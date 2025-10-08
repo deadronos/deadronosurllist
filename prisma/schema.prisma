@@ -26,6 +26,39 @@ model Post {
     @@index([name])
 }
 
+model Collection {
+    id          String   @id @default(cuid())
+    name        String
+    description String?
+    isPublic    Boolean  @default(false)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    createdBy   User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+    createdById String
+
+    links       Link[]
+
+    @@index([createdById])
+    @@index([createdAt])
+}
+
+model Link {
+    id           String     @id @default(cuid())
+    url          String
+    name         String
+    comment      String?
+    order        Int        @default(0)
+    createdAt    DateTime   @default(now())
+    updatedAt    DateTime   @updatedAt
+
+    collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+    collectionId String
+
+    @@index([collectionId])
+    @@index([order])
+}
+
 // Necessary for Next auth
 model Account {
     id                       String  @id @default(cuid())
@@ -63,6 +96,7 @@ model User {
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
+    collections   Collection[]
 }
 
 model VerificationToken {
