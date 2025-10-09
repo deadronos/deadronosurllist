@@ -16,6 +16,8 @@ import {
 import { auth, authDiagnostics } from "@/server/auth";
 import { api } from "@/trpc/server";
 
+import { Analytics } from "@vercel/analytics/next"
+
 type PublicLink = {
   id: string;
   name: string;
@@ -57,6 +59,7 @@ export default async function Home() {
 
   return (
     <Box className="min-h-screen bg-[radial-gradient(circle_at_top,_#101220,_#040406)] text-white">
+      <Analytics />
       <Container
         size="3"
         px={{ initial: "5", sm: "6" }}
