@@ -14,7 +14,9 @@
 2. **Dashboard:** Authenticated request uses `api.collection.getAll()` to list the member's collections and show creation controls.
 3. **Collection Detail:** Hydrated client fetches `collection.getById` results and provides link creation via React Query mutations.
 4. **Link Mutations:** Client components call `link.create`, `link.update`, `link.delete`, and `link.reorder` while server validates ownership before committing changes.
-5. **Testing:** Vitest specs construct tRPC callers with mocked auth/session and reset the in-memory DB before each test for isolation.
+5. **Sign-in UX:** `/signin` page consumes `authDiagnostics` to render available OAuth providers or show guidance when authentication is disabled.
+6. **Error/404 Navigation:** `error.tsx` and `not-found.tsx` provide clear actions to return home, aligning with global layout navigation.
+7. **Testing:** Vitest specs construct tRPC callers with mocked auth/session and reset the in-memory DB before each test for isolation; provider helper is unit-tested for diagnostics behavior.
 
 ## Cross-Cutting Patterns
 
@@ -22,3 +24,4 @@
 - Protected procedures enforce per-user access using `ctx.session.user.id` checks before mutations.
 - Seed helpers in the mock database guard against duplicate entries while guaranteeing the "Discover Links" collection exists for public visitors.
 - Hydration helper (`HydrateClient`) bridges server-fetched data with client components to avoid waterfalls.
+- Auth provider builder centralizes credential validation, producing `authDiagnostics` for UI consumption and strictness in production.
