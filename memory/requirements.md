@@ -27,3 +27,8 @@
 - WHEN OAuth provider credentials are missing or use placeholder values in a non-production environment, THE SYSTEM SHALL disable the affected provider and expose the status for UI messaging [Acceptance: unit test covering the provider diagnostics helper].
 - WHEN no authentication providers are enabled, THE SYSTEM SHALL render the custom sign-in page with guidance instead of propagating an exception [Acceptance: manual verification or component snapshot for the `/signin` page].
 - WHEN valid credentials are supplied, THE SYSTEM SHALL configure the corresponding provider so the normal sign-in flow continues to work [Acceptance: unit test ensuring provider creation succeeds with realistic credentials].
+
+## Navigation & UX
+
+- WHEN a visitor views any application page, THE SYSTEM SHALL present a persistent navigation control that links back to the home page [Acceptance: manual check confirming the control renders across non-root routes].
+- WHEN an error or not-found page renders, THE SYSTEM SHALL provide a clear action to return to the home page [Acceptance: manual check triggering error/not-found routes].
