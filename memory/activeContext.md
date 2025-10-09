@@ -1,5 +1,5 @@
 # Active Context
 
-- Focus: TASK006 – Typing the shared database surface and dependent layers to clear ESLint unsafe-`any` diagnostics.
-- Next Actions: Implement LinkListDatabase contract, align mock delegates, refactor routers/tests, then verify via lint + targeted Vitest.
+- Focus: Lint compliance task (TASK006) completed; no active development thread.
+- Next Actions: Await new directives or follow-up scope.
 - Dependencies: Prisma client types, NextAuth PrismaAdapter compatibility, ESLint configuration.

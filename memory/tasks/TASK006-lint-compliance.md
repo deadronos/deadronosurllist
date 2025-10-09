@@ -1,6 +1,6 @@
 # TASK006 - Lint Compliance
 
-**Status:** In Progress  
+**Status:** Completed  
 **Added:** 2025-10-10  
 **Updated:** 2025-10-10
 
@@ -27,22 +27,23 @@ Fix lint errors.
 
 ## Progress Tracking
 
-**Overall Status:** In Progress – 5%
+**Overall Status:** Completed – 100%
 
 ### Subtasks
 
 | ID  | Description                               | Status        | Updated     | Notes |
 | --- | ----------------------------------------- | ------------- | ----------- | ----- |
-| 1.1 | Type the shared database client export    | Not Started   | —           | — |
-| 1.2 | Align mock database delegates with types  | Not Started   | —           | — |
-| 1.3 | Refine tRPC routers to use typed context  | Not Started   | —           | — |
-| 1.4 | Update React hooks for safe consumption   | Not Started   | —           | — |
-| 1.5 | Harden auth adapter usage of database     | Not Started   | —           | — |
-| 1.6 | Replace test casts with typed factories   | Not Started   | —           | — |
-| 1.7 | Re-run lint and targeted Vitest suites    | Not Started   | —           | — |
+| 1.1 | Type the shared database client export    | Complete      | 2025-10-10  | Wrapped Prisma and mock clients in `LinkListDatabase`. |
+| 1.2 | Align mock database delegates with types  | Complete      | 2025-10-10  | Mock helpers now emit typed DTOs. |
+| 1.3 | Refine tRPC routers to use typed context  | Complete      | 2025-10-10  | Context annotated; routers operate without unsafe casts. |
+| 1.4 | Update React hooks for safe consumption   | Complete      | 2025-10-10  | `LatestPost` now uses suspense-enabled `useQuery`. |
+| 1.5 | Harden auth adapter usage of database     | Complete      | 2025-10-10  | Adapter only instantiated with real Prisma client. |
+| 1.6 | Replace test casts with typed factories   | Complete      | 2025-10-10  | Test callers built via typed session/context helpers. |
+| 1.7 | Re-run lint and targeted Vitest suites    | Complete      | 2025-10-10  | `npm run lint`; `npx vitest --run collectionRouter.spec.ts postRouter.spec.ts`. |
 
 ## Progress Log
 
 ### 2025-10-10
 
 - Captured lint compliance requirements, recorded DESIGN006, and drafted implementation plan to type the database surface, routers, and tests.
+- Implemented `LinkListDatabase` backed by Prisma/mocked wrappers, updated tRPC context and routers, cleaned React hook usage, adjusted NextAuth adapter guard, and refactored Vitest suites to use typed caller factories. Verified fixes via `npm run lint` and `npx vitest --run collectionRouter.spec.ts postRouter.spec.ts`.

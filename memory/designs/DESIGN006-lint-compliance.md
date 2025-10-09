@@ -1,6 +1,6 @@
 # DESIGN006 – Lint Compliance Reinforcement
 
-**Status:** Draft  
+**Status:** Implemented  
 **Related Requirements:** Lint Compliance (memory/requirements.md)  
 **Scope:** Eliminate ESLint unsafe-`any` diagnostics by typing the database surface, tRPC interactions, and Vitest helpers while preserving runtime behaviour.
 
