@@ -20,11 +20,12 @@ type CollectionWithLinks = {
   links: CollectionLink[];
 };
 
-interface Props {
-  params: { id: string };
+interface PageProps {
+  params: Promise<{ id: string }>;
 }
 
-export default async function CollectionPage({ params }: Props) {
+export default async function CollectionPage({ params }: PageProps) {
+  const { id } = await params;
   const session = await auth();
   if (!session?.user) {
     return (
@@ -41,7 +42,7 @@ export default async function CollectionPage({ params }: Props) {
     );
   }
 
-  const collectionResult: unknown = await api.collection.getById({ id: params.id });
+  const collectionResult: unknown = await api.collection.getById({ id });
   if (!collectionResult) notFound();
   if (!isCollectionWithLinks(collectionResult)) {
     throw new Error("Unexpected collection payload");

@@ -56,7 +56,7 @@ export const linkRouter = createTRPCRouter({
         include: { collection: true },
       });
 
-      if (link?.collection.createdById !== ctx.session.user.id) {
+      if (!link || !link.collection || link.collection.createdById !== ctx.session.user.id) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
@@ -80,7 +80,7 @@ export const linkRouter = createTRPCRouter({
         include: { collection: true },
       });
 
-      if (link?.collection.createdById !== ctx.session.user.id) {
+      if (!link || !link.collection || link.collection.createdById !== ctx.session.user.id) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 

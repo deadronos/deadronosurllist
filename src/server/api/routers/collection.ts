@@ -25,7 +25,7 @@ type CollectionLinkRecord = {
 export const collectionRouter = createTRPCRouter({
   // Get the most recently updated public collection with links
   getPublic: publicProcedure.query(async ({ ctx }) => {
-  const collections = await ctx.db.collection.findMany({
+    const collections = await ctx.db.collection.findMany({
       where: { isPublic: true },
       orderBy: { updatedAt: "desc" },
       include: {
@@ -35,14 +35,15 @@ export const collectionRouter = createTRPCRouter({
       },
     });
 
-  const collection = collections.at(0);
+    const collection = collections.at(0);
     if (!collection) return null;
+    const links = collection.links ?? [];
 
     return {
       id: collection.id,
       name: collection.name,
       description: collection.description,
-      links: collection.links.map((link: CollectionLinkRecord): PublicLinkSummary => ({
+      links: links.map((link: CollectionLinkRecord): PublicLinkSummary => ({
         id: link.id,
         name: link.name,
         url: link.url,
@@ -54,7 +55,7 @@ export const collectionRouter = createTRPCRouter({
 
   // Get all collections for current user
   getAll: protectedProcedure.query(({ ctx }) => {
-  return ctx.db.collection.findMany({
+    return ctx.db.collection.findMany({
       where: { createdById: ctx.session.user.id },
       include: { _count: { select: { links: true } } },
       orderBy: { updatedAt: "desc" },
@@ -65,7 +66,7 @@ export const collectionRouter = createTRPCRouter({
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(({ ctx, input }) => {
-  return ctx.db.collection.findFirst({
+      return ctx.db.collection.findFirst({
         where: {
           id: input.id,
           createdById: ctx.session.user.id,
@@ -86,7 +87,7 @@ export const collectionRouter = createTRPCRouter({
       }),
     )
     .mutation(({ ctx, input }) => {
-  return ctx.db.collection.create({
+      return ctx.db.collection.create({
         data: {
           ...input,
           createdBy: { connect: { id: ctx.session.user.id } },
@@ -105,7 +106,7 @@ export const collectionRouter = createTRPCRouter({
       }),
     )
     .mutation(({ ctx, input }) => {
-  return ctx.db.collection.updateMany({
+      return ctx.db.collection.updateMany({
         where: {
           id: input.id,
           createdById: ctx.session.user.id,
@@ -122,7 +123,7 @@ export const collectionRouter = createTRPCRouter({
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(({ ctx, input }) => {
-  return ctx.db.collection.deleteMany({
+      return ctx.db.collection.deleteMany({
         where: {
           id: input.id,
           createdById: ctx.session.user.id,

@@ -29,7 +29,12 @@ if (useMock) {
   if (env.NODE_ENV !== "production") globalForPrisma.prisma = prismaClient;
 
   const prismaDb: LinkListDatabase = {
-    $transaction: (operations) => prismaClient.$transaction(operations),
+    $transaction: (operations) =>
+      prismaClient.$transaction(
+        operations.map((operation) =>
+          typeof operation === "function" ? operation() : operation,
+        ) as unknown as Parameters<typeof prismaClient.$transaction>[0],
+      ) as Promise<unknown[]>,
     collection: {
       findMany: async (args) =>
         (await prismaClient.collection.findMany(args)) as CollectionRecord[],

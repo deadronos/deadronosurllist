@@ -15,7 +15,9 @@ export type LinkRecord = Link & {
 };
 
 export type LinkListDatabase = {
-  $transaction<T>(operations: Array<(() => Promise<T>) | Promise<T>>): Promise<T[]>;
+  $transaction(
+    operations: Array<(() => Promise<unknown>) | Promise<unknown>>,
+  ): Promise<unknown[]>;
   collection: {
     findMany(args?: Prisma.CollectionFindManyArgs): Promise<CollectionRecord[]>;
     findFirst(args?: Prisma.CollectionFindFirstArgs): Promise<CollectionRecord | null>;

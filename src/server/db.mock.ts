@@ -321,8 +321,10 @@ const resolveCreatedById = (data: Record<string, unknown>): string => {
 };
 
 export const db = {
-  $transaction: async <T>(operations: Array<(() => Promise<T>) | Promise<T>>) => {
-    const results: T[] = [];
+  $transaction: async (
+    operations: Array<(() => Promise<unknown>) | Promise<unknown>>,
+  ) => {
+    const results: unknown[] = [];
     for (const op of operations) {
       const value = typeof op === "function" ? await op() : await op;
       results.push(value);
