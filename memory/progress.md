@@ -15,3 +15,4 @@
 - 2025-10-10: Completed TASK005 by hardening type safety across UI, routers, auth providers, mock DB, and tests; `npm run typecheck` and targeted Vitest suites now pass cleanly.
 - 2025-10-10: Initiated TASK006 to type the database context, routers, and tests so `npm run lint` passes without unsafe-`any` diagnostics.
 - 2025-10-10: Completed TASK006 by introducing a typed `LinkListDatabase`, updating routers/tests/UI, and confirming `npm run lint` plus `npx vitest --run collectionRouter.spec.ts postRouter.spec.ts` succeed.
+- 2025-10-10: Implemented database URL resolution fallback so preview deployments gracefully degrade to the mock DB when provided Prisma strings lack a postgres protocol; verified with lint, Vitest, and full Next.js build.

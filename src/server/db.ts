@@ -3,7 +3,36 @@ import type { PrismaClient } from "@prisma/client";
 import { env } from "@/env";
 import type { CollectionRecord, LinkListDatabase, LinkRecord } from "./db.types";
 
-const useMock = !!process.env.USE_MOCK_DB;
+const POSTGRES_PROTOCOL_REGEX = /^postgres(?:ql)?:\/\//i;
+
+const resolveDatasourceUrl = () => {
+  const primary = process.env.DATABASE_URL ?? "";
+  if (POSTGRES_PROTOCOL_REGEX.test(primary)) {
+    return primary;
+  }
+
+  const fallbacks = [
+    process.env.DIRECT_DATABASE_URL,
+    process.env.DATABASE_DIRECT_URL,
+    process.env.POSTGRES_PRISMA_URL,
+    process.env.POSTGRES_URL,
+    process.env.POSTGRES_URL_NON_POOLING,
+    process.env.SHADOW_DATABASE_URL,
+  ];
+
+  for (const candidate of fallbacks) {
+    if (candidate && POSTGRES_PROTOCOL_REGEX.test(candidate)) {
+      return candidate;
+    }
+  }
+
+  return "";
+};
+
+const datasourceUrl = resolveDatasourceUrl();
+
+const useMock =
+  process.env.USE_MOCK_DB === "true" || datasourceUrl.length === 0;
 
 let prismaSingleton: PrismaClient | null = null;
 
@@ -12,6 +41,11 @@ let dbInternal: LinkListDatabase;
 if (useMock) {
   const mod = await import("./db.mock");
   dbInternal = mod.db;
+  if (!process.env.USE_MOCK_DB) {
+    console.warn(
+      "Database connection string is missing or unsupported protocol; defaulting to in-memory mock database.",
+    );
+  }
 } else {
   const { PrismaClient } = await import("@prisma/client");
 
@@ -19,6 +53,7 @@ if (useMock) {
     new PrismaClient({
       log:
         env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+      datasources: { db: { url: datasourceUrl } },
     });
 
   const globalForPrisma = globalThis as unknown as {
