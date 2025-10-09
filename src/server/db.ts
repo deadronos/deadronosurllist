@@ -1,17 +1,30 @@
-import { PrismaClient } from "@prisma/client";
-
 import { env } from "@/env";
 
-const createPrismaClient = () =>
-  new PrismaClient({
-    log:
-      env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-  });
+const useMock = !!process.env.USE_MOCK_DB;
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: ReturnType<typeof createPrismaClient> | undefined;
-};
+let dbInternal: any;
 
-export const db = globalForPrisma.prisma ?? createPrismaClient();
+if (useMock) {
+  // load the mock implementation which avoids loading Prisma binaries
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const mod = await import("./db.mock");
+  dbInternal = mod.db;
+} else {
+  const { PrismaClient } = await import("@prisma/client");
 
-if (env.NODE_ENV !== "production") globalForPrisma.prisma = db;
+  const createPrismaClient = () =>
+    new PrismaClient({
+      log:
+        env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+    });
+
+  const globalForPrisma = globalThis as unknown as {
+    prisma: ReturnType<typeof createPrismaClient> | undefined;
+  };
+
+  dbInternal = globalForPrisma.prisma ?? createPrismaClient();
+
+  if (env.NODE_ENV !== "production") globalForPrisma.prisma = dbInternal;
+}
+
+export const db = dbInternal;
