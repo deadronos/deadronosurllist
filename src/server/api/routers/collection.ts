@@ -1,8 +1,41 @@
 import { z } from "zod";
 
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "@/server/api/trpc";
 
 export const collectionRouter = createTRPCRouter({
+  // Get the most recently updated public collection with links
+  getPublic: publicProcedure.query(async ({ ctx }) => {
+    const collections = await ctx.db.collection.findMany({
+      where: { isPublic: true },
+      orderBy: { updatedAt: "desc" },
+      include: {
+        links: {
+          orderBy: { order: "asc" },
+        },
+      },
+    });
+
+    const collection = collections.at(0);
+    if (!collection) return null;
+
+    return {
+      id: collection.id,
+      name: collection.name,
+      description: collection.description,
+      links: collection.links.map((link) => ({
+        id: link.id,
+        name: link.name,
+        url: link.url,
+        comment: link.comment,
+        order: link.order,
+      })),
+    };
+  }),
+
   // Get all collections for current user
   getAll: protectedProcedure.query(({ ctx }) => {
     return ctx.db.collection.findMany({
@@ -81,4 +114,3 @@ export const collectionRouter = createTRPCRouter({
       });
     }),
 });
-

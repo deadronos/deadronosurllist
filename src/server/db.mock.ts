@@ -113,29 +113,50 @@ const resetStore = () => {
   const userId = "user1";
   ensureUser(userId);
 
-  const collectionId = "col_seed";
-  const linkId = "link_seed";
+  const collectionId = "col_public_discover";
+  const defaultLinks = [
+    {
+      id: "link_github",
+      url: "https://github.com",
+      name: "GitHub",
+      comment: "Collaborate on code and explore repositories.",
+    },
+    {
+      id: "link_radix",
+      url: "https://www.radix-ui.com",
+      name: "Radix UI",
+      comment: "Accessible primitives and themes for modern web apps.",
+    },
+    {
+      id: "link_nextjs",
+      url: "https://nextjs.org",
+      name: "Next.js",
+      comment: "Full-stack React framework for the web.",
+    },
+  ];
 
   store.collections.set(collectionId, {
     id: collectionId,
-    name: "Seeded Collection",
-    description: "Example links to get you started.",
-    isPublic: false,
+    name: "Discover Links",
+    description: "Curated starters to explore the Deadronos URL List.",
+    isPublic: true,
     createdById: userId,
     createdAt: now,
     updatedAt: now,
-    linkIds: [linkId],
+    linkIds: defaultLinks.map((link) => link.id),
   });
 
-  store.links.set(linkId, {
-    id: linkId,
-    collectionId,
-    url: "https://example.com",
-    name: "Example Link",
-    comment: "Replace me with something useful.",
-    order: 0,
-    createdAt: now,
-    updatedAt: now,
+  defaultLinks.forEach((link, index) => {
+    store.links.set(link.id, {
+      id: link.id,
+      collectionId,
+      url: link.url,
+      name: link.name,
+      comment: link.comment ?? null,
+      order: index,
+      createdAt: now,
+      updatedAt: now,
+    });
   });
 };
 
@@ -148,6 +169,9 @@ const matchesCollectionWhere = (
   if (!where) return true;
   if (where.id && record.id !== where.id) return false;
   if (where.createdById && record.createdById !== where.createdById) return false;
+  if (where.isPublic !== undefined && record.isPublic !== Boolean(where.isPublic)) {
+    return false;
+  }
   if (
     typeof where.createdBy === "object" &&
     where.createdBy &&

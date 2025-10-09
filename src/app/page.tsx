@@ -1,69 +1,157 @@
 import Link from "next/link";
 
-import { LatestPost } from "@/app/_components/post";
+import {
+  Box,
+  Button,
+  Card,
+  Container,
+  Flex,
+  Heading,
+  Link as RadixLink,
+  Separator,
+  Text,
+} from "@radix-ui/themes";
+
 import { auth } from "@/server/auth";
-import { api, HydrateClient } from "@/trpc/server";
+import { api } from "@/trpc/server";
 
 export default async function Home() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-  const session = await auth();
+  const [session, publicCollection] = await Promise.all([
+    auth(),
+    api.collection.getPublic(),
+  ]);
 
-  if (session?.user) {
-    void api.post.getLatest.prefetch();
-  }
+  const primaryCtaHref = session ? "/dashboard" : "/api/auth/signin";
+  const primaryCtaLabel = session
+    ? "Go to your dashboard"
+    : "Sign in to start collecting";
+  const authHref = session ? "/api/auth/signout" : "/api/auth/signin";
+  const authLabel = session ? "Sign out" : "Sign in";
+  const publicLinks = publicCollection?.links ?? [];
 
   return (
-    <HydrateClient>
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-        <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16">
-          <h1 className="text-5xl font-extrabold tracking-tight sm:text-[5rem]">
-            Create <span className="text-[hsl(280,100%,70%)]">T3</span> App
-          </h1>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:gap-8">
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/usage/first-steps"
-              target="_blank"
+    <Box className="min-h-screen bg-[radial-gradient(circle_at_top,_#101220,_#040406)] text-white">
+      <Container
+        size="3"
+        px={{ initial: "5", sm: "6" }}
+        py={{ initial: "8", sm: "9" }}
+      >
+        <Flex direction="column" gap="7">
+          <Flex
+            align={{ initial: "start", md: "center" }}
+            direction={{ initial: "column", md: "row" }}
+            justify="between"
+            gap="6"
+          >
+            <Box maxWidth={{ initial: "100%", md: "480px" }}>
+              <Heading size={{ initial: "8", md: "9" }}>
+                Collect, share, and revisit the web.
+              </Heading>
+              <Text as="p" mt="3" size="4" color="gray">
+                Build living collections of links for your team or community.
+                Discover curated resources even before you sign in.
+              </Text>
+              <Flex mt="6" gap="3" wrap="wrap">
+                <Button size="3" asChild>
+                  <Link href={primaryCtaHref}>{primaryCtaLabel}</Link>
+                </Button>
+                <Button size="3" variant="soft" color="gray" asChild>
+                  <Link href={authHref}>{authLabel}</Link>
+                </Button>
+              </Flex>
+              {session?.user?.name && (
+                <Text as="p" mt="3" size="2" color="gray">
+                  Signed in as {session.user.name}.
+                </Text>
+              )}
+            </Box>
+            <Card
+              size="3"
+              variant="surface"
+              className="w-full max-w-md border border-white/10 bg-white/5 backdrop-blur"
             >
-              <h3 className="text-2xl font-bold">First Steps →</h3>
-              <div className="text-lg">
-                Just the basics - Everything you need to know to set up your
-                database and authentication.
-              </div>
-            </Link>
-            <Link
-              className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
-              href="https://create.t3.gg/en/introduction"
-              target="_blank"
+              <Flex direction="column" gap="3">
+                <Text size="2" color="gray">
+                  Featured collection
+                </Text>
+                <Heading size="5">
+                  {publicCollection?.name ?? "No public collection yet"}
+                </Heading>
+                <Text size="3" color="gray">
+                  {publicCollection?.description ??
+                    "Check back soon for curated resources from the Deadronos community."}
+                </Text>
+                <Separator className="border-white/10" />
+                <Flex direction="column" gap="3">
+                  {publicLinks.length > 0 ? (
+                    publicLinks.map((link) => (
+                      <Card
+                        key={link.id}
+                        size="2"
+                        variant="classic"
+                        className="border-white/10 bg-black/40"
+                      >
+                        <Flex
+                          direction="column"
+                          gap="2"
+                          align="start"
+                          justify="between"
+                        >
+                          <Heading as="h3" size="3">
+                            {link.name}
+                          </Heading>
+                          {link.comment && (
+                            <Text size="2" color="gray">
+                              {link.comment}
+                            </Text>
+                          )}
+                          <RadixLink
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            color="iris"
+                            underline="always"
+                            weight="medium"
+                          >
+                            {link.url}
+                          </RadixLink>
+                        </Flex>
+                      </Card>
+                    ))
+                  ) : (
+                    <Text size="2" color="gray">
+                      We are preparing hand-picked recommendations. Stay tuned!
+                    </Text>
+                  )}
+                </Flex>
+              </Flex>
+            </Card>
+          </Flex>
+
+          <Card
+            variant="surface"
+            className="border border-white/10 bg-white/5 backdrop-blur"
+          >
+            <Flex
+              align={{ initial: "stretch", md: "center" }}
+              direction={{ initial: "column", md: "row" }}
+              justify="between"
+              gap="4"
             >
-              <h3 className="text-2xl font-bold">Documentation →</h3>
-              <div className="text-lg">
-                Learn more about Create T3 App, the libraries it uses, and how
-                to deploy it.
-              </div>
-            </Link>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <p className="text-2xl text-white">
-              {hello ? hello.greeting : "Loading tRPC query..."}
-            </p>
-
-            <div className="flex flex-col items-center justify-center gap-4">
-              <p className="text-center text-2xl text-white">
-                {session && <span>Logged in as {session.user?.name}</span>}
-              </p>
-              <Link
-                href={session ? "/api/auth/signout" : "/api/auth/signin"}
-                className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-              >
-                {session ? "Sign out" : "Sign in"}
-              </Link>
-            </div>
-          </div>
-
-          {session?.user && <LatestPost />}
-        </div>
-      </main>
-    </HydrateClient>
+              <Box>
+                <Heading size="6">Why Deadronos URL List?</Heading>
+                <Text as="p" mt="2" size="3" color="gray">
+                  Organize your research, share playlists of knowledge, and keep
+                  every link at your fingertips.
+                </Text>
+              </Box>
+              <Button size="3" variant="outline" asChild>
+                <Link href={primaryCtaHref}>Start your first collection</Link>
+              </Button>
+            </Flex>
+          </Card>
+        </Flex>
+      </Container>
+    </Box>
   );
 }

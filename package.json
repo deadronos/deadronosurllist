@@ -24,6 +24,7 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.0",
     "@prisma/client": "^6.17.0",
+    "@radix-ui/themes": "^3.2.1",
     "@t3-oss/env-nextjs": "^0.13.8",
     "@tanstack/react-query": "^5.90.2",
     "@trpc/client": "^11.6.0",

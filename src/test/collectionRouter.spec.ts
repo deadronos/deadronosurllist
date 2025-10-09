@@ -23,6 +23,14 @@ describe('collectionRouter (mocked)', () => {
     expect(res[0]?._count?.links).toBeDefined();
   });
 
+  it('getPublic returns the seeded public collection', async () => {
+    const res = await caller.collection.getPublic();
+    expect(res).not.toBeNull();
+    expect(res?.name).toBe('Discover Links');
+    expect(res?.links.length).toBeGreaterThan(0);
+    expect(res?.links[0]?.url).toBe('https://github.com');
+  });
+
   it('create returns created collection', async () => {
     const created = await caller.collection.create({ name: 'New', description: 'desc' });
     expect(created).toHaveProperty('id');

@@ -17,12 +17,14 @@ beforeEach(async () => {
 
 describe('linkRouter with in-memory db', () => {
   it('creates, reorders, updates, and deletes links', async () => {
-    const initialCollection = await caller.collection.getById({ id: 'col_seed' });
+    const collectionId = 'col_public_discover';
+    const initialCollection = await caller.collection.getById({ id: collectionId });
     expect(initialCollection).not.toBeNull();
-    expect(initialCollection?.links.length).toBe(1);
+    const initialCount = initialCollection!.links.length;
+    expect(initialCount).toBeGreaterThan(0);
 
     const created = await caller.link.create({
-      collectionId: 'col_seed',
+      collectionId,
       url: 'https://example.com/second',
       name: 'Second Link',
       comment: 'Another link',
@@ -30,24 +32,26 @@ describe('linkRouter with in-memory db', () => {
 
     expect(created).toMatchObject({
       id: expect.any(String),
-      order: 1,
-      collectionId: 'col_seed',
+      order: initialCount,
+      collectionId,
     });
 
-    const afterCreate = await caller.collection.getById({ id: 'col_seed' });
-    expect(afterCreate?.links.length).toBe(2);
+    const afterCreate = await caller.collection.getById({ id: collectionId });
+    expect(afterCreate?.links.length).toBe(initialCount + 1);
 
     const reversed = afterCreate!.links.map((link) => link.id).reverse();
     const results = await caller.link.reorder({
-      collectionId: 'col_seed',
+      collectionId,
       linkIds: reversed,
     });
 
     results.forEach((res) => expect(res.count).toBe(1));
 
-    const afterReorder = await caller.collection.getById({ id: 'col_seed' });
+    const afterReorder = await caller.collection.getById({ id: collectionId });
     expect(afterReorder?.links.map((link) => link.id)).toEqual(reversed);
-    expect(afterReorder?.links.map((link) => link.order)).toEqual([0, 1]);
+    expect(afterReorder?.links.map((link) => link.order)).toEqual(
+      reversed.map((_, index) => index),
+    );
 
     const updated = await caller.link.update({
       id: created.id,
@@ -56,7 +60,7 @@ describe('linkRouter with in-memory db', () => {
     expect(updated.comment).toBe('Updated comment');
 
     await caller.link.delete({ id: created.id });
-    const afterDelete = await caller.collection.getById({ id: 'col_seed' });
+    const afterDelete = await caller.collection.getById({ id: collectionId });
     expect(afterDelete?.links.some((link) => link.id === created.id)).toBe(false);
   });
 });
