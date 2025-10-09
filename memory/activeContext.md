@@ -1,5 +1,5 @@
 # Active Context
 
-- Focus: Baseline project briefing and product context captured in Memory Bank; core public welcome experience remains stable.
-- Next Actions: Await new feature requests or follow-up on collection management enhancements; continue monitoring feedback on Radix landing page.
-- Dependencies: None currently noted.
+- Focus: All planned work for TASK002 is complete; authentication gracefully handles placeholder env values.
+- Next Actions: Await feedback on the revised sign-in flow or new feature requests.
+- Dependencies: None currently outstanding.

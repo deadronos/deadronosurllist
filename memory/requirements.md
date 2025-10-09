@@ -21,3 +21,9 @@
 
 - WHEN a member submits a valid link (URL + name) for one of their collections, THE SYSTEM SHALL assign the next available `order` and persist the record [Acceptance: unit or integration test for `link.create`].
 - WHEN a member updates, deletes, or reorders a link, THE SYSTEM SHALL verify the owning collection belongs to the member before applying changes [Acceptance: link router tests expect FORBIDDEN on foreign collections].
+
+## Graceful Auth Configuration
+
+- WHEN OAuth provider credentials are missing or use placeholder values in a non-production environment, THE SYSTEM SHALL disable the affected provider and expose the status for UI messaging [Acceptance: unit test covering the provider diagnostics helper].
+- WHEN no authentication providers are enabled, THE SYSTEM SHALL render the custom sign-in page with guidance instead of propagating an exception [Acceptance: manual verification or component snapshot for the `/signin` page].
+- WHEN valid credentials are supplied, THE SYSTEM SHALL configure the corresponding provider so the normal sign-in flow continues to work [Acceptance: unit test ensuring provider creation succeeds with realistic credentials].

@@ -12,7 +12,7 @@ import {
   Text,
 } from "@radix-ui/themes";
 
-import { auth } from "@/server/auth";
+import { auth, authDiagnostics } from "@/server/auth";
 import { api } from "@/trpc/server";
 
 export default async function Home() {
@@ -21,12 +21,19 @@ export default async function Home() {
     api.collection.getPublic(),
   ]);
 
-  const primaryCtaHref = session ? "/dashboard" : "/api/auth/signin";
+  const hasEnabledProvider = authDiagnostics.hasEnabledProvider;
+  const primaryCtaHref = session ? "/dashboard" : "/signin";
   const primaryCtaLabel = session
     ? "Go to your dashboard"
-    : "Sign in to start collecting";
-  const authHref = session ? "/api/auth/signout" : "/api/auth/signin";
-  const authLabel = session ? "Sign out" : "Sign in";
+    : hasEnabledProvider
+      ? "Sign in to start collecting"
+      : "Review sign-in setup";
+  const authHref = session ? "/api/auth/signout" : "/signin";
+  const authLabel = session
+    ? "Sign out"
+    : hasEnabledProvider
+      ? "Sign in"
+      : "Sign-in disabled";
   const publicLinks = publicCollection?.links ?? [];
 
   return (
@@ -59,6 +66,12 @@ export default async function Home() {
                   <Link href={authHref}>{authLabel}</Link>
                 </Button>
               </Flex>
+              {!hasEnabledProvider && (
+                <Text as="p" mt="3" size="2" color="gray">
+                  Sign-in is disabled while mock credentials are configured. Update your OAuth
+                  secrets to enable authentication.
+                </Text>
+              )}
               {session?.user?.name && (
                 <Text as="p" mt="3" size="2" color="gray">
                   Signed in as {session.user.name}.

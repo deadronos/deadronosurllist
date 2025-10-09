@@ -3,7 +3,15 @@ import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import GoogleProvider from "next-auth/providers/google";
 
+import { env } from "@/env";
 import { db } from "@/server/db";
+
+import {
+  buildAuthProviders,
+  type AuthDiagnostics,
+  type AuthEnvShape,
+  type AuthProviderDescriptor,
+} from "./provider-helpers";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -31,20 +39,59 @@ declare module "next-auth" {
  *
  * @see https://next-auth.js.org/configuration/options
  */
+const authEnv: AuthEnvShape = {
+  NODE_ENV: env.NODE_ENV,
+  AUTH_DISCORD_ID: process.env.AUTH_DISCORD_ID,
+  AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET,
+  AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
+  AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
+};
+
+const providerDescriptors: AuthProviderDescriptor[] = [
+  {
+    id: "discord",
+    label: "Discord",
+    credentials: {
+      clientId: "AUTH_DISCORD_ID",
+      clientSecret: "AUTH_DISCORD_SECRET",
+    },
+    createProvider: ({ clientId, clientSecret }) =>
+      DiscordProvider({ clientId, clientSecret }),
+  },
+  {
+    id: "google",
+    label: "Google",
+    optional: true,
+    credentials: {
+      clientId: "AUTH_GOOGLE_ID",
+      clientSecret: "AUTH_GOOGLE_SECRET",
+    },
+    createProvider: ({ clientId, clientSecret }) =>
+      GoogleProvider({ clientId, clientSecret }),
+  },
+];
+
+const { providers, diagnostics } = buildAuthProviders(
+  authEnv,
+  providerDescriptors,
+);
+
+if (
+  diagnostics.disabledProviders.length > 0 &&
+  env.NODE_ENV !== "test" &&
+  env.NODE_ENV !== "production"
+) {
+  diagnostics.disabledProviders.forEach((status) => {
+    console.warn(
+      `[auth] Disabled ${status.label} provider (${status.reason ?? "unknown reason"}).`,
+    );
+  });
+}
+
+export const authDiagnostics: AuthDiagnostics = diagnostics;
+
 export const authConfig = {
-  providers: [
-    DiscordProvider,
-    GoogleProvider,
-    /**
-     * ...add more providers here.
-     *
-     * Most other providers require a bit more work than the Discord provider. For example, the
-     * GitHub provider requires you to add the `refresh_token_expires_in` field to the Account
-     * model. Refer to the NextAuth.js docs for the provider you want to use. Example:
-     *
-     * @see https://next-auth.js.org/providers/github
-     */
-  ],
+  providers,
   adapter: PrismaAdapter(db),
   callbacks: {
     session: ({ session, user }) => ({
@@ -54,5 +101,8 @@ export const authConfig = {
         id: user.id,
       },
     }),
+  },
+  pages: {
+    signIn: "/signin",
   },
 } satisfies NextAuthConfig;
