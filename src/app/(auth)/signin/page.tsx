@@ -8,8 +8,6 @@ import {
   Flex,
   Heading,
   IconButton,
-  List,
-  ListItem,
   Separator,
   Text,
 } from "@radix-ui/themes";
@@ -85,13 +83,13 @@ export default function SignInPage() {
                   <Separator className="border-white/10" />
                   <Box>
                     <Heading size="4">Provider diagnostics</Heading>
-                    <List size="2" mt="2" color="gray">
+                    <ul className="mt-2 text-sm text-gray-400 list-disc pl-5 space-y-1">
                       {disabledProviders.map((provider) => (
-                        <ListItem key={`disabled-${provider.id}`}>
+                        <li key={`disabled-${provider.id}`}>
                           {provider.label}: {provider.reason ?? "Configuration issue detected."}
-                        </ListItem>
+                        </li>
                       ))}
-                    </List>
+                    </ul>
                   </Box>
                 </>
               )}
