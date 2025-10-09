@@ -36,7 +36,7 @@ Notes
 - All variables are validated in `src/env.js`.
 
 4) Configure Discord OAuth
-- Go to https://discord.com/developers/applications → New Application
+- Go to https://discord.com//developers/applications → New Application
 - Add OAuth2 → Configure a “Web” application
 - Authorized redirect URI (local): `http://localhost:3000/api/auth/callback/discord`
 - After creating the Client, copy the Client ID and Client Secret into `.env` as `AUTH_DISCORD_ID` and `AUTH_DISCORD_SECRET`
