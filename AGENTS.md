@@ -2,6 +2,8 @@
 
 This document provides essential guidance for AI coding agents working on this **T3 Stack** application (Next.js 15, tRPC, NextAuth.js, Prisma, TypeScript).
 
+Look at `.github/instructions/spec-driven-workflow-v1.instructions.md' for guidance on spec/design/tasks.
+
 ## 🧠 Memory Bank System
 
 **CRITICAL**: This project uses a structured Memory Bank for context preservation. Review these files before starting work:

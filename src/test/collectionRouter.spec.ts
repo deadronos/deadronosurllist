@@ -1,15 +1,26 @@
-import { describe, it, expect } from 'vitest';
-import { createCallerFactory } from '@/server/api/trpc';
-import { collectionRouter } from '@/server/api/routers/collection';
+import { beforeEach, describe, it, expect } from 'vitest';
 
-// create a caller with fake headers; setup.ts will mock auth() and db
-const caller = createCallerFactory({ headers: new Headers() }).create();
+type CreateCallerFn = typeof import('@/server/api/root')['createCaller'];
+type AppCaller = ReturnType<CreateCallerFn>;
+
+let caller: AppCaller;
+
+beforeEach(async () => {
+  const [{ createCaller }, { createTRPCContext }] = await Promise.all([
+    import('@/server/api/root'),
+    import('@/server/api/trpc'),
+  ]);
+
+  const context = await createTRPCContext({ headers: new Headers() });
+  caller = createCaller(context);
+});
 
 describe('collectionRouter (mocked)', () => {
   it('getAll returns mocked collections', async () => {
     const res = await caller.collection.getAll();
     expect(Array.isArray(res)).toBe(true);
     expect(res[0]).toHaveProperty('id');
+    expect(res[0]?._count?.links).toBeDefined();
   });
 
   it('create returns created collection', async () => {
