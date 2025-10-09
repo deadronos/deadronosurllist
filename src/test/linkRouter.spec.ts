@@ -1,16 +1,24 @@
 import { beforeEach, describe, it, expect } from 'vitest';
 
-type CreateCallerFn = typeof import('@/server/api/root')['createCaller'];
-type AppCaller = ReturnType<CreateCallerFn>;
+import { createCaller } from '@/server/api/root';
+import { createTRPCContext } from '@/server/api/trpc';
+
+type AppCaller = ReturnType<typeof createCaller>;
+
+type LinkResult = {
+  id: string;
+  order: number;
+  comment: string | null;
+  collectionId: string;
+};
+
+type CountResult = {
+  count: number;
+};
 
 let caller: AppCaller;
 
 beforeEach(async () => {
-  const [{ createCaller }, { createTRPCContext }] = await Promise.all([
-    import('@/server/api/root'),
-    import('@/server/api/trpc'),
-  ]);
-
   const context = await createTRPCContext({ headers: new Headers() });
   caller = createCaller(context);
 });
@@ -18,49 +26,118 @@ beforeEach(async () => {
 describe('linkRouter with in-memory db', () => {
   it('creates, reorders, updates, and deletes links', async () => {
     const collectionId = 'col_public_discover';
-    const initialCollection = await caller.collection.getById({ id: collectionId });
-    expect(initialCollection).not.toBeNull();
-    const initialCount = initialCollection!.links.length;
+    const initialCollectionRaw: unknown = await caller.collection.getById({ id: collectionId });
+    const initialCollection = ensureCollectionResult(initialCollectionRaw);
+    const initialCount = initialCollection.links.length;
     expect(initialCount).toBeGreaterThan(0);
 
-    const created = await caller.link.create({
+    const createdRaw: unknown = await caller.link.create({
       collectionId,
       url: 'https://example.com/second',
       name: 'Second Link',
       comment: 'Another link',
     });
+    const created = ensureLinkResult(createdRaw);
 
-    expect(created).toMatchObject({
-      id: expect.any(String),
-      order: initialCount,
+    expect(typeof created.id).toBe('string');
+    expect(created.order).toBe(initialCount);
+    expect(created.collectionId).toBe(collectionId);
+
+    const afterCreateRaw: unknown = await caller.collection.getById({ id: collectionId });
+    const afterCreate = ensureCollectionResult(afterCreateRaw);
+    const afterCreateLinks = afterCreate.links;
+    expect(afterCreateLinks.length).toBe(initialCount + 1);
+
+    const reversedIds = [...afterCreateLinks].map((link) => link.id).reverse();
+    const reorderResultsRaw: unknown = await caller.link.reorder({
       collectionId,
+      linkIds: reversedIds,
     });
 
-    const afterCreate = await caller.collection.getById({ id: collectionId });
-    expect(afterCreate?.links.length).toBe(initialCount + 1);
+    getCountResults(reorderResultsRaw).forEach((res) => expect(res.count).toBe(1));
 
-    const reversed = afterCreate!.links.map((link) => link.id).reverse();
-    const results = await caller.link.reorder({
-      collectionId,
-      linkIds: reversed,
-    });
-
-    results.forEach((res) => expect(res.count).toBe(1));
-
-    const afterReorder = await caller.collection.getById({ id: collectionId });
-    expect(afterReorder?.links.map((link) => link.id)).toEqual(reversed);
-    expect(afterReorder?.links.map((link) => link.order)).toEqual(
-      reversed.map((_, index) => index),
+    const afterReorderRaw: unknown = await caller.collection.getById({ id: collectionId });
+    const afterReorder = ensureCollectionResult(afterReorderRaw);
+    const afterReorderLinks = afterReorder.links;
+    expect(afterReorderLinks.map((link) => link.id)).toEqual(reversedIds);
+    expect(afterReorderLinks.map((link) => link.order)).toEqual(
+      reversedIds.map((_value, index) => index),
     );
 
-    const updated = await caller.link.update({
+    const updatedRaw: unknown = await caller.link.update({
       id: created.id,
       comment: 'Updated comment',
     });
+    const updated = ensureLinkResult(updatedRaw);
     expect(updated.comment).toBe('Updated comment');
-
     await caller.link.delete({ id: created.id });
-    const afterDelete = await caller.collection.getById({ id: collectionId });
-    expect(afterDelete?.links.some((link) => link.id === created.id)).toBe(false);
+    const afterDeleteRaw: unknown = await caller.collection.getById({ id: collectionId });
+    const afterDelete = ensureCollectionResult(afterDeleteRaw);
+    const afterDeleteLinks = afterDelete.links;
+    expect(afterDeleteLinks.some((link) => link.id === created.id)).toBe(false);
   });
 });
+
+function isLinkResult(value: unknown): value is LinkResult {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as {
+    id?: unknown;
+    order?: unknown;
+    comment?: unknown;
+    collectionId?: unknown;
+  };
+  const comment = candidate.comment;
+  return (
+    typeof candidate.id === 'string' &&
+    typeof candidate.order === 'number' &&
+    typeof candidate.collectionId === 'string' &&
+    (comment === null || comment === undefined || typeof comment === 'string')
+  );
+}
+
+function toLinkResults(value: unknown): LinkResult[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(isLinkResult);
+}
+
+function ensureLinkResult(value: unknown): LinkResult {
+  if (!isLinkResult(value)) {
+    throw new Error('Link result malformed');
+  }
+  return value;
+}
+
+type CollectionResult = {
+  id: string;
+  links: LinkResult[];
+};
+
+function isCollectionResult(value: unknown): value is CollectionResult {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as { id?: unknown; links?: unknown };
+  if (typeof candidate.id !== 'string') return false;
+  if (!Array.isArray(candidate.links)) return false;
+  const linkList = toLinkResults(candidate.links);
+  return linkList.length === candidate.links.length;
+}
+
+function ensureCollectionResult(value: unknown): CollectionResult {
+  if (!isCollectionResult(value)) {
+    throw new Error('Collection result malformed');
+  }
+  return {
+    id: (value as { id: string }).id,
+    links: toLinkResults((value as { links: unknown }).links),
+  };
+}
+
+function isCountResult(value: unknown): value is CountResult {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as { count?: unknown };
+  return typeof candidate.count === 'number';
+}
+
+function getCountResults(value: unknown): CountResult[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter(isCountResult);
+}

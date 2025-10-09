@@ -217,11 +217,14 @@ const sortByDate = <T extends { createdAt: Date; updatedAt: Date }>(
     [keyof typeof orderBy, SortOrder]
   >;
   if (entries.length === 0) return items;
-  const [field, direction] = entries[0];
+  const firstEntry = entries[0];
+  if (!firstEntry) return items;
+  const [field, direction] = firstEntry;
+  if (field !== "createdAt" && field !== "updatedAt") return items;
   const multiplier = direction === "desc" ? -1 : 1;
   return items.sort((a, b) => {
-    const dateA = (a[field as "createdAt" | "updatedAt"] as Date).getTime();
-    const dateB = (b[field as "createdAt" | "updatedAt"] as Date).getTime();
+    const dateA = a[field]?.getTime?.() ?? 0;
+    const dateB = b[field]?.getTime?.() ?? 0;
     return (dateA - dateB) * multiplier;
   });
 };
@@ -590,6 +593,7 @@ export const db = {
       if (items.length === 0) return null;
       const sorted = orderBy ? sortByDate(items, orderBy) : items;
       const record = sorted[0];
+      if (!record) return null;
       return {
         id: record.id,
         name: record.name,

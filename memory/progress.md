@@ -12,3 +12,4 @@
 - 2025-10-09: Completed TASK003 by embedding a global home button in the root layout and verifying navigation across routes.
 - 2025-10-09: Started TASK004 to extend home navigation onto error and not-found pages.
 - 2025-10-09: Completed TASK004 by introducing Radix-styled error and 404 pages with home navigation.
+- 2025-10-10: Completed TASK005 by hardening type safety across UI, routers, auth providers, mock DB, and tests; `npm run typecheck` and targeted Vitest suites now pass cleanly.

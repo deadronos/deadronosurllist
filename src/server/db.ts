@@ -6,7 +6,7 @@ let dbInternal: any;
 
 if (useMock) {
   // load the mock implementation which avoids loading Prisma binaries
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
+   
   const mod = await import("./db.mock");
   dbInternal = mod.db;
 } else {

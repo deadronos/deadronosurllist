@@ -1,19 +1,20 @@
 import { describe, expect, it } from 'vitest';
 
+import type { Provider } from 'next-auth/providers';
+
 import {
   buildAuthProviders,
   type AuthEnvShape,
   type AuthProviderDescriptor,
-  type NextAuthProvider,
   __private,
 } from '@/server/auth/provider-helpers';
 
-const createStubProvider = (id: string): NextAuthProvider =>
-  ({
-    id,
-    type: 'oauth',
-    options: {},
-  }) as NextAuthProvider;
+const createStubProvider = (id: string): Provider => ({
+  id,
+  name: id,
+  type: 'oauth',
+  options: {},
+});
 
 const descriptor = (overrides?: Partial<AuthProviderDescriptor>) =>
   ({

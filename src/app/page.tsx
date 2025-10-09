@@ -16,11 +16,29 @@ import {
 import { auth, authDiagnostics } from "@/server/auth";
 import { api } from "@/trpc/server";
 
+type PublicLink = {
+  id: string;
+  name: string;
+  url: string;
+  comment: string | null;
+};
+
+type PublicCollection = {
+  id: string;
+  name: string;
+  description: string | null;
+  links: PublicLink[];
+};
+
 export default async function Home() {
-  const [session, publicCollection] = await Promise.all([
+  const [session, publicCollectionResult] = await Promise.all([
     auth(),
     api.collection.getPublic(),
   ]);
+
+  const publicCollection = isPublicCollection(publicCollectionResult)
+    ? publicCollectionResult
+    : null;
 
   const hasEnabledProvider = authDiagnostics.hasEnabledProvider;
   const primaryCtaHref = session ? "/dashboard" : "/signin";
@@ -35,7 +53,7 @@ export default async function Home() {
     : hasEnabledProvider
       ? "Sign in"
       : "Sign-in disabled";
-  const publicLinks = publicCollection?.links ?? [];
+  const publicLinks: PublicLink[] = publicCollection?.links ?? [];
 
   return (
     <Box className="min-h-screen bg-[radial-gradient(circle_at_top,_#101220,_#040406)] text-white">
@@ -169,4 +187,43 @@ export default async function Home() {
       <Text>Hello {dotenvx.get('HELLO')}</Text>
     </Box>
   );
+}
+
+function isPublicCollection(value: unknown): value is PublicCollection {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as {
+    id?: unknown;
+    name?: unknown;
+    description?: unknown;
+    links?: unknown;
+  };
+  if (typeof candidate.id !== "string") return false;
+  if (candidate.name !== undefined && typeof candidate.name !== "string") {
+    return false;
+  }
+  if (
+    candidate.description !== undefined &&
+    candidate.description !== null &&
+    typeof candidate.description !== "string"
+  ) {
+    return false;
+  }
+  if (!Array.isArray(candidate.links)) return false;
+  return candidate.links.every((link) => {
+    if (!link || typeof link !== "object") return false;
+    const linkCandidate = link as {
+      id?: unknown;
+      name?: unknown;
+      url?: unknown;
+      comment?: unknown;
+    };
+    return (
+      typeof linkCandidate.id === "string" &&
+      typeof linkCandidate.name === "string" &&
+      typeof linkCandidate.url === "string" &&
+      (linkCandidate.comment === null ||
+        linkCandidate.comment === undefined ||
+        typeof linkCandidate.comment === "string")
+    );
+  });
 }
