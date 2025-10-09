@@ -39,6 +39,7 @@ yarn-error.log*
 # gitignore
 !.env.production
 .env.keys
+.env.key*
 
 
 # vercel
