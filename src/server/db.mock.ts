@@ -2,6 +2,12 @@
 // real database is not available. The goal is to provide the minimal surface
 // area that our routers interact with while keeping behaviour predictable.
 
+import type {
+  CollectionRecord as CollectionDto,
+  LinkListDatabase,
+  LinkRecord as LinkDto,
+} from "./db.types";
+
 type SortOrder = "asc" | "desc";
 
 type UserRecord = {
@@ -52,17 +58,6 @@ type LinkInclude =
   | {
       collection?: boolean | { include?: CollectionInclude };
     };
-
-type LinkSelect = {
-  id?: boolean;
-  url?: boolean;
-  name?: boolean;
-  comment?: boolean;
-  order?: boolean;
-  collectionId?: boolean;
-  createdAt?: boolean;
-  updatedAt?: boolean;
-};
 
 type Store = {
   users: Map<string, UserRecord>;
@@ -232,8 +227,8 @@ const sortByDate = <T extends { createdAt: Date; updatedAt: Date }>(
 const toCollectionResult = (
   record: CollectionRecord,
   include?: CollectionInclude,
-) => {
-  const base: Record<string, unknown> = {
+): CollectionDto => {
+  const base: CollectionDto = {
     id: record.id,
     name: record.name,
     description: record.description,
@@ -272,21 +267,11 @@ const toCollectionResult = (
   return base;
 };
 
-const pickSelectedFields = (source: Record<string, unknown>, select: LinkSelect) => {
-  const result: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(select)) {
-    if (value && key in source) {
-      result[key] = source[key];
-    }
-  }
-  return result;
-};
-
 const toLinkResult = (
   record: LinkRecord,
-  opts?: { include?: LinkInclude; select?: LinkSelect },
-) => {
-  const base: Record<string, unknown> = {
+  opts?: { include?: LinkInclude },
+): LinkDto => {
+  const base: LinkDto = {
     id: record.id,
     collectionId: record.collectionId,
     url: record.url,
@@ -297,13 +282,6 @@ const toLinkResult = (
     updatedAt: cloneDate(record.updatedAt),
   };
 
-  let result: Record<string, unknown>;
-  if (opts?.select) {
-    result = pickSelectedFields(base, opts.select);
-  } else {
-    result = { ...base };
-  }
-
   if (opts?.include) {
     const includeOptions = opts.include === true ? {} : opts.include;
     if (includeOptions?.collection) {
@@ -313,12 +291,12 @@ const toLinkResult = (
           : includeOptions.collection.include;
       const collectionRecord = store.collections.get(record.collectionId);
       if (collectionRecord) {
-        result.collection = toCollectionResult(collectionRecord, collectionInclude);
+        base.collection = toCollectionResult(collectionRecord, collectionInclude);
       }
     }
   }
 
-  return result;
+  return base;
 };
 
 const touchCollection = (collectionId: string) => {
@@ -447,7 +425,6 @@ export const db = {
     findFirst: async (args?: {
       where?: Record<string, unknown>;
       orderBy?: { order?: SortOrder };
-      select?: LinkSelect;
       include?: LinkInclude;
     }) => {
       const where = args?.where;
@@ -463,7 +440,7 @@ export const db = {
 
       const record = linkRecords[0];
       if (!record) return null;
-      return toLinkResult(record, { select: args?.select, include: args?.include });
+      return toLinkResult(record, { include: args?.include });
     },
 
     findMany: async (args?: {
@@ -625,7 +602,7 @@ export const db = {
       };
     },
   },
-};
+} as LinkListDatabase;
 
 export const __memoryDb = {
   reset: resetStore,

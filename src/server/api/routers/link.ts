@@ -29,7 +29,6 @@ export const linkRouter = createTRPCRouter({
       const maxOrder = await ctx.db.link.findFirst({
         where: { collectionId: input.collectionId },
         orderBy: { order: "desc" },
-        select: { order: true },
       });
 
       return ctx.db.link.create({

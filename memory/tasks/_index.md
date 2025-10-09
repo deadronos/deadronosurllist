@@ -2,7 +2,7 @@
 
 ## In Progress
 
-None
+- [TASK006] Lint compliance – Tightening typed database surface to clear ESLint violations (2025-10-10).
 
 ## Pending
 

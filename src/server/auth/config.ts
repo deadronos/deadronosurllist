@@ -4,7 +4,7 @@ import DiscordProvider from "next-auth/providers/discord";
 import GoogleProvider from "next-auth/providers/google";
 
 import { env } from "@/env";
-import { db } from "@/server/db";
+import { isMockDb, prisma } from "@/server/db";
 
 import {
   buildAuthProviders,
@@ -90,9 +90,11 @@ if (
 
 export const authDiagnostics: AuthDiagnostics = diagnostics;
 
+const adapter = isMockDb || !prisma ? undefined : PrismaAdapter(prisma);
+
 export const authConfig = {
   providers,
-  adapter: PrismaAdapter(db),
+  adapter,
   callbacks: {
     session: ({ session, user }) => ({
       ...session,

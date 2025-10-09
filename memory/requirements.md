@@ -38,3 +38,9 @@
 - WHEN TypeScript static analysis runs, THE SYSTEM SHALL compile without reporting implicit `any` parameters in application components or tests [Acceptance: `npm run typecheck` shows zero TS7006 diagnostics].
 - WHEN the authentication configuration constructs provider instances, THE SYSTEM SHALL produce objects compatible with NextAuth `Provider` definitions without manual casts [Acceptance: `npm run typecheck` completes without TS2322/TS2345 errors in auth config files].
 - WHEN the mock database adapters resolve optional records, THE SYSTEM SHALL guard against `undefined` values before dereferencing to satisfy strict null checks [Acceptance: `npm run typecheck` reports no TS18048/TS2488 diagnostics in `src/server/db.mock.ts`].
+
+## Lint Compliance
+
+- WHEN `npm run lint` executes, THE SYSTEM SHALL complete without any `@typescript-eslint/no-unsafe-*` or `@typescript-eslint/no-explicit-any` diagnostics across routers, database utilities, or tests [Acceptance: `npm run lint` exits with code 0 and reports zero such violations].
+- WHEN tRPC procedures access `ctx.db`, THE SYSTEM SHALL expose a typed database client so property access (e.g., `collection`, `link`, `post`) carries Prisma-aligned signatures instead of `any` [Acceptance: TypeScript inference in routers eliminates `@typescript-eslint/no-unsafe-member-access` and related lint warnings].
+- WHEN Vitest suites construct callers or contexts, THE SYSTEM SHALL rely on typed helpers rather than `any` coercions [Acceptance: `npm run lint` reports no `@typescript-eslint/no-unsafe-assignment` or `no-explicit-any` issues within `src/test` files].
