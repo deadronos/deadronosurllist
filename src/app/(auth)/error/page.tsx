@@ -14,6 +14,11 @@ import {
 import { ArrowLeftIcon, ReloadIcon } from "@radix-ui/react-icons";
 
 const ERROR_DESCRIPTIONS: Record<string, { title: string; description: string }> = {
+  AuthUnavailable: {
+    title: "Sign-in disabled",
+    description:
+      "Sign-in is turned off in this environment. Configure valid OAuth credentials to re-enable it.",
+  },
   AccessDenied: {
     title: "Access denied",
     description: "You do not have permission to sign in with that account.",
@@ -54,6 +59,11 @@ const ERROR_DESCRIPTIONS: Record<string, { title: string; description: string }>
   OAuthSignin: {
     title: "OAuth sign-in issue",
     description: "We were unable to reach the OAuth provider. Try again or use another provider.",
+  },
+  DatabaseUnavailable: {
+    title: "Database unavailable",
+    description:
+      "We could not reach the database required for sign-in. Confirm your DATABASE_URL is set with a postgres-compatible connection string.",
   },
   SessionRequired: {
     title: "Session expired",
