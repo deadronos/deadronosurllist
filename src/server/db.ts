@@ -5,8 +5,22 @@ import type { CollectionRecord, LinkListDatabase, LinkRecord } from "./db.types"
 
 const POSTGRES_PROTOCOL_REGEX = /^postgres(?:ql)?:\/\//i;
 
+const normalizeEnv = (value?: string | null) => {
+  if (!value) return "";
+  const trimmed = value.trim();
+  // Remove surrounding single or double quotes that often accidentally get pasted
+  // into hosting provider UI (e.g., "postgresql://...").
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+};
+
 const resolveDatasourceUrl = () => {
-  const primary = process.env.DATABASE_URL ?? "";
+  const primary = normalizeEnv(process.env.DATABASE_URL ?? "");
   if (POSTGRES_PROTOCOL_REGEX.test(primary)) {
     return primary;
   }
@@ -18,7 +32,9 @@ const resolveDatasourceUrl = () => {
     process.env.POSTGRES_URL,
     process.env.POSTGRES_URL_NON_POOLING,
     process.env.SHADOW_DATABASE_URL,
-  ];
+    // Some projects use the shorter `DIRECT_URL` (see .env.production).
+    process.env.DIRECT_URL,
+  ].map(normalizeEnv);
 
   for (const candidate of fallbacks) {
     if (candidate && POSTGRES_PROTOCOL_REGEX.test(candidate)) {
