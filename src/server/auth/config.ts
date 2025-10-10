@@ -93,6 +93,9 @@ export const authDiagnostics: AuthDiagnostics = diagnostics;
 const adapter = isMockDb || !prisma ? undefined : PrismaAdapter(prisma);
 
 export const authConfig = {
+  // Ensure NextAuth has a stable secret in production. The env helper makes AUTH_SECRET
+  // optional during local development but required in production builds.
+  secret: env.AUTH_SECRET,
   providers,
   adapter,
   callbacks: {
