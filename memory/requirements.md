@@ -39,6 +39,12 @@
 - WHEN the authentication configuration constructs provider instances, THE SYSTEM SHALL produce objects compatible with NextAuth `Provider` definitions without manual casts [Acceptance: `npm run typecheck` completes without TS2322/TS2345 errors in auth config files].
 - WHEN the mock database adapters resolve optional records, THE SYSTEM SHALL guard against `undefined` values before dereferencing to satisfy strict null checks [Acceptance: `npm run typecheck` reports no TS18048/TS2488 diagnostics in `src/server/db.mock.ts`].
 
+## Post Router Type Safety
+
+- WHEN the Next.js production build runs, THE SYSTEM SHALL complete without reporting `@typescript-eslint/no-unsafe-*` violations in `src/server/api/routers/post.ts` [Acceptance: `npm run build` succeeds without lint failures].
+- WHEN tRPC procedures access `ctx.db.post`, THE SYSTEM SHALL provide strongly typed Prisma delegate methods instead of `any` [Acceptance: `npm run typecheck` reports no unsafe call/member access warnings for `ctx.db.post` usages].
+- WHEN Vitest executes against the mock database, THE SYSTEM SHALL expose `post` delegate behaviour matching the typed database contract without relying on `any` [Acceptance: `npm run test -- --run postRouter.spec.ts` completes without type or lint violations].
+
 ## Lint Compliance
 
 - WHEN `npm run lint` executes, THE SYSTEM SHALL complete without any `@typescript-eslint/no-unsafe-*` or `@typescript-eslint/no-explicit-any` diagnostics across routers, database utilities, or tests [Acceptance: `npm run lint` exits with code 0 and reports zero such violations].
