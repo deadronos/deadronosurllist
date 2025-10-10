@@ -24,8 +24,38 @@ const redirectWithError = (request: NextRequest | Request, errorCode: string) =>
 
 type RouteHandler = (request: NextRequest, context?: unknown) => Promise<Response>;
 
+const allowedMethods = new Set(["GET", "POST"]);
+
 const withAvailabilityGuard = (handler: RouteHandler): RouteHandler =>
 	async (request, context) => {
+		if (!allowedMethods.has(request.method)) {
+			// HEAD/OPTIONS and other probes should not reach NextAuth's handler because it will
+			// emit UnknownAction noise. Reply quickly without touching the core auth runtime.
+			if (request.method === "HEAD") {
+				return new NextResponse(null, {
+					status: 204,
+					headers: { Allow: "GET, POST" },
+				});
+			}
+
+			if (request.method === "OPTIONS") {
+				return new NextResponse(null, {
+					status: 204,
+					headers: {
+						Allow: "GET, POST",
+						"Access-Control-Allow-Origin": request.headers.get("origin") ?? "*",
+						"Access-Control-Allow-Methods": "GET, POST",
+						"Access-Control-Allow-Headers": request.headers.get("access-control-request-headers") ?? "",
+					},
+				});
+			}
+
+			return new NextResponse(null, {
+				status: 405,
+				headers: { Allow: "GET, POST" },
+			});
+		}
+
 		if (inferredErrorCode) {
 			return redirectWithError(request, inferredErrorCode);
 		}
@@ -39,8 +69,11 @@ const withAvailabilityGuard = (handler: RouteHandler): RouteHandler =>
 			// pre-built auth error page instead of surfacing a stacktrace.
 			const message = err instanceof Error ? err.message : String(err);
 			if (message.includes("Unsupported action") || message.includes("UnknownAction")) {
-				console.warn('[auth][error] Caught unsupported auth action probe:', message);
-				return redirectWithError(request, 'AuthUnavailable');
+				console.warn(
+					`[auth][warn] Suppressed unsupported auth action (${request.method} ${request.url}):`,
+					message,
+				);
+				return redirectWithError(request, "AuthUnavailable");
 			}
 
 			// Re-throw unexpected errors so they surface to the platform logging/monitoring
