@@ -14,7 +14,22 @@ env.USE_MOCK_DB = '1';
 // Mock the Prisma client by re-using the in-memory db implementation.
 import { beforeEach, vi } from 'vitest';
 
-vi.mock('@/server/db', async () => await import('@/server/db.mock'));
+vi.mock('next/server', () => ({
+  NextResponse: {
+    json: vi.fn(),
+    redirect: vi.fn(),
+  },
+  headers: () => new Headers(),
+}));
+
+vi.mock('@/server/db', async () => {
+  const mod = await import('@/server/db.mock');
+  return {
+    ...mod,
+    isMockDb: true,
+    prisma: null,
+  };
+});
 
 const memoryDb = await import('@/server/db.mock');
 

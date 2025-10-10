@@ -17,6 +17,8 @@ None
 - [TASK005] Type safety hardening – Cleared implicit-any diagnostics, aligned auth provider typings, and hardened mock DB/test utilities (2025-10-10).
 - [TASK007] Post router type safety – Ensured typed database delegates eliminate unsafe lint diagnostics (2025-10-10).
 - [TASK006] Lint compliance – Tightened typed database surface, routers, and tests to clear ESLint violations (2025-10-10).
+- [TASK008] JWT-backed sessions – Added NextAuth JWT/session callbacks so session.user.id persists without the Prisma adapter and confirmed Vitest suite (2025-10-10).
+- [TASK009] Auth callback test coverage – Added dedicated Vitest ensuring JWT/session callbacks expose session.user.id under the mock adapterless setup (2025-10-10).
 
 ## Abandoned
 

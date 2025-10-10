@@ -19,3 +19,5 @@
 - 2025-10-10: Implemented database URL resolution fallback so preview deployments gracefully degrade to the mock DB when provided Prisma strings lack a postgres protocol; verified with lint, Vitest, and full Next.js build.
 - 2025-10-10: Added a custom NextAuth error page with home navigation and retry actions, wired via `pages.error`, and confirmed with lint, Vitest, and production build.
 - 2025-10-10: Guarded NextAuth route handlers to redirect to the error page when the database or providers are unavailable, eliminating Vercel UnknownAction noise; validated with lint, Vitest, and production build.
+- 2025-10-10: Implemented JWT/session callbacks in the NextAuth config so `session.user.id` persists even when operating statelessly, then reran `npm run test` to confirm the router suites stay green.
+- 2025-10-10: Added a dedicated Vitest for the NextAuth callbacks, stubbing Next providers to prove `session.user.id` remains present when the Prisma adapter is disabled and the mock database is in use.

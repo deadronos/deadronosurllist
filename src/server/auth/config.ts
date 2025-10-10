@@ -6,6 +6,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { env } from "@/env";
 import { isMockDb, prisma } from "@/server/db";
 
+import { authCallbacks } from "./callbacks";
 import {
   buildAuthProviders,
   type AuthDiagnostics,
@@ -32,6 +33,12 @@ declare module "next-auth" {
   //   // ...other properties
   //   // role: UserRole;
   // }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+  }
 }
 
 /**
@@ -98,15 +105,7 @@ export const authConfig = {
   secret: env.AUTH_SECRET,
   providers,
   adapter,
-  callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
-  },
+  callbacks: authCallbacks,
   pages: {
     signIn: "/signin",
     error: "/error",
