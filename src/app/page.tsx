@@ -33,10 +33,11 @@ type PublicCollection = {
 };
 
 export default async function Home() {
-  const [session, publicCollectionResult] = await Promise.all([
-    auth(),
-    api.collection.getPublic(),
-  ]);
+  const sessionPromise = auth();
+  const publicCollectionResultPromise = api.collection.getPublic();
+
+  const session = await sessionPromise;
+  const publicCollectionResult = await publicCollectionResultPromise;
 
   const publicCollection = isPublicCollection(publicCollectionResult)
     ? publicCollectionResult

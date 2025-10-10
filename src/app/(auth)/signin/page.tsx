@@ -14,11 +14,16 @@ import {
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
 
 import { authDiagnostics } from "@/server/auth";
+import type { AuthDiagnostics } from "@/server/auth/provider-helpers";
 
 const providerButtonLabel = (label: string) => `Continue with ${label}`;
 
 export default function SignInPage() {
-  const { enabledProviders, disabledProviders, hasEnabledProvider } = authDiagnostics;
+  const {
+    enabledProviders,
+    disabledProviders,
+    hasEnabledProvider,
+  }: AuthDiagnostics = authDiagnostics;
 
   return (
     <Box className="min-h-screen bg-[radial-gradient(circle_at_top,_#101220,_#040406)] text-white">

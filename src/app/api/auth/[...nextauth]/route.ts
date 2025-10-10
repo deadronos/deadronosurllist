@@ -82,5 +82,7 @@ const withAvailabilityGuard = (handler: RouteHandler): RouteHandler =>
 		}
 	};
 
-export const GET = withAvailabilityGuard(handlers.GET as RouteHandler);
-export const POST = withAvailabilityGuard(handlers.POST as RouteHandler);
+const { GET: nextAuthGetHandler, POST: nextAuthPostHandler } = handlers;
+
+export const GET = withAvailabilityGuard(nextAuthGetHandler);
+export const POST = withAvailabilityGuard(nextAuthPostHandler);
