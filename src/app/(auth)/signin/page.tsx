@@ -16,14 +16,25 @@ import { ArrowLeftIcon } from "@radix-ui/react-icons";
 import { authDiagnostics } from "@/server/auth";
 import type { AuthDiagnostics } from "@/server/auth/provider-helpers";
 
+type SignInPageProps = {
+  searchParams?: Promise<Record<string, string | string[]>>;
+};
+
 const providerButtonLabel = (label: string) => `Continue with ${label}`;
 
-export default function SignInPage() {
+const normalizeParam = (value: string | string[] | undefined) =>
+  Array.isArray(value) ? value[0] : value;
+
+export default async function SignInPage({ searchParams }: SignInPageProps) {
   const {
     enabledProviders,
     disabledProviders,
     hasEnabledProvider,
   }: AuthDiagnostics = authDiagnostics;
+
+  const params = searchParams ? await searchParams : {};
+  const callbackUrl = normalizeParam(params.callbackUrl) ?? "/";
+  const errorCode = normalizeParam(params.error);
 
   return (
     <Box className="min-h-screen bg-[radial-gradient(circle_at_top,_#101220,_#040406)] text-white">
@@ -52,20 +63,38 @@ export default function SignInPage() {
                 credentials in your environment first.
               </Text>
 
+              {errorCode && (
+                <Card
+                  size="2"
+                  variant="classic"
+                  className="border border-red-500/40 bg-red-500/10 text-left"
+                >
+                  <Heading size="3">Sign-in failed</Heading>
+                  <Text color="gray" size="2" mt="2">
+                    The provider returned an error ({errorCode}). Try again or contact support if
+                    the problem persists.
+                  </Text>
+                </Card>
+              )}
+
               {hasEnabledProvider ? (
                 <Flex direction="column" gap="3">
                   {enabledProviders.map((provider) => (
-                    <Button
+                    <form
                       key={provider.id}
-                      size="3"
-                      asChild
-                      className="justify-start"
-                      variant="solid"
+                      action={`/api/auth/signin/${provider.id}`}
+                      method="post"
                     >
-                      <Link href={`/api/auth/signin/${provider.id}`}>
+                      <input type="hidden" name="callbackUrl" value={callbackUrl} />
+                      <Button
+                        type="submit"
+                        size="3"
+                        className="w-full justify-start"
+                        variant="solid"
+                      >
                         {providerButtonLabel(provider.label)}
-                      </Link>
-                    </Button>
+                      </Button>
+                    </form>
                   ))}
                 </Flex>
               ) : (
