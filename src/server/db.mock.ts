@@ -2,6 +2,12 @@
 // real database is not available. The goal is to provide the minimal surface
 // area that our routers interact with while keeping behaviour predictable.
 
+import type {
+  CollectionRecord as CollectionDto,
+  LinkListDatabase,
+  LinkRecord as LinkDto,
+} from "./db.types";
+
 type SortOrder = "asc" | "desc";
 
 type UserRecord = {
@@ -52,17 +58,6 @@ type LinkInclude =
   | {
       collection?: boolean | { include?: CollectionInclude };
     };
-
-type LinkSelect = {
-  id?: boolean;
-  url?: boolean;
-  name?: boolean;
-  comment?: boolean;
-  order?: boolean;
-  collectionId?: boolean;
-  createdAt?: boolean;
-  updatedAt?: boolean;
-};
 
 type Store = {
   users: Map<string, UserRecord>;
@@ -217,11 +212,14 @@ const sortByDate = <T extends { createdAt: Date; updatedAt: Date }>(
     [keyof typeof orderBy, SortOrder]
   >;
   if (entries.length === 0) return items;
-  const [field, direction] = entries[0];
+  const firstEntry = entries[0];
+  if (!firstEntry) return items;
+  const [field, direction] = firstEntry;
+  if (field !== "createdAt" && field !== "updatedAt") return items;
   const multiplier = direction === "desc" ? -1 : 1;
   return items.sort((a, b) => {
-    const dateA = (a[field as "createdAt" | "updatedAt"] as Date).getTime();
-    const dateB = (b[field as "createdAt" | "updatedAt"] as Date).getTime();
+    const dateA = a[field]?.getTime?.() ?? 0;
+    const dateB = b[field]?.getTime?.() ?? 0;
     return (dateA - dateB) * multiplier;
   });
 };
@@ -229,8 +227,8 @@ const sortByDate = <T extends { createdAt: Date; updatedAt: Date }>(
 const toCollectionResult = (
   record: CollectionRecord,
   include?: CollectionInclude,
-) => {
-  const base: Record<string, unknown> = {
+): CollectionDto => {
+  const base: CollectionDto = {
     id: record.id,
     name: record.name,
     description: record.description,
@@ -269,21 +267,11 @@ const toCollectionResult = (
   return base;
 };
 
-const pickSelectedFields = (source: Record<string, unknown>, select: LinkSelect) => {
-  const result: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(select)) {
-    if (value && key in source) {
-      result[key] = source[key];
-    }
-  }
-  return result;
-};
-
 const toLinkResult = (
   record: LinkRecord,
-  opts?: { include?: LinkInclude; select?: LinkSelect },
-) => {
-  const base: Record<string, unknown> = {
+  opts?: { include?: LinkInclude },
+): LinkDto => {
+  const base: LinkDto = {
     id: record.id,
     collectionId: record.collectionId,
     url: record.url,
@@ -294,13 +282,6 @@ const toLinkResult = (
     updatedAt: cloneDate(record.updatedAt),
   };
 
-  let result: Record<string, unknown>;
-  if (opts?.select) {
-    result = pickSelectedFields(base, opts.select);
-  } else {
-    result = { ...base };
-  }
-
   if (opts?.include) {
     const includeOptions = opts.include === true ? {} : opts.include;
     if (includeOptions?.collection) {
@@ -310,12 +291,12 @@ const toLinkResult = (
           : includeOptions.collection.include;
       const collectionRecord = store.collections.get(record.collectionId);
       if (collectionRecord) {
-        result.collection = toCollectionResult(collectionRecord, collectionInclude);
+        base.collection = toCollectionResult(collectionRecord, collectionInclude);
       }
     }
   }
 
-  return result;
+  return base;
 };
 
 const touchCollection = (collectionId: string) => {
@@ -340,8 +321,10 @@ const resolveCreatedById = (data: Record<string, unknown>): string => {
 };
 
 export const db = {
-  $transaction: async <T>(operations: Array<(() => Promise<T>) | Promise<T>>) => {
-    const results: T[] = [];
+  $transaction: async (
+    operations: Array<(() => Promise<unknown>) | Promise<unknown>>,
+  ) => {
+    const results: unknown[] = [];
     for (const op of operations) {
       const value = typeof op === "function" ? await op() : await op;
       results.push(value);
@@ -444,7 +427,6 @@ export const db = {
     findFirst: async (args?: {
       where?: Record<string, unknown>;
       orderBy?: { order?: SortOrder };
-      select?: LinkSelect;
       include?: LinkInclude;
     }) => {
       const where = args?.where;
@@ -460,7 +442,7 @@ export const db = {
 
       const record = linkRecords[0];
       if (!record) return null;
-      return toLinkResult(record, { select: args?.select, include: args?.include });
+      return toLinkResult(record, { include: args?.include });
     },
 
     findMany: async (args?: {
@@ -590,6 +572,7 @@ export const db = {
       if (items.length === 0) return null;
       const sorted = orderBy ? sortByDate(items, orderBy) : items;
       const record = sorted[0];
+      if (!record) return null;
       return {
         id: record.id,
         name: record.name,
@@ -621,7 +604,7 @@ export const db = {
       };
     },
   },
-};
+} as LinkListDatabase;
 
 export const __memoryDb = {
   reset: resetStore,

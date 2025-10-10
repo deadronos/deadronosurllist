@@ -5,6 +5,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
+import type { Post } from "@prisma/client";
 
 export const postRouter = createTRPCRouter({
   hello: publicProcedure
@@ -18,18 +19,22 @@ export const postRouter = createTRPCRouter({
   create: protectedProcedure
     .input(z.object({ name: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      return ctx.db.post.create({
+      const userId = ctx.session.user.id;
+      const post: Post = await ctx.db.post.create({
         data: {
           name: input.name,
-          createdBy: { connect: { id: ctx.session.user.id } },
+          createdById: userId,
         },
       });
+
+      return post;
     }),
 
   getLatest: protectedProcedure.query(async ({ ctx }) => {
-    const post = await ctx.db.post.findFirst({
+    const userId = ctx.session.user.id;
+    const post: Post | null = await ctx.db.post.findFirst({
       orderBy: { createdAt: "desc" },
-      where: { createdBy: { id: ctx.session.user.id } },
+      where: { createdById: userId },
     });
 
     return post ?? null;

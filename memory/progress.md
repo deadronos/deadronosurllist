@@ -12,3 +12,10 @@
 - 2025-10-09: Completed TASK003 by embedding a global home button in the root layout and verifying navigation across routes.
 - 2025-10-09: Started TASK004 to extend home navigation onto error and not-found pages.
 - 2025-10-09: Completed TASK004 by introducing Radix-styled error and 404 pages with home navigation.
+- 2025-10-10: Completed TASK005 by hardening type safety across UI, routers, auth providers, mock DB, and tests; `npm run typecheck` and targeted Vitest suites now pass cleanly.
+- 2025-10-10: Completed TASK007 by tightening post router typing, leveraging Prisma `Post` models directly, and verifying with lint/typecheck/postRouter Vitest plus build (Prisma engine warnings acknowledged on Windows mock environment).
+- 2025-10-10: Initiated TASK006 to type the database context, routers, and tests so `npm run lint` passes without unsafe-`any` diagnostics.
+- 2025-10-10: Completed TASK006 by introducing a typed `LinkListDatabase`, updating routers/tests/UI, and confirming `npm run lint` plus `npx vitest --run collectionRouter.spec.ts postRouter.spec.ts` succeed.
+- 2025-10-10: Implemented database URL resolution fallback so preview deployments gracefully degrade to the mock DB when provided Prisma strings lack a postgres protocol; verified with lint, Vitest, and full Next.js build.
+- 2025-10-10: Added a custom NextAuth error page with home navigation and retry actions, wired via `pages.error`, and confirmed with lint, Vitest, and production build.
+- 2025-10-10: Guarded NextAuth route handlers to redirect to the error page when the database or providers are unavailable, eliminating Vercel UnknownAction noise; validated with lint, Vitest, and production build.

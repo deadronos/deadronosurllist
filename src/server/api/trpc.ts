@@ -10,9 +10,11 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
+import type { Session } from "next-auth";
 
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
+import type { LinkListDatabase } from "@/server/db.types";
 
 /**
  * 1. CONTEXT
@@ -26,7 +28,17 @@ import { db } from "@/server/db";
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = async (opts: { headers: Headers }) => {
+type CreateContextOptions = { headers: Headers };
+
+export type TRPCContext = {
+  db: LinkListDatabase;
+  session: Session | null;
+  headers: Headers;
+};
+
+export const createTRPCContext = async (
+  opts: CreateContextOptions,
+): Promise<TRPCContext> => {
   const session = await auth();
 
   return {
@@ -43,7 +55,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
-const t = initTRPC.context<typeof createTRPCContext>().create({
+const t = initTRPC.context<TRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
     return {

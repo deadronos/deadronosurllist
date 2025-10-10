@@ -4,6 +4,13 @@ import { api, HydrateClient } from "@/trpc/server";
 import { auth } from "@/server/auth";
 import { CollectionCreateForm } from "@/app/_components/collection-create-form";
 
+type CollectionSummary = {
+  id: string;
+  name: string;
+  description: string | null;
+  _count?: { links?: number | null } | null;
+};
+
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) {
@@ -21,7 +28,15 @@ export default async function DashboardPage() {
     );
   }
 
-  const collections = await api.collection.getAll();
+  const collectionsRaw: unknown = await api.collection.getAll();
+  if (!Array.isArray(collectionsRaw)) {
+    throw new Error("Unexpected collections payload");
+  }
+  const collectionsResult = collectionsRaw as unknown[];
+  if (!collectionsResult.every(isCollectionSummary)) {
+    throw new Error("Unexpected collections payload");
+  }
+  const collections = collectionsResult;
 
   return (
     <HydrateClient>
@@ -37,21 +52,24 @@ export default async function DashboardPage() {
         </div>
         <CollectionCreateForm />
         <ul className="mt-6 divide-y divide-slate-200 rounded border">
-          {collections.map((c) => (
-            <li key={c.id} className="flex items-center justify-between p-4">
+          {collections.map((collection) => (
+            <li
+              key={collection.id}
+              className="flex items-center justify-between p-4"
+            >
               <div>
                 <Link
-                  href={`/collections/${c.id}`}
+                  href={`/collections/${collection.id}`}
                   className="text-lg font-semibold text-blue-600 hover:underline"
                 >
-                  {c.name}
+                  {collection.name}
                 </Link>
-                {c.description ? (
-                  <p className="text-sm text-slate-600">{c.description}</p>
+                {collection.description ? (
+                  <p className="text-sm text-slate-600">{collection.description}</p>
                 ) : null}
               </div>
               <div className="flex items-center gap-4 text-sm text-slate-600">
-                <span>{c._count?.links ?? 0} links</span>
+                <span>{collection._count?.links ?? 0} links</span>
               </div>
             </li>
           ))}
@@ -62,5 +80,40 @@ export default async function DashboardPage() {
       </main>
     </HydrateClient>
   );
+}
+
+function isCollectionSummary(value: unknown): value is CollectionSummary {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as {
+    id?: unknown;
+    name?: unknown;
+    description?: unknown;
+    _count?: unknown;
+  };
+  if (typeof candidate.id !== "string") return false;
+  if (candidate.name !== undefined && typeof candidate.name !== "string") {
+    return false;
+  }
+  if (
+    candidate.description !== undefined &&
+    candidate.description !== null &&
+    typeof candidate.description !== "string"
+  ) {
+    return false;
+  }
+  if (
+    candidate._count !== undefined &&
+    candidate._count !== null &&
+    typeof candidate._count !== "object"
+  ) {
+    return false;
+  }
+  if (candidate._count && typeof candidate._count === "object") {
+    const links = (candidate._count as { links?: unknown }).links;
+    if (links !== undefined && links !== null && typeof links !== "number") {
+      return false;
+    }
+  }
+  return true;
 }
 

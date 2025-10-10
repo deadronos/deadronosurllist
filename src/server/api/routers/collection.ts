@@ -6,6 +6,22 @@ import {
   publicProcedure,
 } from "@/server/api/trpc";
 
+type PublicLinkSummary = {
+  id: string;
+  name: string;
+  url: string;
+  comment: string | null;
+  order: number;
+};
+
+type CollectionLinkRecord = {
+  id: string;
+  name: string;
+  url: string;
+  comment: string | null;
+  order: number;
+};
+
 export const collectionRouter = createTRPCRouter({
   // Get the most recently updated public collection with links
   getPublic: publicProcedure.query(async ({ ctx }) => {
@@ -21,12 +37,13 @@ export const collectionRouter = createTRPCRouter({
 
     const collection = collections.at(0);
     if (!collection) return null;
+    const links = collection.links ?? [];
 
     return {
       id: collection.id,
       name: collection.name,
       description: collection.description,
-      links: collection.links.map((link) => ({
+      links: links.map((link: CollectionLinkRecord): PublicLinkSummary => ({
         id: link.id,
         name: link.name,
         url: link.url,

@@ -1,5 +1,5 @@
 # Active Context
 
-- Focus: Auth diagnostics and resilient sign-in UX landed; global navigation added to layout, error, and 404 pages.
-- Next Actions: Await further feature requests or feedback; consider adding collection sharing and link reordering UI in future.
-- Dependencies: None currently outstanding.
+- Focus: No active coding tasks; post router type safety fix landed.
+- Next Actions: Monitor for new lint or build regressions and await further feature requests.
+- Dependencies: Prisma client runtime availability on Windows environments (build emits expected engine warnings).

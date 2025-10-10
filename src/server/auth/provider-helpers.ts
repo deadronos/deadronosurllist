@@ -1,8 +1,4 @@
-export type NextAuthProvider = {
-  id: string;
-  type: string;
-  [key: string]: unknown;
-};
+import type { Provider } from "next-auth/providers";
 
 export type AuthEnvShape = {
   NODE_ENV: string;
@@ -20,7 +16,7 @@ export type AuthProviderDescriptor = {
     clientId: keyof AuthEnvShape;
     clientSecret: keyof AuthEnvShape;
   };
-  createProvider: (credentials: { clientId: string; clientSecret: string }) => NextAuthProvider;
+  createProvider: (credentials: { clientId: string; clientSecret: string }) => Provider;
 };
 
 export type ProviderStatus = {
@@ -38,7 +34,7 @@ export type AuthDiagnostics = {
 };
 
 export type AuthProviderBuildResult = {
-  providers: NextAuthProvider[];
+  providers: Provider[];
   diagnostics: AuthDiagnostics;
 };
 
@@ -97,7 +93,7 @@ export const buildAuthProviders = (
   env: AuthEnvShape,
   descriptors: AuthProviderDescriptor[],
 ): AuthProviderBuildResult => {
-  const providers: NextAuthProvider[] = [];
+  const providers: Provider[] = [];
   const statuses: ProviderStatus[] = [];
 
   const isProduction = env.NODE_ENV === "production";

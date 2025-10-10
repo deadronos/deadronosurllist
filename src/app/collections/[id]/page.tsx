@@ -5,11 +5,27 @@ import { api, HydrateClient } from "@/trpc/server";
 import { LinkCreateForm } from "@/app/_components/link-create-form";
 import { auth } from "@/server/auth";
 
-interface Props {
-  params: { id: string };
+type CollectionLink = {
+  id: string;
+  name: string;
+  url: string;
+  comment: string | null;
+  order: number;
+};
+
+type CollectionWithLinks = {
+  id: string;
+  name: string;
+  description: string | null;
+  links: CollectionLink[];
+};
+
+interface PageProps {
+  params: Promise<{ id: string }>;
 }
 
-export default async function CollectionPage({ params }: Props) {
+export default async function CollectionPage({ params }: PageProps) {
+  const { id } = await params;
   const session = await auth();
   if (!session?.user) {
     return (
@@ -26,8 +42,12 @@ export default async function CollectionPage({ params }: Props) {
     );
   }
 
-  const collection = await api.collection.getById({ id: params.id });
-  if (!collection) notFound();
+  const collectionResult: unknown = await api.collection.getById({ id });
+  if (!collectionResult) notFound();
+  if (!isCollectionWithLinks(collectionResult)) {
+    throw new Error("Unexpected collection payload");
+  }
+  const collection = collectionResult;
 
   return (
     <HydrateClient>
@@ -47,22 +67,22 @@ export default async function CollectionPage({ params }: Props) {
         <LinkCreateForm collectionId={collection.id} />
 
         <ul className="mt-6 divide-y rounded border">
-          {collection.links.map((l) => (
-            <li key={l.id} className="flex items-center justify-between p-4">
+          {collection.links.map((link) => (
+            <li key={link.id} className="flex items-center justify-between p-4">
               <div>
                 <a
                   className="font-medium text-blue-600 hover:underline"
-                  href={l.url}
+                  href={link.url}
                   target="_blank"
                   rel="noreferrer"
                 >
-                  {l.name}
+                  {link.name}
                 </a>
-                {l.comment ? (
-                  <p className="text-sm text-slate-600">{l.comment}</p>
+                {link.comment ? (
+                  <p className="text-sm text-slate-600">{link.comment}</p>
                 ) : null}
               </div>
-              <span className="text-xs text-slate-500">#{l.order}</span>
+              <span className="text-xs text-slate-500">#{link.order}</span>
             </li>
           ))}
           {collection.links.length === 0 && (
@@ -72,5 +92,50 @@ export default async function CollectionPage({ params }: Props) {
       </main>
     </HydrateClient>
   );
+}
+
+function isCollectionWithLinks(value: unknown): value is CollectionWithLinks {
+  if (!value || typeof value !== "object") return false;
+
+  const candidate = value as {
+    id?: unknown;
+    name?: unknown;
+    description?: unknown;
+    links?: unknown;
+  };
+
+  if (typeof candidate.id !== "string") return false;
+  if (candidate.name !== undefined && typeof candidate.name !== "string") {
+    return false;
+  }
+  if (
+    candidate.description !== undefined &&
+    candidate.description !== null &&
+    typeof candidate.description !== "string"
+  ) {
+    return false;
+  }
+  if (!Array.isArray(candidate.links)) return false;
+  return candidate.links.every((link) => {
+    if (!link || typeof link !== "object") return false;
+    const linkCandidate = link as {
+      id?: unknown;
+      name?: unknown;
+      url?: unknown;
+      order?: unknown;
+      comment?: unknown;
+    };
+    const hasComment =
+      linkCandidate.comment === null ||
+      linkCandidate.comment === undefined ||
+      typeof linkCandidate.comment === "string";
+    return (
+      typeof linkCandidate.id === "string" &&
+      typeof linkCandidate.name === "string" &&
+      typeof linkCandidate.url === "string" &&
+      typeof linkCandidate.order === "number" &&
+      hasComment
+    );
+  });
 }
 
