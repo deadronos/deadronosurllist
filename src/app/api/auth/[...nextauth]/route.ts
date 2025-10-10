@@ -1,7 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { authDiagnostics, handlers } from "@/server/auth";
+import NextAuth from "next-auth";
+
+import { authConfig, authDiagnostics } from "@/server/auth";
 import { isMockDb } from "@/server/db";
 
 const inferredErrorCode = (() => {
@@ -22,12 +24,16 @@ const redirectWithError = (request: NextRequest | Request, errorCode: string) =>
 	return NextResponse.redirect(url);
 };
 
-type RouteHandler = (request: NextRequest, context?: unknown) => Promise<Response>;
+type RouteContext = { params: Promise<{ nextauth: string[] }> };
+type RouteHandler = (request: NextRequest, context: RouteContext) => Promise<Response>;
 
 const allowedMethods = new Set(["GET", "POST"]);
 
 const withAvailabilityGuard = (handler: RouteHandler): RouteHandler =>
-	async (request, context) => {
+	async (
+		request,
+		context = { params: Promise.resolve({ nextauth: [] }) },
+	) => {
 		if (!allowedMethods.has(request.method)) {
 			// HEAD/OPTIONS and other probes should not reach NextAuth's handler because it will
 			// emit UnknownAction noise. Reply quickly without touching the core auth runtime.
@@ -82,7 +88,7 @@ const withAvailabilityGuard = (handler: RouteHandler): RouteHandler =>
 		}
 	};
 
-const { GET: nextAuthGetHandler, POST: nextAuthPostHandler } = handlers;
+const nextAuthHandler = NextAuth(authConfig) as RouteHandler;
 
-export const GET = withAvailabilityGuard(nextAuthGetHandler);
-export const POST = withAvailabilityGuard(nextAuthPostHandler);
+export const GET = withAvailabilityGuard(nextAuthHandler);
+export const POST = withAvailabilityGuard(nextAuthHandler);
