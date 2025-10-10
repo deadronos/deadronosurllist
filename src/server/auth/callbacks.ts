@@ -1,8 +1,10 @@
-import type { NextAuthConfig } from "next-auth";
+import type { AuthOptions } from "next-auth";
 
-export const authCallbacks: NonNullable<NextAuthConfig["callbacks"]> = {
+type AuthCallbacks = NonNullable<AuthOptions["callbacks"]>;
+
+export const authCallbacks: AuthCallbacks = {
   // Persist the user id on the JWT so stateless sessions still expose session.user.id.
-  jwt: ({ token, user }) => {
+  async jwt({ token, user }) {
     if (user?.id) {
       token.id = user.id;
     } else if (!token.id && typeof token.sub === "string") {
@@ -11,7 +13,7 @@ export const authCallbacks: NonNullable<NextAuthConfig["callbacks"]> = {
 
     return token;
   },
-  session: ({ session, token, user }) => {
+  async session({ session, token, user }) {
     const idFromCallbacks =
       user?.id ??
       (typeof token.id === "string" ? token.id : undefined) ??

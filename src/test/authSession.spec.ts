@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import type { AdapterUser } from "next-auth/adapters";
+
 import { authCallbacks } from "@/server/auth/callbacks";
 import { isMockDb } from "@/server/db";
 
@@ -14,45 +16,47 @@ describe("auth callbacks without Prisma adapter", () => {
       throw new Error("NextAuth callbacks are not configured");
     }
 
-    type JwtParams = Parameters<typeof jwtCallback>[0];
-    type SessionParams = Parameters<typeof sessionCallback>[0];
+    const adapterUser: AdapterUser = {
+      id: "user-123",
+      name: "Tester",
+      email: "tester@example.com",
+      emailVerified: null,
+    };
 
     const loginToken = await jwtCallback({
       token: {},
-      user: { id: "user-123" } as JwtParams["user"],
-      account: undefined,
+      user: adapterUser,
+      account: null,
       profile: undefined,
       trigger: "signIn",
       session: undefined,
       isNewUser: false,
-    } as JwtParams);
+    });
 
     expect(loginToken.id).toBe("user-123");
 
-    const persistedToken = await jwtCallback({
-      token: loginToken,
-      user: undefined,
-      account: undefined,
-      profile: undefined,
-      trigger: "update",
-      session: undefined,
-      isNewUser: false,
-    } as JwtParams);
+    const adapterUserWithoutId = {
+      ...adapterUser,
+      id: undefined,
+    } as unknown as AdapterUser;
 
     const session = await sessionCallback({
       session: {
         user: {
+          id: "",
           name: "Tester",
           email: "tester@example.com",
+          image: null,
         },
         expires: new Date().toISOString(),
       },
-      token: persistedToken,
-      user: undefined,
+      token: loginToken,
+      user: adapterUserWithoutId,
       newSession: false,
       trigger: "update",
-    } as SessionParams);
+    });
 
-    expect(session.user?.id).toBe("user-123");
+    const sessionUser = session.user as { id: string };
+    expect(sessionUser.id).toBe("user-123");
   });
 });

@@ -1,4 +1,4 @@
-import type { Provider } from "next-auth/providers";
+import type { Provider } from "next-auth/providers/index";
 
 export type AuthEnvShape = {
   NODE_ENV: string;

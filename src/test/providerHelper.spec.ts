@@ -1,6 +1,22 @@
 import { describe, expect, it } from 'vitest';
 
-import type { Provider } from 'next-auth/providers';
+import type { Provider } from 'next-auth/providers/index';
+
+const createStubProvider = (id: string): Provider => ({
+  id,
+  name: id,
+  type: 'oauth',
+  authorization: 'https://example.com/oauth',
+  token: 'https://example.com/token',
+  userinfo: 'https://example.com/userinfo',
+  clientId: 'stub-client-id',
+  clientSecret: 'stub-client-secret',
+  profile: () => ({
+    id: 'user-stub',
+    name: 'User Stub',
+    email: 'stub@example.com',
+  }),
+});
 
 import {
   buildAuthProviders,
@@ -8,13 +24,6 @@ import {
   type AuthProviderDescriptor,
   __private,
 } from '@/server/auth/provider-helpers';
-
-const createStubProvider = (id: string): Provider => ({
-  id,
-  name: id,
-  type: 'oauth',
-  options: {},
-});
 
 const descriptor = (overrides?: Partial<AuthProviderDescriptor>) =>
   ({
