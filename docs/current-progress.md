@@ -28,5 +28,7 @@ This document captures the current implementation state of the LinkList project 
 1. Port additional routers (e.g., posts) or new features to leverage the mock while backend infrastructure is finalized.
 2. Expand tests to cover failure cases (authorization violations, invalid data) using the same in-memory context.
 3. When ready for a database, replace `USE_MOCK_DB` guard with real Prisma client instantiation—no API changes required for dependent code.
+4. Explore optimistic UI feedback (or lightweight toasts) for link edits/deletions so changes feel instant while mutations settle.
+5. Extend the collection manager with quality-of-life tools such as a public/private toggle per link and quick filtering for large collections.
 
 _Last updated: 2025-10-09_

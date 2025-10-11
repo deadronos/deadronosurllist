@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 
 import { api, HydrateClient } from "@/trpc/server";
 import { LinkCreateForm } from "@/app/_components/link-create-form";
-import { CollectionLinksManager } from "@/app/_components/collection-links-manager";
 import { auth } from "@/server/auth";
+import { CollectionLinksManager } from "@/app/_components/collection-links-manager";
 
 type CollectionLink = {
   id: string;
@@ -18,6 +18,7 @@ type CollectionWithLinks = {
   id: string;
   name: string;
   description: string | null;
+  isPublic: boolean;
   links: CollectionLink[];
 };
 
@@ -48,10 +49,11 @@ export default async function CollectionPage({ params }: PageProps) {
   if (!isCollectionWithLinks(collectionResult)) {
     throw new Error("Unexpected collection payload");
   }
+
   const collection = {
     ...collectionResult,
     links: [...collectionResult.links].sort((a, b) => a.order - b.order),
-  };
+  } satisfies CollectionWithLinks;
 
   return (
     <HydrateClient>
@@ -73,6 +75,7 @@ export default async function CollectionPage({ params }: PageProps) {
         <CollectionLinksManager
           collectionId={collection.id}
           initialLinks={collection.links}
+          initialIsPublic={collection.isPublic}
         />
       </main>
     </HydrateClient>
@@ -86,6 +89,7 @@ function isCollectionWithLinks(value: unknown): value is CollectionWithLinks {
     id?: unknown;
     name?: unknown;
     description?: unknown;
+    isPublic?: unknown;
     links?: unknown;
   };
 
@@ -98,6 +102,9 @@ function isCollectionWithLinks(value: unknown): value is CollectionWithLinks {
     candidate.description !== null &&
     typeof candidate.description !== "string"
   ) {
+    return false;
+  }
+  if (typeof candidate.isPublic !== "boolean") {
     return false;
   }
   if (!Array.isArray(candidate.links)) return false;

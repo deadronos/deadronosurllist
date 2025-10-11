@@ -18,12 +18,14 @@ type SortableLinkItemProps = {
   link: CollectionLinkModel;
   onEdit: () => void;
   onDelete: () => void;
+  dragDisabled?: boolean;
 };
 
 export function SortableLinkItem({
   link,
   onEdit,
   onDelete,
+  dragDisabled = false,
 }: SortableLinkItemProps) {
   const {
     attributes,
@@ -32,13 +34,15 @@ export function SortableLinkItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: link.id });
+  } = useSortable({ id: link.id, disabled: dragDisabled });
 
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.6 : undefined,
   };
+
+  const dragProps = dragDisabled ? {} : { ...attributes, ...listeners };
 
   return (
     <Card
@@ -49,12 +53,18 @@ export function SortableLinkItem({
     >
       <Flex align="center" justify="between" gap="3">
         <Flex align="center" gap="3" className="flex-1">
-          <Tooltip content="Drag to reorder">
+          <Tooltip
+            content={
+              dragDisabled
+                ? "Reordering disabled while filtering"
+                : "Drag to reorder"
+            }
+          >
             <IconButton
               variant="soft"
               color="gray"
-              {...attributes}
-              {...listeners}
+              {...dragProps}
+              disabled={dragDisabled}
             >
               <DotsVerticalIcon />
             </IconButton>
