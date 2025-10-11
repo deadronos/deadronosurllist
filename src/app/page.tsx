@@ -1,5 +1,5 @@
 import Link from "next/link";
-import * as dotenvx from '@dotenvx/dotenvx';
+import * as dotenvx from "@dotenvx/dotenvx";
 
 import {
   Box,
@@ -15,54 +15,31 @@ import {
 
 import { auth, authDiagnostics } from "@/server/auth";
 import { api } from "@/trpc/server";
-import {
-  PublicCatalog,
-  type PublicCatalogCollection,
-} from "@/app/_components/public-catalog";
+import { PublicCatalog } from "@/app/_components/public-catalog";
+import type { RouterOutputs } from "@/trpc/react";
 
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 
-type PublicLink = {
-  id: string;
-  name: string;
-  url: string;
-  comment: string | null;
-  order: number;
-};
+type PublicCatalogPage = RouterOutputs["collection"]["getPublicCatalog"];
+type PublicCatalogCollection = PublicCatalogPage["items"][number];
+type PublicLink = PublicCatalogCollection["topLinks"][number];
 
-type PublicCollection = {
-  id: string;
-  name: string;
-  description: string | null;
-  updatedAt: string | Date;
-  links: PublicLink[];
-};
+const PUBLIC_CATALOG_PAGE_SIZE = 12;
+const PUBLIC_CATALOG_LINK_LIMIT = 3;
 
 export default async function Home() {
   const sessionPromise = auth();
-  const publicCollectionsPromise = api.collection.listPublic();
+  const featuredCollectionPromise = api.collection.getPublic();
+  const publicCatalogPromise = api.collection.getPublicCatalog({
+    limit: PUBLIC_CATALOG_PAGE_SIZE,
+    linkLimit: PUBLIC_CATALOG_LINK_LIMIT,
+  });
 
-  const session = await sessionPromise;
-  const publicCollectionsResult = await publicCollectionsPromise;
-
-  const publicCollectionsRaw = isPublicCollectionArray(publicCollectionsResult)
-    ? publicCollectionsResult
-    : [];
-
-  const publicCollections: PublicCatalogCollection[] = publicCollectionsRaw.map(
-    (collection) => ({
-      id: collection.id,
-      name: collection.name,
-      description: collection.description,
-      updatedAt:
-        typeof collection.updatedAt === "string"
-          ? collection.updatedAt
-          : collection.updatedAt.toISOString(),
-      links: [...collection.links].sort((a, b) => a.order - b.order),
-    }),
-  );
-
-  const featuredCollection = publicCollections.at(0) ?? null;
+  const [session, featuredCollection, publicCatalog] = await Promise.all([
+    sessionPromise,
+    featuredCollectionPromise,
+    publicCatalogPromise,
+  ]);
 
   const hasEnabledProvider = authDiagnostics.hasEnabledProvider;
   const primaryCtaHref = session ? "/dashboard" : "/signin";
@@ -77,7 +54,7 @@ export default async function Home() {
     : hasEnabledProvider
       ? "Sign in"
       : "Sign-in disabled";
-  const publicLinks: PublicLink[] = featuredCollection?.links ?? [];
+  const publicLinks: PublicLink[] = featuredCollection?.topLinks ?? [];
 
   return (
     <Box className="min-h-screen bg-[radial-gradient(circle_at_top,_#101220,_#040406)] text-white">
@@ -112,8 +89,8 @@ export default async function Home() {
               </Flex>
               {!hasEnabledProvider && (
                 <Text as="p" mt="3" size="2" color="gray">
-                  Sign-in is disabled while mock credentials are configured. Update your OAuth
-                  secrets to enable authentication.
+                  Sign-in is disabled while mock credentials are configured.
+                  Update your OAuth secrets to enable authentication.
                 </Text>
               )}
               {session?.user?.name && (
@@ -128,19 +105,19 @@ export default async function Home() {
               className="w-full max-w-md border border-white/10 bg-white/5 backdrop-blur"
             >
               <Flex direction="column" gap="3">
-            <Text size="2" color="gray">
-              Featured collection
-            </Text>
-            <Heading size="5">
-              {featuredCollection?.name ?? "No public collection yet"}
-            </Heading>
-            <Text size="3" color="gray">
-              {featuredCollection?.description ??
-                "Check back soon for curated resources from the Deadronos community."}
-            </Text>
-            <Separator className="border-white/10" />
-            <Flex direction="column" gap="3">
-              {publicLinks.length > 0 ? (
+                <Text size="2" color="gray">
+                  Featured collection
+                </Text>
+                <Heading size="5">
+                  {featuredCollection?.name ?? "No public collection yet"}
+                </Heading>
+                <Text size="3" color="gray">
+                  {featuredCollection?.description ??
+                    "Check back soon for curated resources from the Deadronos community."}
+                </Text>
+                <Separator className="border-white/10" />
+                <Flex direction="column" gap="3">
+                  {publicLinks.length > 0 ? (
                     publicLinks.map((link) => (
                       <Card
                         key={link.id}
@@ -208,71 +185,14 @@ export default async function Home() {
             </Flex>
           </Card>
 
-          <PublicCatalog collections={publicCollections} />
+          <PublicCatalog
+            initialPage={publicCatalog}
+            pageSize={PUBLIC_CATALOG_PAGE_SIZE}
+            linkLimit={PUBLIC_CATALOG_LINK_LIMIT}
+          />
         </Flex>
       </Container>
-      <Text>Hello {dotenvx.get('HELLO')}</Text>
+      <Text>Hello {dotenvx.get("HELLO")}</Text>
     </Box>
-  );
-}
-
-function isPublicCollectionArray(
-  value: unknown,
-): value is PublicCollection[] {
-  return Array.isArray(value) && value.every(isPublicCollection);
-}
-
-function isPublicCollection(value: unknown): value is PublicCollection {
-  if (!value || typeof value !== "object") return false;
-  const candidate = value as {
-    id?: unknown;
-    name?: unknown;
-    description?: unknown;
-    updatedAt?: unknown;
-    links?: unknown;
-  };
-  if (typeof candidate.id !== "string") return false;
-  if (candidate.name !== undefined && typeof candidate.name !== "string") {
-    return false;
-  }
-  if (
-    candidate.description !== undefined &&
-    candidate.description !== null &&
-    typeof candidate.description !== "string"
-  ) {
-    return false;
-  }
-  if (
-    candidate.updatedAt !== undefined &&
-    !(
-      typeof candidate.updatedAt === "string" ||
-      candidate.updatedAt instanceof Date
-    )
-  ) {
-    return false;
-  }
-  if (!Array.isArray(candidate.links)) return false;
-  return candidate.links.every(isPublicLink);
-}
-
-function isPublicLink(value: unknown): value is PublicLink {
-  if (!value || typeof value !== "object") return false;
-  const candidate = value as {
-    id?: unknown;
-    name?: unknown;
-    url?: unknown;
-    comment?: unknown;
-    order?: unknown;
-  };
-  const hasComment =
-    candidate.comment === null ||
-    candidate.comment === undefined ||
-    typeof candidate.comment === "string";
-  return (
-    typeof candidate.id === "string" &&
-    typeof candidate.name === "string" &&
-    typeof candidate.url === "string" &&
-    typeof candidate.order === "number" &&
-    hasComment
   );
 }

@@ -34,7 +34,8 @@ export function SignInButtons({ providers }: SignInButtonsProps) {
     <Flex direction="column" gap="3">
       {errorCode ? (
         <Text color="red" size="2">
-          Sign-in failed ({errorCode}). Try again or contact support if the problem persists.
+          Sign-in failed ({errorCode}). Try again or contact support if the
+          problem persists.
         </Text>
       ) : null}
 
@@ -52,5 +53,3 @@ export function SignInButtons({ providers }: SignInButtonsProps) {
     </Flex>
   );
 }
-
-

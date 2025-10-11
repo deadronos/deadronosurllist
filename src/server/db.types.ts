@@ -1,9 +1,4 @@
-import type {
-  Collection,
-  Link,
-  Post,
-  Prisma,
-} from "@prisma/client";
+import type { Collection, Link, Post, Prisma } from "@prisma/client";
 
 export type CollectionRecord = Collection & {
   links?: LinkRecord[];
@@ -20,10 +15,16 @@ export type LinkListDatabase = {
   ): Promise<unknown[]>;
   collection: {
     findMany(args?: Prisma.CollectionFindManyArgs): Promise<CollectionRecord[]>;
-    findFirst(args?: Prisma.CollectionFindFirstArgs): Promise<CollectionRecord | null>;
+    findFirst(
+      args?: Prisma.CollectionFindFirstArgs,
+    ): Promise<CollectionRecord | null>;
     create(args: Prisma.CollectionCreateArgs): Promise<Collection>;
-    updateMany(args: Prisma.CollectionUpdateManyArgs): Promise<Prisma.BatchPayload>;
-    deleteMany(args: Prisma.CollectionDeleteManyArgs): Promise<Prisma.BatchPayload>;
+    updateMany(
+      args: Prisma.CollectionUpdateManyArgs,
+    ): Promise<Prisma.BatchPayload>;
+    deleteMany(
+      args: Prisma.CollectionDeleteManyArgs,
+    ): Promise<Prisma.BatchPayload>;
   };
   link: {
     findFirst(args?: Prisma.LinkFindFirstArgs): Promise<LinkRecord | null>;

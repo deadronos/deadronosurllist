@@ -55,7 +55,9 @@ describe("postRouter with in-memory db", () => {
       createdById: "user1",
     });
 
-    const otherUserCaller = createTestCaller({ session: createSession("user2") }).post;
+    const otherUserCaller = createTestCaller({
+      session: createSession("user2"),
+    }).post;
 
     await otherUserCaller.create({ name: "Other user post" });
 
@@ -74,7 +76,9 @@ describe("postRouter authorization", () => {
   it("rejects protected mutations without a session", async () => {
     const unauthenticatedCaller = createTestCaller({ session: null }).post;
 
-    await expect(unauthenticatedCaller.create({ name: "Nope" })).rejects.toMatchObject({
+    await expect(
+      unauthenticatedCaller.create({ name: "Nope" }),
+    ).rejects.toMatchObject({
       code: "UNAUTHORIZED",
     });
   });

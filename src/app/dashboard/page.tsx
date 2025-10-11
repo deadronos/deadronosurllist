@@ -65,7 +65,9 @@ export default async function DashboardPage() {
                   {collection.name}
                 </Link>
                 {collection.description ? (
-                  <p className="text-sm text-slate-600">{collection.description}</p>
+                  <p className="text-sm text-slate-600">
+                    {collection.description}
+                  </p>
                 ) : null}
               </div>
               <div className="flex items-center gap-4 text-sm text-slate-600">
@@ -116,4 +118,3 @@ function isCollectionSummary(value: unknown): value is CollectionSummary {
   }
   return true;
 }
-

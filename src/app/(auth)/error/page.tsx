@@ -13,7 +13,10 @@ import {
 } from "@radix-ui/themes";
 import { ArrowLeftIcon, ReloadIcon } from "@radix-ui/react-icons";
 
-const ERROR_DESCRIPTIONS: Record<string, { title: string; description: string }> = {
+const ERROR_DESCRIPTIONS: Record<
+  string,
+  { title: string; description: string }
+> = {
   AuthUnavailable: {
     title: "Sign-in disabled",
     description:
@@ -25,23 +28,28 @@ const ERROR_DESCRIPTIONS: Record<string, { title: string; description: string }>
   },
   Callback: {
     title: "Callback error",
-    description: "We were unable to complete the sign-in callback. Please try again.",
+    description:
+      "We were unable to complete the sign-in callback. Please try again.",
   },
   Configuration: {
     title: "Configuration error",
-    description: "The authentication configuration is incomplete. Update your OAuth credentials.",
+    description:
+      "The authentication configuration is incomplete. Update your OAuth credentials.",
   },
   CredentialsSignin: {
     title: "Sign-in failed",
-    description: "The provided credentials are invalid. Double-check and try again.",
+    description:
+      "The provided credentials are invalid. Double-check and try again.",
   },
   EmailCreateAccount: {
     title: "Email link issue",
-    description: "We could not create your account from the email link. Request a new link and retry.",
+    description:
+      "We could not create your account from the email link. Request a new link and retry.",
   },
   EmailSignin: {
     title: "Email sign-in issue",
-    description: "The email sign-in link is invalid or expired. Request a new link and retry.",
+    description:
+      "The email sign-in link is invalid or expired. Request a new link and retry.",
   },
   OAuthAccountNotLinked: {
     title: "Account not linked",
@@ -50,15 +58,18 @@ const ERROR_DESCRIPTIONS: Record<string, { title: string; description: string }>
   },
   OAuthCallback: {
     title: "OAuth callback",
-    description: "The OAuth provider returned an error. Retry the sign-in process.",
+    description:
+      "The OAuth provider returned an error. Retry the sign-in process.",
   },
   OAuthCreateAccount: {
     title: "Account creation blocked",
-    description: "We could not create an account with that provider. Contact support if this persists.",
+    description:
+      "We could not create an account with that provider. Contact support if this persists.",
   },
   OAuthSignin: {
     title: "OAuth sign-in issue",
-    description: "We were unable to reach the OAuth provider. Try again or use another provider.",
+    description:
+      "We were unable to reach the OAuth provider. Try again or use another provider.",
   },
   DatabaseUnavailable: {
     title: "Database unavailable",
@@ -83,7 +94,8 @@ const resolveErrorCopy = (code?: string) => {
   if (!code) {
     return {
       title: "Authentication error",
-      description: "Something went wrong while signing you in. Try again in a moment.",
+      description:
+        "Something went wrong while signing you in. Try again in a moment.",
     };
   }
 
@@ -94,7 +106,8 @@ const resolveErrorCopy = (code?: string) => {
 
   return {
     title: "Authentication error",
-    description: "We hit an unexpected issue. Sign in again or return to the welcome page.",
+    description:
+      "We hit an unexpected issue. Sign in again or return to the welcome page.",
   };
 };
 
@@ -108,7 +121,11 @@ export default async function AuthErrorPage({
 
   return (
     <Box className="min-h-screen bg-[radial-gradient(circle_at_top,_#101220,_#040406)] text-white">
-      <Container size="2" px={{ initial: "5", sm: "6" }} py={{ initial: "7", sm: "9" }}>
+      <Container
+        size="2"
+        px={{ initial: "5", sm: "6" }}
+        py={{ initial: "7", sm: "9" }}
+      >
         <Flex direction="column" gap="6">
           <Flex align="center" gap="3">
             <IconButton asChild variant="surface" color="gray">

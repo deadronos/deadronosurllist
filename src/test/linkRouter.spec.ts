@@ -1,16 +1,17 @@
-import { beforeEach, describe, it, expect } from 'vitest';
+import { beforeEach, describe, it, expect } from "vitest";
 
-import { createCaller } from '@/server/api/root';
-import { createTRPCContext } from '@/server/api/trpc';
-import { db } from '@/server/db';
-import type { LinkListDatabase } from '@/server/db.types';
-import type { Session } from 'next-auth';
+import { createCaller } from "@/server/api/root";
+import { createTRPCContext } from "@/server/api/trpc";
+import { db } from "@/server/db";
+import type { LinkListDatabase } from "@/server/db.types";
+import type { Session } from "next-auth";
 
 type AppCaller = ReturnType<typeof createCaller>;
 
 type LinkResult = {
   id: string;
   order: number;
+  name: string;
   comment: string | null;
   collectionId: string;
 };
@@ -40,7 +41,7 @@ const createSession = (userId: string): Session => ({
 const createTestCaller = (overrides?: Partial<TestContext>): AppCaller => {
   const context: TestContext = {
     db,
-    session: createSession('user1'),
+    session: createSession("user1"),
     headers: new Headers(),
     ...overrides,
   };
@@ -53,27 +54,31 @@ beforeEach(async () => {
   caller = createCaller(context);
 });
 
-describe('linkRouter with in-memory db', () => {
-  it('creates, reorders, updates, and deletes links', async () => {
-    const collectionId = 'col_public_discover';
-    const initialCollectionRaw: unknown = await caller.collection.getById({ id: collectionId });
+describe("linkRouter with in-memory db", () => {
+  it("creates, reorders, updates, and deletes links", async () => {
+    const collectionId = "col_public_discover";
+    const initialCollectionRaw: unknown = await caller.collection.getById({
+      id: collectionId,
+    });
     const initialCollection = ensureCollectionResult(initialCollectionRaw);
     const initialCount = initialCollection.links.length;
     expect(initialCount).toBeGreaterThan(0);
 
     const createdRaw: unknown = await caller.link.create({
       collectionId,
-      url: 'https://example.com/second',
-      name: 'Second Link',
-      comment: 'Another link',
+      url: "https://example.com/second",
+      name: "Second Link",
+      comment: "Another link",
     });
     const created = ensureLinkResult(createdRaw);
 
-    expect(typeof created.id).toBe('string');
+    expect(typeof created.id).toBe("string");
     expect(created.order).toBe(initialCount);
     expect(created.collectionId).toBe(collectionId);
 
-    const afterCreateRaw: unknown = await caller.collection.getById({ id: collectionId });
+    const afterCreateRaw: unknown = await caller.collection.getById({
+      id: collectionId,
+    });
     const afterCreate = ensureCollectionResult(afterCreateRaw);
     const afterCreateLinks = afterCreate.links;
     expect(afterCreateLinks.length).toBe(initialCount + 1);
@@ -84,9 +89,13 @@ describe('linkRouter with in-memory db', () => {
       linkIds: reversedIds,
     });
 
-    getCountResults(reorderResultsRaw).forEach((res) => expect(res.count).toBe(1));
+    getCountResults(reorderResultsRaw).forEach((res) =>
+      expect(res.count).toBe(1),
+    );
 
-    const afterReorderRaw: unknown = await caller.collection.getById({ id: collectionId });
+    const afterReorderRaw: unknown = await caller.collection.getById({
+      id: collectionId,
+    });
     const afterReorder = ensureCollectionResult(afterReorderRaw);
     const afterReorderLinks = afterReorder.links;
     expect(afterReorderLinks.map((link) => link.id)).toEqual(reversedIds);
@@ -96,114 +105,118 @@ describe('linkRouter with in-memory db', () => {
 
     const updatedRaw: unknown = await caller.link.update({
       id: created.id,
-      comment: 'Updated comment',
+      comment: "Updated comment",
     });
     const updated = ensureLinkResult(updatedRaw);
-    expect(updated.comment).toBe('Updated comment');
+    expect(updated.comment).toBe("Updated comment");
     await caller.link.delete({ id: created.id });
-    const afterDeleteRaw: unknown = await caller.collection.getById({ id: collectionId });
+    const afterDeleteRaw: unknown = await caller.collection.getById({
+      id: collectionId,
+    });
     const afterDelete = ensureCollectionResult(afterDeleteRaw);
     const afterDeleteLinks = afterDelete.links;
     expect(afterDeleteLinks.some((link) => link.id === created.id)).toBe(false);
   });
 });
 
-describe('linkRouter authorization guards', () => {
-  it('rejects creating links in collections owned by another user', async () => {
-    const intruder = createTestCaller({ session: createSession('intruder') }).link;
+describe("linkRouter authorization guards", () => {
+  it("rejects creating links in collections owned by another user", async () => {
+    const intruder = createTestCaller({
+      session: createSession("intruder"),
+    }).link;
 
-    const initial = await caller.collection.getById({ id: 'col_public_discover' });
-    if (!initial) {
-      throw new Error('Expected seeded collection to exist');
-    }
+    const initial = await getCollectionOrThrow("col_public_discover");
     const initialCount = initial.links.length;
 
     await expect(
       intruder.create({
-        collectionId: 'col_public_discover',
-        url: 'https://example.com/forbidden',
-        name: 'Forbidden',
+        collectionId: "col_public_discover",
+        url: "https://example.com/forbidden",
+        name: "Forbidden",
         comment: undefined,
       }),
-    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
 
-    const afterAttempt = await caller.collection.getById({ id: 'col_public_discover' });
-    expect(afterAttempt?.links.length).toBe(initialCount);
+    const afterAttempt = await getCollectionOrThrow("col_public_discover");
+    expect(afterAttempt.links.length).toBe(initialCount);
   });
 
-  it('prevents updates to links owned by another user', async () => {
+  it("prevents updates to links owned by another user", async () => {
     const ownerCaller = createTestCaller().link;
     const created = await ownerCaller.create({
-      collectionId: 'col_public_discover',
-      url: 'https://example.com/update-target',
-      name: 'Update Target',
+      collectionId: "col_public_discover",
+      url: "https://example.com/update-target",
+      name: "Update Target",
     });
 
-    const intruder = createTestCaller({ session: createSession('user2') }).link;
+    const intruder = createTestCaller({ session: createSession("user2") }).link;
 
     await expect(
       intruder.update({
         id: created.id,
-        name: 'Hacked Name',
+        name: "Hacked Name",
       }),
-    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
 
-    const ownerView = await caller.collection.getById({ id: 'col_public_discover' });
-    const target = ownerView?.links.find((link) => link.id === created.id);
-    expect(target?.name).toBe('Update Target');
+    const ownerView = await getCollectionOrThrow("col_public_discover");
+    const target = ownerView.links.find((link) => link.id === created.id);
+    expect(target?.name).toBe("Update Target");
   });
 
-  it('prevents deleting links owned by another user', async () => {
+  it("prevents deleting links owned by another user", async () => {
     const ownerCaller = createTestCaller().link;
     const created = await ownerCaller.create({
-      collectionId: 'col_public_discover',
-      url: 'https://example.com/delete-target',
-      name: 'Delete Target',
+      collectionId: "col_public_discover",
+      url: "https://example.com/delete-target",
+      name: "Delete Target",
     });
 
-    const intruder = createTestCaller({ session: createSession('user3') }).link;
+    const intruder = createTestCaller({ session: createSession("user3") }).link;
 
-    await expect(intruder.delete({ id: created.id })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    await expect(intruder.delete({ id: created.id })).rejects.toMatchObject({
+      code: "FORBIDDEN",
+    });
 
-    const ownerView = await caller.collection.getById({ id: 'col_public_discover' });
-    const stillExists = ownerView?.links.some((link) => link.id === created.id);
+    const ownerView = await getCollectionOrThrow("col_public_discover");
+    const stillExists = ownerView.links.some((link) => link.id === created.id);
     expect(stillExists).toBe(true);
   });
 
-  it('rejects reordering links for foreign collections', async () => {
-    const ownerView = await caller.collection.getById({ id: 'col_public_discover' });
-    if (!ownerView) {
-      throw new Error('Expected seeded collection to exist');
-    }
+  it("rejects reordering links for foreign collections", async () => {
+    const ownerView = await getCollectionOrThrow("col_public_discover");
 
-    const intruder = createTestCaller({ session: createSession('user4') }).link;
+    const intruder = createTestCaller({ session: createSession("user4") }).link;
 
     await expect(
       intruder.reorder({
-        collectionId: 'col_public_discover',
+        collectionId: "col_public_discover",
         linkIds: ownerView.links.map((link) => link.id).reverse(),
       }),
-    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
 
-    const afterAttempt = await caller.collection.getById({ id: 'col_public_discover' });
-    expect(afterAttempt?.links.map((link) => link.id)).toEqual(ownerView.links.map((link) => link.id));
+    const afterAttempt = await getCollectionOrThrow("col_public_discover");
+    expect(afterAttempt.links.map((link) => link.id)).toEqual(
+      ownerView.links.map((link) => link.id),
+    );
   });
 });
 
 function isLinkResult(value: unknown): value is LinkResult {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== "object") return false;
   const candidate = value as {
     id?: unknown;
     order?: unknown;
+    name?: unknown;
     comment?: unknown;
     collectionId?: unknown;
   };
   const comment = candidate.comment;
   return (
-    typeof candidate.id === 'string' &&
-    typeof candidate.order === 'number' &&
-    typeof candidate.collectionId === 'string' &&
-    (comment === null || comment === undefined || typeof comment === 'string')
+    typeof candidate.id === "string" &&
+    typeof candidate.order === "number" &&
+    typeof candidate.name === "string" &&
+    typeof candidate.collectionId === "string" &&
+    (comment === null || comment === undefined || typeof comment === "string")
   );
 }
 
@@ -214,7 +227,7 @@ function toLinkResults(value: unknown): LinkResult[] {
 
 function ensureLinkResult(value: unknown): LinkResult {
   if (!isLinkResult(value)) {
-    throw new Error('Link result malformed');
+    throw new Error("Link result malformed");
   }
   return value;
 }
@@ -225,9 +238,9 @@ type CollectionResult = {
 };
 
 function isCollectionResult(value: unknown): value is CollectionResult {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== "object") return false;
   const candidate = value as { id?: unknown; links?: unknown };
-  if (typeof candidate.id !== 'string') return false;
+  if (typeof candidate.id !== "string") return false;
   if (!Array.isArray(candidate.links)) return false;
   const linkList = toLinkResults(candidate.links);
   return linkList.length === candidate.links.length;
@@ -235,7 +248,7 @@ function isCollectionResult(value: unknown): value is CollectionResult {
 
 function ensureCollectionResult(value: unknown): CollectionResult {
   if (!isCollectionResult(value)) {
-    throw new Error('Collection result malformed');
+    throw new Error("Collection result malformed");
   }
   return {
     id: (value as { id: string }).id,
@@ -244,12 +257,17 @@ function ensureCollectionResult(value: unknown): CollectionResult {
 }
 
 function isCountResult(value: unknown): value is CountResult {
-  if (!value || typeof value !== 'object') return false;
+  if (!value || typeof value !== "object") return false;
   const candidate = value as { count?: unknown };
-  return typeof candidate.count === 'number';
+  return typeof candidate.count === "number";
 }
 
 function getCountResults(value: unknown): CountResult[] {
   if (!Array.isArray(value)) return [];
   return value.filter(isCountResult);
+}
+
+async function getCollectionOrThrow(id: string): Promise<CollectionResult> {
+  const result = await caller.collection.getById({ id });
+  return ensureCollectionResult(result);
 }

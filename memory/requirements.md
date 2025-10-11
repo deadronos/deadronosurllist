@@ -44,8 +44,10 @@
 
 ## Public Collections Catalog
 
-- WHEN the landing page renders, THE SYSTEM SHALL fetch all collections flagged `isPublic` ordered by `updatedAt` descending with their link summaries [Acceptance: unit test for the new tRPC procedure returning every seeded public collection].
-- WHEN the landing page renders, THE SYSTEM SHALL display a section titled "All current public lists" showing one card per public collection with its name, description, and top links [Acceptance: manual UI check confirming cards render for each seeded collection].
+- WHEN the `collection.getPublicCatalog` tRPC procedure receives an optional query, limit, and cursor, THE SYSTEM SHALL return public collections ordered by `updatedAt` descending with a maximum of `limit` entries, ISO8601 timestamps, and the next cursor when more results remain [Acceptance: Vitest exercising pagination and cursor advancement].
+- WHEN the catalog response is constructed, THE SYSTEM SHALL include at most three top links per collection ordered by link `order`, ensuring the payload is trimmed for the landing page cards [Acceptance: Vitest verifying link trimming].
+- WHEN the landing page renders, THE SYSTEM SHALL display a section titled "All current public lists" showing one card per public collection from the first catalog page including name, description, and top links [Acceptance: manual or automated UI check confirming cards render for seeded collections].
+- WHEN a visitor activates the "Load more" control, THE SYSTEM SHALL fetch the next catalog page via tRPC and append it to the rendered grid without duplicates [Acceptance: component-level test or manual verification demonstrating pagination].
 - WHEN a visitor enters text into the catalog search input, THE SYSTEM SHALL filter the rendered cards to collections whose name or description contains the query case-insensitively [Acceptance: component story or manual check filtering seeded data].
 ## Type Safety Hardening
 
@@ -64,3 +66,10 @@
 - WHEN `npm run lint` executes, THE SYSTEM SHALL complete without any `@typescript-eslint/no-unsafe-*` or `@typescript-eslint/no-explicit-any` diagnostics across routers, database utilities, or tests [Acceptance: `npm run lint` exits with code 0 and reports zero such violations].
 - WHEN tRPC procedures access `ctx.db`, THE SYSTEM SHALL expose a typed database client so property access (e.g., `collection`, `link`, `post`) carries Prisma-aligned signatures instead of `any` [Acceptance: TypeScript inference in routers eliminates `@typescript-eslint/no-unsafe-member-access` and related lint warnings].
 - WHEN Vitest suites construct callers or contexts, THE SYSTEM SHALL rely on typed helpers rather than `any` coercions [Acceptance: `npm run lint` reports no `@typescript-eslint/no-unsafe-assignment` or `no-explicit-any` issues within `src/test` files].
+
+## Vitest Toolchain Compatibility
+
+- WHEN the TypeScript typecheck executes against Vitest tooling files, THE SYSTEM SHALL rely on exported types from maintained dependencies to avoid TS2305 missing member diagnostics [Acceptance: `npm run typecheck` completes without TS2305 errors from `vitest.config.ts`].
+- WHEN Vitest loads the browser testing configuration, THE SYSTEM SHALL compile with a typed `browser` option while gracefully handling missing Playwright provider modules [Acceptance: `npm run test` completes without type errors or runtime exceptions if `@vitest/browser-playwright` is absent].
+- WHEN the lint fixer script runs, THE SYSTEM SHALL lint the Vitest configuration without reporting unresolved type references or unsafe assignments introduced by the tooling upgrade [Acceptance: `npm run lint:fix` exits with code 0 and reports no type-based lint errors in `vitest.config.ts`].
+- WHEN environment variable `VITEST_BROWSER` is unset or not `"true"`, THE SYSTEM SHALL skip enabling the Vitest browser provider so Node-based test runs succeed without Playwright browser binaries [Acceptance: `npm run test` completes without attempting to launch Playwright when `VITEST_BROWSER` is not `"true"`].

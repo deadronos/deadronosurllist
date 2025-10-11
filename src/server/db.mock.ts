@@ -163,8 +163,12 @@ const matchesCollectionWhere = (
 ) => {
   if (!where) return true;
   if (where.id && record.id !== where.id) return false;
-  if (where.createdById && record.createdById !== where.createdById) return false;
-  if (where.isPublic !== undefined && record.isPublic !== Boolean(where.isPublic)) {
+  if (where.createdById && record.createdById !== where.createdById)
+    return false;
+  if (
+    where.isPublic !== undefined &&
+    record.isPublic !== Boolean(where.isPublic)
+  ) {
     return false;
   }
   if (
@@ -184,14 +188,19 @@ const matchesLinkWhere = (
 ) => {
   if (!where) return true;
   if (where.id && record.id !== where.id) return false;
-  if (where.collectionId && record.collectionId !== where.collectionId) return false;
+  if (where.collectionId && record.collectionId !== where.collectionId)
+    return false;
   return true;
 };
 
-const matchesPostWhere = (record: PostRecord, where?: Record<string, unknown>) => {
+const matchesPostWhere = (
+  record: PostRecord,
+  where?: Record<string, unknown>,
+) => {
   if (!where) return true;
   if (where.id && record.id !== where.id) return false;
-  if (where.createdById && record.createdById !== where.createdById) return false;
+  if (where.createdById && record.createdById !== where.createdById)
+    return false;
   if (
     typeof where.createdBy === "object" &&
     where.createdBy &&
@@ -291,7 +300,10 @@ const toLinkResult = (
           : includeOptions.collection.include;
       const collectionRecord = store.collections.get(record.collectionId);
       if (collectionRecord) {
-        base.collection = toCollectionResult(collectionRecord, collectionInclude);
+        base.collection = toCollectionResult(
+          collectionRecord,
+          collectionInclude,
+        );
       }
     }
   }
@@ -373,7 +385,9 @@ export const db = {
         id: (data.id as string) ?? randomId("col"),
         name: data.name as string,
         description:
-          data.description === undefined ? null : (data.description as string | null),
+          data.description === undefined
+            ? null
+            : (data.description as string | null),
         isPublic: data.isPublic === undefined ? false : Boolean(data.isPublic),
         createdById,
         createdAt: now,
@@ -398,7 +412,8 @@ export const db = {
         if (data.description !== undefined) {
           record.description = data.description as string | null;
         }
-        if (data.isPublic !== undefined) record.isPublic = Boolean(data.isPublic);
+        if (data.isPublic !== undefined)
+          record.isPublic = Boolean(data.isPublic);
         record.updatedAt = new Date();
       });
       return { count: matched.length };
@@ -480,7 +495,8 @@ export const db = {
         collectionId,
         url: data.url as string,
         name: data.name as string,
-        comment: data.comment === undefined ? null : (data.comment as string | null),
+        comment:
+          data.comment === undefined ? null : (data.comment as string | null),
         order: (data.order as number) ?? 0,
         createdAt: now,
         updatedAt: now,
@@ -550,7 +566,9 @@ export const db = {
       store.links.delete(id);
       const collection = store.collections.get(record.collectionId);
       if (collection) {
-        collection.linkIds = collection.linkIds.filter((linkId) => linkId !== id);
+        collection.linkIds = collection.linkIds.filter(
+          (linkId) => linkId !== id,
+        );
         collection.updatedAt = new Date();
       }
       return toLinkResult(record);

@@ -22,7 +22,11 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { CheckIcon, DotsHorizontalIcon, ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import {
+  CheckIcon,
+  DotsHorizontalIcon,
+  ExclamationTriangleIcon,
+} from "@radix-ui/react-icons";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
@@ -179,8 +183,7 @@ export function CollectionLinksManager({
 
     const url = urlValue.trim();
     const name = nameValue.trim();
-    const comment =
-      typeof commentValue === "string" ? commentValue : "";
+    const comment = typeof commentValue === "string" ? commentValue : "";
 
     if (!url || !name) {
       return;
@@ -285,7 +288,7 @@ export function CollectionLinksManager({
         >
           <Callout.Icon>
             {feedback.type === "success" ? (
-            <CheckIcon />
+              <CheckIcon />
             ) : (
               <ExclamationTriangleIcon />
             )}
@@ -431,5 +434,3 @@ export function CollectionLinksManager({
     </>
   );
 }
-
-
