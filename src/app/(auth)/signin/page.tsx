@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 
 import {
@@ -52,9 +53,17 @@ export default function SignInPage() {
               </Text>
 
               {hasEnabledProvider ? (
-                <SignInButtons
-                  providers={enabledProviders.map(({ id, label }) => ({ id, label }))}
-                />
+                <Suspense
+                  fallback={
+                    <Text color="gray" size="2">
+                      Preparing sign-in options…
+                    </Text>
+                  }
+                >
+                  <SignInButtons
+                    providers={enabledProviders.map(({ id, label }) => ({ id, label }))}
+                  />
+                </Suspense>
               ) : (
                 <Card
                   size="3"
@@ -92,4 +101,3 @@ export default function SignInPage() {
     </Box>
   );
 }
-
