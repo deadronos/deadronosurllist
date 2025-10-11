@@ -2,6 +2,9 @@ import { beforeEach, describe, it, expect } from 'vitest';
 
 import { createCaller } from '@/server/api/root';
 import { createTRPCContext } from '@/server/api/trpc';
+import { db } from '@/server/db';
+import type { LinkListDatabase } from '@/server/db.types';
+import type { Session } from 'next-auth';
 
 type AppCaller = ReturnType<typeof createCaller>;
 
@@ -17,6 +20,33 @@ type CountResult = {
 };
 
 let caller: AppCaller;
+
+type TestContext = {
+  db: LinkListDatabase;
+  session: Session | null;
+  headers: Headers;
+};
+
+const createSession = (userId: string): Session => ({
+  user: {
+    id: userId,
+    name: `Test ${userId}`,
+    email: null,
+    image: null,
+  },
+  expires: new Date(Date.now() + 60_000).toISOString(),
+});
+
+const createTestCaller = (overrides?: Partial<TestContext>): AppCaller => {
+  const context: TestContext = {
+    db,
+    session: createSession('user1'),
+    headers: new Headers(),
+    ...overrides,
+  };
+
+  return createCaller(context);
+};
 
 beforeEach(async () => {
   const context = await createTRPCContext({ headers: new Headers() });
@@ -75,6 +105,88 @@ describe('linkRouter with in-memory db', () => {
     const afterDelete = ensureCollectionResult(afterDeleteRaw);
     const afterDeleteLinks = afterDelete.links;
     expect(afterDeleteLinks.some((link) => link.id === created.id)).toBe(false);
+  });
+});
+
+describe('linkRouter authorization guards', () => {
+  it('rejects creating links in collections owned by another user', async () => {
+    const intruder = createTestCaller({ session: createSession('intruder') }).link;
+
+    const initial = await caller.collection.getById({ id: 'col_public_discover' });
+    if (!initial) {
+      throw new Error('Expected seeded collection to exist');
+    }
+    const initialCount = initial.links.length;
+
+    await expect(
+      intruder.create({
+        collectionId: 'col_public_discover',
+        url: 'https://example.com/forbidden',
+        name: 'Forbidden',
+        comment: undefined,
+      }),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+
+    const afterAttempt = await caller.collection.getById({ id: 'col_public_discover' });
+    expect(afterAttempt?.links.length).toBe(initialCount);
+  });
+
+  it('prevents updates to links owned by another user', async () => {
+    const ownerCaller = createTestCaller().link;
+    const created = await ownerCaller.create({
+      collectionId: 'col_public_discover',
+      url: 'https://example.com/update-target',
+      name: 'Update Target',
+    });
+
+    const intruder = createTestCaller({ session: createSession('user2') }).link;
+
+    await expect(
+      intruder.update({
+        id: created.id,
+        name: 'Hacked Name',
+      }),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+
+    const ownerView = await caller.collection.getById({ id: 'col_public_discover' });
+    const target = ownerView?.links.find((link) => link.id === created.id);
+    expect(target?.name).toBe('Update Target');
+  });
+
+  it('prevents deleting links owned by another user', async () => {
+    const ownerCaller = createTestCaller().link;
+    const created = await ownerCaller.create({
+      collectionId: 'col_public_discover',
+      url: 'https://example.com/delete-target',
+      name: 'Delete Target',
+    });
+
+    const intruder = createTestCaller({ session: createSession('user3') }).link;
+
+    await expect(intruder.delete({ id: created.id })).rejects.toMatchObject({ code: 'FORBIDDEN' });
+
+    const ownerView = await caller.collection.getById({ id: 'col_public_discover' });
+    const stillExists = ownerView?.links.some((link) => link.id === created.id);
+    expect(stillExists).toBe(true);
+  });
+
+  it('rejects reordering links for foreign collections', async () => {
+    const ownerView = await caller.collection.getById({ id: 'col_public_discover' });
+    if (!ownerView) {
+      throw new Error('Expected seeded collection to exist');
+    }
+
+    const intruder = createTestCaller({ session: createSession('user4') }).link;
+
+    await expect(
+      intruder.reorder({
+        collectionId: 'col_public_discover',
+        linkIds: ownerView.links.map((link) => link.id).reverse(),
+      }),
+    ).rejects.toMatchObject({ code: 'FORBIDDEN' });
+
+    const afterAttempt = await caller.collection.getById({ id: 'col_public_discover' });
+    expect(afterAttempt?.links.map((link) => link.id)).toEqual(ownerView.links.map((link) => link.id));
   });
 });
 

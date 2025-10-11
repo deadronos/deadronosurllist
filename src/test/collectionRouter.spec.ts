@@ -66,7 +66,9 @@ describe("collectionRouter (mocked)", () => {
     }
     expect(first).toHaveProperty("name");
     expect(first.links.length).toBeGreaterThan(0);
-    const timestamps = res.map((collection) => new Date(collection.updatedAt).getTime());
+    const timestamps = res.map((collection) =>
+      new Date(collection.updatedAt).getTime(),
+    );
     const isDescending = timestamps.every(
       (value, index, array) => index === 0 || value <= array[index - 1]!,
     );
@@ -74,8 +76,73 @@ describe("collectionRouter (mocked)", () => {
   });
 
   it("create returns created collection", async () => {
-    const created = await caller.collection.create({ name: "New", description: "desc" });
+    const created = await caller.collection.create({
+      name: "New",
+      description: "desc",
+    });
     expect(created).toHaveProperty("id");
     expect(created.name).toBe("New");
+  });
+
+  it("update modifies owned collection fields", async () => {
+    const created = await caller.collection.create({
+      name: "Original",
+      description: "Original description",
+      isPublic: false,
+    });
+
+    const updateResult = await caller.collection.update({
+      id: created.id,
+      name: "Updated",
+      description: "Updated description",
+      isPublic: true,
+    });
+
+    expect(updateResult.count).toBe(1);
+
+    const fetched = await caller.collection.getById({ id: created.id });
+    if (!fetched) {
+      throw new Error("Expected collection to exist after update");
+    }
+
+    expect(fetched.name).toBe("Updated");
+    expect(fetched.description).toBe("Updated description");
+    expect(fetched.isPublic).toBe(true);
+  });
+
+  it("update refuses to modify collections owned by another user", async () => {
+    const created = await caller.collection.create({
+      name: "Mine",
+      description: "belongs to user1",
+    });
+
+    const intruder = createTestCaller({ session: createSession("user2") });
+    const updateResult = await intruder.collection.update({
+      id: created.id,
+      name: "Hacked",
+      description: "should not change",
+    });
+
+    expect(updateResult.count).toBe(0);
+
+    const intruderView = await intruder.collection.getById({ id: created.id });
+    expect(intruderView).toBeNull();
+
+    const ownerView = await caller.collection.getById({ id: created.id });
+    expect(ownerView?.name).toBe("Mine");
+    expect(ownerView?.description).toBe("belongs to user1");
+  });
+
+  it("delete removes owned collection and associated access", async () => {
+    const created = await caller.collection.create({
+      name: "Temporary",
+      description: "to remove",
+    });
+
+    const deleteResult = await caller.collection.delete({ id: created.id });
+    expect(deleteResult.count).toBe(1);
+
+    const fetched = await caller.collection.getById({ id: created.id });
+    expect(fetched).toBeNull();
   });
 });
