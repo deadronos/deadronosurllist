@@ -44,8 +44,10 @@
 
 ## Public Collections Catalog
 
-- WHEN the landing page renders, THE SYSTEM SHALL fetch all collections flagged `isPublic` ordered by `updatedAt` descending with their link summaries [Acceptance: unit test for the new tRPC procedure returning every seeded public collection].
-- WHEN the landing page renders, THE SYSTEM SHALL display a section titled "All current public lists" showing one card per public collection with its name, description, and top links [Acceptance: manual UI check confirming cards render for each seeded collection].
+- WHEN the `collection.getPublicCatalog` tRPC procedure receives an optional query, limit, and cursor, THE SYSTEM SHALL return public collections ordered by `updatedAt` descending with a maximum of `limit` entries, ISO8601 timestamps, and the next cursor when more results remain [Acceptance: Vitest exercising pagination and cursor advancement].
+- WHEN the catalog response is constructed, THE SYSTEM SHALL include at most three top links per collection ordered by link `order`, ensuring the payload is trimmed for the landing page cards [Acceptance: Vitest verifying link trimming].
+- WHEN the landing page renders, THE SYSTEM SHALL display a section titled "All current public lists" showing one card per public collection from the first catalog page including name, description, and top links [Acceptance: manual or automated UI check confirming cards render for seeded collections].
+- WHEN a visitor activates the "Load more" control, THE SYSTEM SHALL fetch the next catalog page via tRPC and append it to the rendered grid without duplicates [Acceptance: component-level test or manual verification demonstrating pagination].
 - WHEN a visitor enters text into the catalog search input, THE SYSTEM SHALL filter the rendered cards to collections whose name or description contains the query case-insensitively [Acceptance: component story or manual check filtering seeded data].
 ## Type Safety Hardening
 

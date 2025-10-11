@@ -1,8 +1,22 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig, type UserConfig } from "vitest/config";
 import tsconfigPaths from "vite-tsconfig-paths";
-import { playwright } from "@vitest/browser-playwright";
 
 /// <reference types="@vitest/browser/providers/playwright" />
+
+type BrowserConfig = NonNullable<NonNullable<UserConfig["test"]>["browser"]>;
+
+let browserConfig: BrowserConfig | undefined;
+
+try {
+  const { playwright } = await import("@vitest/browser-playwright");
+  browserConfig = {
+    enabled: true,
+    provider: playwright(),
+    instances: [{ browser: "chromium" }],
+  };
+} catch {
+  browserConfig = undefined;
+}
 
 export default defineConfig({
   test: {
@@ -20,11 +34,7 @@ export default defineConfig({
       include: ["src/**"],
       exclude: ["node_modules/", "src/test/"],
     },
-    browser: {
-      enabled: true,
-      provider: playwright(),
-      instances: [{ browser: "chromium" }],
-    },
+    browser: browserConfig,
   },
   plugins: [tsconfigPaths()],
 });
