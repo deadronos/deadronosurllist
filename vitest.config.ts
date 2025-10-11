@@ -1,21 +1,48 @@
-import { defineConfig, type UserConfig } from "vitest/config";
+import { defineConfig } from "vitest/config";
+import type { UserConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 /// <reference types="@vitest/browser/providers/playwright" />
 
 type BrowserConfig = NonNullable<NonNullable<UserConfig["test"]>["browser"]>;
 
+type BrowserProviderFactory = () => BrowserConfig["provider"];
+
+interface PlaywrightModule {
+  playwright: BrowserProviderFactory;
+}
+
+const isPlaywrightModule = (
+  candidate: unknown,
+): candidate is PlaywrightModule => {
+  if (typeof candidate !== "object" || candidate === null) {
+    return false;
+  }
+
+  const moduleCandidate = candidate as Partial<PlaywrightModule>;
+
+  return typeof moduleCandidate.playwright === "function";
+};
+
+const shouldEnableBrowser =
+  process.env.VITEST_BROWSER?.toLowerCase() === "true";
+
 let browserConfig: BrowserConfig | undefined;
 
-try {
-  const { playwright } = await import("@vitest/browser-playwright");
-  browserConfig = {
-    enabled: true,
-    provider: playwright(),
-    instances: [{ browser: "chromium" }],
-  };
-} catch {
-  browserConfig = undefined;
+if (shouldEnableBrowser) {
+  try {
+    const moduleCandidate: unknown = await import("@vitest/browser-playwright");
+
+    if (isPlaywrightModule(moduleCandidate)) {
+      browserConfig = {
+        enabled: true,
+        provider: moduleCandidate.playwright(),
+        instances: [{ browser: "chromium" }],
+      };
+    }
+  } catch {
+    browserConfig = undefined;
+  }
 }
 
 export default defineConfig({

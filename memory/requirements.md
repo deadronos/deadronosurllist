@@ -66,3 +66,10 @@
 - WHEN `npm run lint` executes, THE SYSTEM SHALL complete without any `@typescript-eslint/no-unsafe-*` or `@typescript-eslint/no-explicit-any` diagnostics across routers, database utilities, or tests [Acceptance: `npm run lint` exits with code 0 and reports zero such violations].
 - WHEN tRPC procedures access `ctx.db`, THE SYSTEM SHALL expose a typed database client so property access (e.g., `collection`, `link`, `post`) carries Prisma-aligned signatures instead of `any` [Acceptance: TypeScript inference in routers eliminates `@typescript-eslint/no-unsafe-member-access` and related lint warnings].
 - WHEN Vitest suites construct callers or contexts, THE SYSTEM SHALL rely on typed helpers rather than `any` coercions [Acceptance: `npm run lint` reports no `@typescript-eslint/no-unsafe-assignment` or `no-explicit-any` issues within `src/test` files].
+
+## Vitest Toolchain Compatibility
+
+- WHEN the TypeScript typecheck executes against Vitest tooling files, THE SYSTEM SHALL rely on exported types from maintained dependencies to avoid TS2305 missing member diagnostics [Acceptance: `npm run typecheck` completes without TS2305 errors from `vitest.config.ts`].
+- WHEN Vitest loads the browser testing configuration, THE SYSTEM SHALL compile with a typed `browser` option while gracefully handling missing Playwright provider modules [Acceptance: `npm run test` completes without type errors or runtime exceptions if `@vitest/browser-playwright` is absent].
+- WHEN the lint fixer script runs, THE SYSTEM SHALL lint the Vitest configuration without reporting unresolved type references or unsafe assignments introduced by the tooling upgrade [Acceptance: `npm run lint:fix` exits with code 0 and reports no type-based lint errors in `vitest.config.ts`].
+- WHEN environment variable `VITEST_BROWSER` is unset or not `"true"`, THE SYSTEM SHALL skip enabling the Vitest browser provider so Node-based test runs succeed without Playwright browser binaries [Acceptance: `npm run test` completes without attempting to launch Playwright when `VITEST_BROWSER` is not `"true"`].

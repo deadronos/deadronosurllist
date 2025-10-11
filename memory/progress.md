@@ -27,3 +27,4 @@
 - 2025-10-11: Implemented TASK010 catalog work by adding a `getPublicCatalog` tRPC procedure, updating the landing page with a searchable public collections grid, and verified linting via `npm run lint`.
 - 2025-10-11: Expanded TASK010 to deliver a typed catalog contract with pagination, load-more UI, search filtering, and Vitest coverage for link trimming and cursor handling; reran formatter, lint, typecheck, and unit tests.
 - 2025-10-11: Completed TASK011 by adding link router authorization regression tests and NextAuth callback fallback coverage; ran `npm run format:check`, `npm run lint`, and `npm run test` (format check reports existing formatting drift).
+- 2025-10-11: Completed TASK013 by retyping `vitest.config.ts`, gating the Playwright provider behind `VITEST_BROWSER`, and confirming `npm run typecheck`, `npm run lint:fix`, `npm run test`, and `npm run format:write` all succeed.
