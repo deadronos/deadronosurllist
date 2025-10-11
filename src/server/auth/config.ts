@@ -1,11 +1,12 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { type DefaultSession, type NextAuthConfig } from "next-auth";
+import { type AuthOptions, type DefaultSession } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import GoogleProvider from "next-auth/providers/google";
 
 import { env } from "@/env";
 import { isMockDb, prisma } from "@/server/db";
 
+import { authCallbacks } from "./callbacks";
 import {
   buildAuthProviders,
   type AuthDiagnostics,
@@ -32,6 +33,12 @@ declare module "next-auth" {
   //   // ...other properties
   //   // role: UserRole;
   // }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+  }
 }
 
 /**
@@ -93,19 +100,14 @@ export const authDiagnostics: AuthDiagnostics = diagnostics;
 const adapter = isMockDb || !prisma ? undefined : PrismaAdapter(prisma);
 
 export const authConfig = {
+  // Ensure NextAuth has a stable secret in production. The env helper makes AUTH_SECRET
+  // optional during local development but required in production builds.
+  secret: env.AUTH_SECRET,
   providers,
   adapter,
-  callbacks: {
-    session: ({ session, user }) => ({
-      ...session,
-      user: {
-        ...session.user,
-        id: user.id,
-      },
-    }),
-  },
+  callbacks: authCallbacks,
   pages: {
     signIn: "/signin",
     error: "/error",
   },
-} satisfies NextAuthConfig;
+} satisfies AuthOptions;

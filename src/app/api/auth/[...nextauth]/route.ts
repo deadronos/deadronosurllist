@@ -1,7 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-import { authDiagnostics, handlers } from "@/server/auth";
+import NextAuth from "next-auth";
+
+import { authConfig, authDiagnostics } from "@/server/auth";
 import { isMockDb } from "@/server/db";
 
 const inferredErrorCode = (() => {
@@ -22,15 +24,71 @@ const redirectWithError = (request: NextRequest | Request, errorCode: string) =>
 	return NextResponse.redirect(url);
 };
 
-type RouteHandler = (request: NextRequest, context?: unknown) => Promise<Response>;
+type RouteContext = { params: Promise<{ nextauth: string[] }> };
+type RouteHandler = (request: NextRequest, context: RouteContext) => Promise<Response>;
+
+const allowedMethods = new Set(["GET", "POST"]);
 
 const withAvailabilityGuard = (handler: RouteHandler): RouteHandler =>
-	async (request, context) => {
+	async (
+		request,
+		context = { params: Promise.resolve({ nextauth: [] }) },
+	) => {
+		if (!allowedMethods.has(request.method)) {
+			// HEAD/OPTIONS and other probes should not reach NextAuth's handler because it will
+			// emit UnknownAction noise. Reply quickly without touching the core auth runtime.
+			if (request.method === "HEAD") {
+				return new NextResponse(null, {
+					status: 204,
+					headers: { Allow: "GET, POST" },
+				});
+			}
+
+			if (request.method === "OPTIONS") {
+				return new NextResponse(null, {
+					status: 204,
+					headers: {
+						Allow: "GET, POST",
+						"Access-Control-Allow-Origin": request.headers.get("origin") ?? "*",
+						"Access-Control-Allow-Methods": "GET, POST",
+						"Access-Control-Allow-Headers": request.headers.get("access-control-request-headers") ?? "",
+					},
+				});
+			}
+
+			return new NextResponse(null, {
+				status: 405,
+				headers: { Allow: "GET, POST" },
+			});
+		}
+
 		if (inferredErrorCode) {
 			return redirectWithError(request, inferredErrorCode);
 		}
-		return handler(request, context);
+
+		try {
+			return await handler(request, context);
+		} catch (err) {
+			// Some hosting platforms and bots probe API endpoints in ways that can
+			// trigger Auth.js to throw an UnknownAction/Unsupported action error.
+			// These are noisy and not actionable for end users — redirect to the
+			// pre-built auth error page instead of surfacing a stacktrace.
+			const message = err instanceof Error ? err.message : String(err);
+			if (message.includes("Unsupported action") || message.includes("UnknownAction")) {
+				console.warn(
+					`[auth][warn] Suppressed unsupported auth action (${request.method} ${request.url}):`,
+					message,
+				);
+				return redirectWithError(request, "AuthUnavailable");
+			}
+
+			// Re-throw unexpected errors so they surface to the platform logging/monitoring
+			// as they may indicate real misconfiguration or runtime faults.
+			throw err;
+		}
 	};
 
-export const GET = withAvailabilityGuard(handlers.GET as RouteHandler);
-export const POST = withAvailabilityGuard(handlers.POST as RouteHandler);
+const nextAuthHandler = NextAuth(authConfig) as RouteHandler;
+
+export const GET = withAvailabilityGuard(nextAuthHandler);
+export const POST = withAvailabilityGuard(nextAuthHandler);

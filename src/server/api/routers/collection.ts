@@ -4,6 +4,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
+  type TRPCContext,
 } from "@/server/api/trpc";
 
 type PublicLinkSummary = {
@@ -22,35 +23,58 @@ type CollectionLinkRecord = {
   order: number;
 };
 
-export const collectionRouter = createTRPCRouter({
-  // Get the most recently updated public collection with links
-  getPublic: publicProcedure.query(async ({ ctx }) => {
-    const collections = await ctx.db.collection.findMany({
-      where: { isPublic: true },
-      orderBy: { updatedAt: "desc" },
-      include: {
-        links: {
-          orderBy: { order: "asc" },
-        },
-      },
-    });
+type PublicCollectionSummary = {
+  id: string;
+  name: string;
+  description: string | null;
+  updatedAt: Date;
+  links: PublicLinkSummary[];
+};
 
-    const collection = collections.at(0);
-    if (!collection) return null;
+const publicCatalogQuery = {
+  where: { isPublic: true },
+  orderBy: { updatedAt: "desc" as const },
+  include: {
+    links: {
+      orderBy: { order: "asc" as const },
+    },
+  },
+} as const;
+
+async function fetchPublicCollections(
+  ctx: TRPCContext,
+): Promise<PublicCollectionSummary[]> {
+  const collections = await ctx.db.collection.findMany(publicCatalogQuery);
+  return collections.map((collection) => {
     const links = collection.links ?? [];
-
     return {
       id: collection.id,
       name: collection.name,
       description: collection.description,
-      links: links.map((link: CollectionLinkRecord): PublicLinkSummary => ({
-        id: link.id,
-        name: link.name,
-        url: link.url,
-        comment: link.comment,
-        order: link.order,
-      })),
+      updatedAt: collection.updatedAt,
+      links: links.map(
+        (link: CollectionLinkRecord): PublicLinkSummary => ({
+          id: link.id,
+          name: link.name,
+          url: link.url,
+          comment: link.comment,
+          order: link.order,
+        }),
+      ),
     };
+  });
+}
+
+export const collectionRouter = createTRPCRouter({
+  // Get the most recently updated public collection with links
+  getPublic: publicProcedure.query(async ({ ctx }) => {
+    const collections = await fetchPublicCollections(ctx);
+    return collections.at(0) ?? null;
+  }),
+
+  // Get all public collections with link summaries
+  listPublic: publicProcedure.query(async ({ ctx }) => {
+    return fetchPublicCollections(ctx);
   }),
 
   // Get all collections for current user

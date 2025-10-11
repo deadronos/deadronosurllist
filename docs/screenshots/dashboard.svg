@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 480" width="900" height="480" role="img" aria-label="Dashboard mock">
+  <style>
+    .bg { fill: #0f172a; }
+    .panel { fill: #0b1220; stroke: #1f2937; stroke-width: 1; rx: 6; }
+    .nav { fill: #071124; stroke: #0f172a; stroke-width: 1; }
+    .text { fill: #e6edf3; font-family: 'Segoe UI', Roboto, Arial, sans-serif; }
+    .muted { fill: #9aa8b6; font-size: 12px; }
+  </style>
+
+  <rect class="bg" width="900" height="480"/>
+
+  <!-- Left navigation -->
+  <g transform="translate(24,24)">
+    <rect class="nav" width="160" height="420"/>
+    <text x="20" y="40" class="text">Dashboard</text>
+    <text x="20" y="70" class="muted">Collections</text>
+    <text x="20" y="94" class="muted">Create</text>
+  </g>
+
+  <!-- Main content -->
+  <g transform="translate(200,24)">
+    <rect class="panel" width="660" height="420"/>
+    <text x="20" y="36" class="text" font-size="18">Your collections</text>
+
+    <!-- list items -->
+    <g transform="translate(20,60)">
+      <rect x="0" y="0" width="600" height="56" class="card" fill="#071124" rx="6"/>
+      <text x="12" y="28" class="text">Personal Stuff</text>
+      <text x="12" y="46" class="muted">12 links • updated 3d ago</text>
+
+      <rect x="0" y="76" width="600" height="56" class="card" fill="#071124" rx="6"/>
+      <text x="12" y="104" class="text">Read Later</text>
+      <text x="12" y="122" class="muted">5 links • updated 1w ago</text>
+    </g>
+  </g>
+
+  <text x="24" y="468" class="muted">(Simplified dashboard mock — replace with real screenshots when available.)</text>
+</svg>

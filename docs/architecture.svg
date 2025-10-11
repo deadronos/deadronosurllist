@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 420" width="1000" height="420" role="img" aria-label="Architecture diagram">
+  <style>
+    .box { fill: #0f172a; stroke: #94a3b8; stroke-width: 1.5; rx: 8; }
+    .label { font: 14px 'Segoe UI', Roboto, Arial, sans-serif; fill: #e2e8f0; }
+    .sub { font: 12px 'Segoe UI', Roboto, Arial, sans-serif; fill: #cbd5e1; }
+    .arrow { stroke: #94a3b8; stroke-width: 1.6; fill: none; marker-end: url(#arrowhead); }
+    .bg { fill: #fff; }
+  </style>
+
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+    </marker>
+  </defs>
+
+  <!-- Browser -->
+  <g transform="translate(40,40)">
+    <rect class="box" width="140" height="60"/>
+    <text x="70" y="36" class="label" text-anchor="middle">Browser</text>
+    <text x="70" y="50" class="sub" text-anchor="middle">(visitor)</text>
+  </g>
+
+  <!-- Next.js App -->
+  <g transform="translate(220,24)">
+    <rect class="box" width="220" height="96"/>
+    <text x="110" y="36" class="label" text-anchor="middle">Next.js App</text>
+    <text x="110" y="56" class="sub" text-anchor="middle">App Router • Server & Client</text>
+
+    <!-- Radix & NextAuth -->
+    <text x="110" y="78" class="sub" text-anchor="middle">UI: Radix Themes • Auth: NextAuth</text>
+  </g>
+
+  <!-- tRPC API -->
+  <g transform="translate(520,40)">
+    <rect class="box" width="170" height="60"/>
+    <text x="85" y="36" class="label" text-anchor="middle">tRPC API</text>
+    <text x="85" y="50" class="sub" text-anchor="middle">procedures for client/server</text>
+  </g>
+
+  <!-- Prisma -->
+  <g transform="translate(720,40)">
+    <rect class="box" width="160" height="60"/>
+    <text x="80" y="36" class="label" text-anchor="middle">Prisma Client</text>
+    <text x="80" y="50" class="sub" text-anchor="middle">ORM • typed delegates</text>
+  </g>
+
+  <!-- Postgres -->
+  <g transform="translate(720,140)">
+    <rect class="box" width="160" height="60"/>
+    <text x="80" y="36" class="label" text-anchor="middle">Postgres</text>
+    <text x="80" y="50" class="sub" text-anchor="middle">Primary data store</text>
+  </g>
+
+  <!-- Arrows -->
+  <path class="arrow" d="M180 70 L220 70" />
+  <path class="arrow" d="M440 70 L520 70" />
+  <path class="arrow" d="M690 70 L720 70" />
+  <path class="arrow" d="M800 100 L800 140" />
+
+  <!-- Testing & Mock DB -->
+  <g transform="translate(520,140)">
+    <rect class="box" width="170" height="60"/>
+    <text x="85" y="34" class="label" text-anchor="middle">Mock DB (tests)</text>
+    <text x="85" y="50" class="sub" text-anchor="middle">Vitest + in-repo mock adapter</text>
+    <path class="arrow" d="M170 90 L260 90" />
+  </g>
+
+  <!-- Footer -->
+  <text x="40" y="360" class="sub">Legend: Browser → Next.js → tRPC → Prisma → Postgres. UI and Auth live in the app layer; tests use a mock DB for faster unit runs.</text>
+</svg>

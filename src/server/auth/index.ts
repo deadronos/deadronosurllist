@@ -1,10 +1,11 @@
-import NextAuth from "next-auth";
-import { cache } from "react";
+import type { Session } from "next-auth";
+import { getServerSession } from "next-auth";
 
-import { authConfig, authDiagnostics } from "./config";
+import { authConfig } from "./config";
 
-const { auth: uncachedAuth, handlers, signIn, signOut } = NextAuth(authConfig);
+export async function auth(): Promise<Session | null> {
+	return getServerSession(authConfig);
+}
 
-const auth = cache(uncachedAuth);
-
-export { auth, authDiagnostics, handlers, signIn, signOut };
+export { authDiagnostics } from "./config";
+export { authConfig };

@@ -56,6 +56,23 @@ describe("collectionRouter (mocked)", () => {
     expect(res?.links[0]?.url).toBe("https://github.com");
   });
 
+  it("listPublic returns all public collections ordered by updatedAt", async () => {
+    const res = await caller.collection.listPublic();
+    expect(Array.isArray(res)).toBe(true);
+    expect(res.length).toBeGreaterThan(0);
+    const first = res[0];
+    if (!first) {
+      throw new Error("Expected at least one public collection");
+    }
+    expect(first).toHaveProperty("name");
+    expect(first.links.length).toBeGreaterThan(0);
+    const timestamps = res.map((collection) => new Date(collection.updatedAt).getTime());
+    const isDescending = timestamps.every(
+      (value, index, array) => index === 0 || value <= array[index - 1]!,
+    );
+    expect(isDescending).toBe(true);
+  });
+
   it("create returns created collection", async () => {
     const created = await caller.collection.create({ name: "New", description: "desc" });
     expect(created).toHaveProperty("id");

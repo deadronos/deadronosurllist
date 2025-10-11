@@ -1,8 +1,8 @@
+import { Suspense } from "react";
 import Link from "next/link";
 
 import {
   Box,
-  Button,
   Card,
   Container,
   Flex,
@@ -14,11 +14,16 @@ import {
 import { ArrowLeftIcon } from "@radix-ui/react-icons";
 
 import { authDiagnostics } from "@/server/auth";
+import type { AuthDiagnostics } from "@/server/auth/provider-helpers";
 
-const providerButtonLabel = (label: string) => `Continue with ${label}`;
+import { SignInButtons } from "./sign-in-buttons";
 
 export default function SignInPage() {
-  const { enabledProviders, disabledProviders, hasEnabledProvider } = authDiagnostics;
+  const {
+    enabledProviders,
+    disabledProviders,
+    hasEnabledProvider,
+  }: AuthDiagnostics = authDiagnostics;
 
   return (
     <Box className="min-h-screen bg-[radial-gradient(circle_at_top,_#101220,_#040406)] text-white">
@@ -48,21 +53,17 @@ export default function SignInPage() {
               </Text>
 
               {hasEnabledProvider ? (
-                <Flex direction="column" gap="3">
-                  {enabledProviders.map((provider) => (
-                    <Button
-                      key={provider.id}
-                      size="3"
-                      asChild
-                      className="justify-start"
-                      variant="solid"
-                    >
-                      <Link href={`/api/auth/signin/${provider.id}`}>
-                        {providerButtonLabel(provider.label)}
-                      </Link>
-                    </Button>
-                  ))}
-                </Flex>
+                <Suspense
+                  fallback={
+                    <Text color="gray" size="2">
+                      Preparing sign-in options…
+                    </Text>
+                  }
+                >
+                  <SignInButtons
+                    providers={enabledProviders.map(({ id, label }) => ({ id, label }))}
+                  />
+                </Suspense>
               ) : (
                 <Card
                   size="3"
