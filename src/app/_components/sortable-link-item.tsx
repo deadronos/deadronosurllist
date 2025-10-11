@@ -1,0 +1,96 @@
+"use client";
+
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
+  Card,
+  Flex,
+  IconButton,
+  Link as RadixLink,
+  Text,
+  Tooltip,
+} from "@radix-ui/themes";
+import { DotsVerticalIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
+
+import type { CollectionLinkModel } from "./collection-links-manager";
+
+type SortableLinkItemProps = {
+  link: CollectionLinkModel;
+  onEdit: () => void;
+  onDelete: () => void;
+};
+
+export function SortableLinkItem({
+  link,
+  onEdit,
+  onDelete,
+}: SortableLinkItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: link.id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : undefined,
+  };
+
+  return (
+    <Card
+      ref={setNodeRef}
+      style={style}
+      variant="surface"
+      className="border border-white/10 bg-white/5 backdrop-blur"
+    >
+      <Flex align="center" justify="between" gap="3">
+        <Flex align="center" gap="3" className="flex-1">
+          <Tooltip content="Drag to reorder">
+            <IconButton
+              variant="soft"
+              color="gray"
+              {...attributes}
+              {...listeners}
+            >
+              <DotsVerticalIcon />
+            </IconButton>
+          </Tooltip>
+          <Flex direction="column" gap="1" className="overflow-hidden">
+            <RadixLink
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              color="blue"
+              underline="always"
+              weight="medium"
+              className="truncate"
+            >
+              {link.name}
+            </RadixLink>
+            {link.comment ? (
+              <Text size="2" color="gray" className="truncate">
+                {link.comment}
+              </Text>
+            ) : null}
+          </Flex>
+        </Flex>
+        <Flex gap="2">
+          <Tooltip content="Edit link">
+            <IconButton variant="outline" onClick={onEdit}>
+              <Pencil2Icon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip content="Delete link">
+            <IconButton variant="outline" color="red" onClick={onDelete}>
+              <TrashIcon />
+            </IconButton>
+          </Tooltip>
+        </Flex>
+      </Flex>
+    </Card>
+  );
+}

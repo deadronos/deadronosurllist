@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import { api } from "@/trpc/react";
 
 export function CollectionCreateForm() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(false);
+  const router = useRouter();
   const utils = api.useUtils();
   const createMutation = api.collection.create.useMutation({
     onSuccess: async () => {
@@ -14,6 +17,7 @@ export function CollectionCreateForm() {
       setDescription("");
       setIsPublic(false);
       await utils.collection.invalidate();
+      router.refresh();
     },
   });
 
@@ -63,4 +67,3 @@ export function CollectionCreateForm() {
     </form>
   );
 }
-

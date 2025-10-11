@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import { api } from "@/trpc/react";
 
 export function LinkCreateForm({ collectionId }: { collectionId: string }) {
   const [url, setUrl] = useState("");
   const [name, setName] = useState("");
   const [comment, setComment] = useState("");
+  const router = useRouter();
   const utils = api.useUtils();
   const createMutation = api.link.create.useMutation({
     onSuccess: async () => {
@@ -14,6 +17,7 @@ export function LinkCreateForm({ collectionId }: { collectionId: string }) {
       setName("");
       setComment("");
       await utils.collection.getById.invalidate({ id: collectionId });
+      router.refresh();
     },
   });
 
@@ -61,4 +65,3 @@ export function LinkCreateForm({ collectionId }: { collectionId: string }) {
     </form>
   );
 }
-

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { api, HydrateClient } from "@/trpc/server";
 import { LinkCreateForm } from "@/app/_components/link-create-form";
+import { CollectionLinksManager } from "@/app/_components/collection-links-manager";
 import { auth } from "@/server/auth";
 
 type CollectionLink = {
@@ -47,7 +48,10 @@ export default async function CollectionPage({ params }: PageProps) {
   if (!isCollectionWithLinks(collectionResult)) {
     throw new Error("Unexpected collection payload");
   }
-  const collection = collectionResult;
+  const collection = {
+    ...collectionResult,
+    links: [...collectionResult.links].sort((a, b) => a.order - b.order),
+  };
 
   return (
     <HydrateClient>
@@ -66,29 +70,10 @@ export default async function CollectionPage({ params }: PageProps) {
 
         <LinkCreateForm collectionId={collection.id} />
 
-        <ul className="mt-6 divide-y rounded border">
-          {collection.links.map((link) => (
-            <li key={link.id} className="flex items-center justify-between p-4">
-              <div>
-                <a
-                  className="font-medium text-blue-600 hover:underline"
-                  href={link.url}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {link.name}
-                </a>
-                {link.comment ? (
-                  <p className="text-sm text-slate-600">{link.comment}</p>
-                ) : null}
-              </div>
-              <span className="text-xs text-slate-500">#{link.order}</span>
-            </li>
-          ))}
-          {collection.links.length === 0 && (
-            <li className="p-4 text-slate-600">No links yet.</li>
-          )}
-        </ul>
+        <CollectionLinksManager
+          collectionId={collection.id}
+          initialLinks={collection.links}
+        />
       </main>
     </HydrateClient>
   );
@@ -138,4 +123,3 @@ function isCollectionWithLinks(value: unknown): value is CollectionWithLinks {
     );
   });
 }
-
