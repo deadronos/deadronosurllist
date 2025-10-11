@@ -1,7 +1,11 @@
 import type { PrismaClient } from "@prisma/client";
 
 import { env } from "@/env";
-import type { CollectionRecord, LinkListDatabase, LinkRecord } from "./db.types";
+import type {
+  CollectionRecord,
+  LinkListDatabase,
+  LinkRecord,
+} from "./db.types";
 
 const POSTGRES_PROTOCOL_REGEX = /^postgres(?:ql)?:\/\//i;
 
@@ -90,7 +94,9 @@ if (useMock) {
       findMany: async (args) =>
         (await prismaClient.collection.findMany(args)) as CollectionRecord[],
       findFirst: async (args) =>
-        (await prismaClient.collection.findFirst(args)) as CollectionRecord | null,
+        (await prismaClient.collection.findFirst(
+          args,
+        )) as CollectionRecord | null,
       create: (args) => prismaClient.collection.create(args),
       updateMany: (args) => prismaClient.collection.updateMany(args),
       deleteMany: (args) => prismaClient.collection.deleteMany(args),

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import * as dotenvx from '@dotenvx/dotenvx';
+import * as dotenvx from "@dotenvx/dotenvx";
 
 import {
   Box,
@@ -20,7 +20,7 @@ import {
   type PublicCatalogCollection,
 } from "@/app/_components/public-catalog";
 
-import { Analytics } from "@vercel/analytics/next"
+import { Analytics } from "@vercel/analytics/next";
 
 type PublicLink = {
   id: string;
@@ -112,8 +112,8 @@ export default async function Home() {
               </Flex>
               {!hasEnabledProvider && (
                 <Text as="p" mt="3" size="2" color="gray">
-                  Sign-in is disabled while mock credentials are configured. Update your OAuth
-                  secrets to enable authentication.
+                  Sign-in is disabled while mock credentials are configured.
+                  Update your OAuth secrets to enable authentication.
                 </Text>
               )}
               {session?.user?.name && (
@@ -128,19 +128,19 @@ export default async function Home() {
               className="w-full max-w-md border border-white/10 bg-white/5 backdrop-blur"
             >
               <Flex direction="column" gap="3">
-            <Text size="2" color="gray">
-              Featured collection
-            </Text>
-            <Heading size="5">
-              {featuredCollection?.name ?? "No public collection yet"}
-            </Heading>
-            <Text size="3" color="gray">
-              {featuredCollection?.description ??
-                "Check back soon for curated resources from the Deadronos community."}
-            </Text>
-            <Separator className="border-white/10" />
-            <Flex direction="column" gap="3">
-              {publicLinks.length > 0 ? (
+                <Text size="2" color="gray">
+                  Featured collection
+                </Text>
+                <Heading size="5">
+                  {featuredCollection?.name ?? "No public collection yet"}
+                </Heading>
+                <Text size="3" color="gray">
+                  {featuredCollection?.description ??
+                    "Check back soon for curated resources from the Deadronos community."}
+                </Text>
+                <Separator className="border-white/10" />
+                <Flex direction="column" gap="3">
+                  {publicLinks.length > 0 ? (
                     publicLinks.map((link) => (
                       <Card
                         key={link.id}
@@ -211,14 +211,12 @@ export default async function Home() {
           <PublicCatalog collections={publicCollections} />
         </Flex>
       </Container>
-      <Text>Hello {dotenvx.get('HELLO')}</Text>
+      <Text>Hello {dotenvx.get("HELLO")}</Text>
     </Box>
   );
 }
 
-function isPublicCollectionArray(
-  value: unknown,
-): value is PublicCollection[] {
+function isPublicCollectionArray(value: unknown): value is PublicCollection[] {
   return Array.isArray(value) && value.every(isPublicCollection);
 }
 

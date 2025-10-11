@@ -27,7 +27,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable}`}>
       <body className="antialiased">
-        <Theme appearance="dark" accentColor="iris" radius="large" scaling="100%">
+        <Theme
+          appearance="dark"
+          accentColor="iris"
+          radius="large"
+          scaling="100%"
+        >
           <TRPCReactProvider>
             <div className="flex min-h-screen flex-col">
               <header className="sticky top-0 z-50 border-b border-white/10 bg-black/30 backdrop-blur">

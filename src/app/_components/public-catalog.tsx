@@ -42,10 +42,7 @@ export function PublicCatalog({ collections }: PublicCatalogProps) {
     const trimmedQuery = query.trim().toLowerCase();
     if (!trimmedQuery) return collections;
     return collections.filter((collection) => {
-      const haystack = [
-        collection.name,
-        collection.description ?? "",
-      ]
+      const haystack = [collection.name, collection.description ?? ""]
         .join(" ")
         .toLowerCase();
       return haystack.includes(trimmedQuery);

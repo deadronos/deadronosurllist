@@ -10,7 +10,11 @@ import {
   Text,
   Tooltip,
 } from "@radix-ui/themes";
-import { DotsVerticalIcon, Pencil2Icon, TrashIcon } from "@radix-ui/react-icons";
+import {
+  DotsVerticalIcon,
+  Pencil2Icon,
+  TrashIcon,
+} from "@radix-ui/react-icons";
 
 import type { CollectionLinkModel } from "./collection-links-manager";
 

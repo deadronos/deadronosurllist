@@ -16,7 +16,10 @@ export type AuthProviderDescriptor = {
     clientId: keyof AuthEnvShape;
     clientSecret: keyof AuthEnvShape;
   };
-  createProvider: (credentials: { clientId: string; clientSecret: string }) => Provider;
+  createProvider: (credentials: {
+    clientId: string;
+    clientSecret: string;
+  }) => Provider;
 };
 
 export type ProviderStatus = {

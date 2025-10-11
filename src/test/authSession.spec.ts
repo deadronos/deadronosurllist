@@ -5,6 +5,11 @@ import type { AdapterUser } from "next-auth/adapters";
 import { authCallbacks } from "@/server/auth/callbacks";
 import { isMockDb } from "@/server/db";
 
+type JwtCallbackInput = Parameters<NonNullable<typeof authCallbacks.jwt>>[0];
+type SessionCallbackInput = Parameters<
+  NonNullable<typeof authCallbacks.session>
+>[0];
+
 describe("auth callbacks without Prisma adapter", () => {
   it("populates session.user.id from the JWT payload", async () => {
     expect(isMockDb).toBe(true);
@@ -71,10 +76,10 @@ describe("auth callbacks without Prisma adapter", () => {
       user: undefined,
       account: null,
       profile: undefined,
-      trigger: "signIn",
+      trigger: "update",
       session: undefined,
       isNewUser: false,
-    });
+    } as unknown as JwtCallbackInput); // NextAuth omits `user` on updates even though the type marks it as required.
 
     expect(token.id).toBe("user-456");
   });
@@ -99,7 +104,7 @@ describe("auth callbacks without Prisma adapter", () => {
       user: undefined,
       newSession: false,
       trigger: "update",
-    });
+    } as unknown as SessionCallbackInput); // Session updates omit the user payload while the type still demands it.
 
     const sessionUser = session.user as { id: string };
     expect(sessionUser.id).toBe("user-789");

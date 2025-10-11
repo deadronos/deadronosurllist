@@ -21,7 +21,11 @@ type ErrorPageProps = {
 export default function GlobalError({ error, reset }: ErrorPageProps) {
   return (
     <Box className="min-h-[60vh] bg-[radial-gradient(circle_at_top,_#1a1c2c,_#050508)] text-white">
-      <Container size="2" px={{ initial: "5", sm: "6" }} py={{ initial: "8", sm: "10" }}>
+      <Container
+        size="2"
+        px={{ initial: "5", sm: "6" }}
+        py={{ initial: "8", sm: "10" }}
+      >
         <Card
           variant="surface"
           size="4"
@@ -30,7 +34,8 @@ export default function GlobalError({ error, reset }: ErrorPageProps) {
           <Flex direction="column" gap="5" align="start">
             <Heading size="7">Something went wrong</Heading>
             <Text size="3" color="gray">
-              {error.message || "An unexpected error occurred. Try again or head back home."}
+              {error.message ||
+                "An unexpected error occurred. Try again or head back home."}
             </Text>
             <Flex gap="3" wrap="wrap">
               <Button size="3" onClick={reset} variant="solid">
