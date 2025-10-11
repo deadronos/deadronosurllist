@@ -1,3 +1,7 @@
+if(typeof process === 'undefined'){
+  globalThis.process = { env: {}};
+}
+
 // Test setup: mock env, db, and auth
 
 // Set NODE_ENV and required env vars expected by src/env.js
