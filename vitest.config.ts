@@ -13,13 +13,14 @@ export default defineConfig({
     passWithNoTests: false,
     include:['src/test/*.spec.ts'],
     includeSource:['src/**/*.{js,ts,tsx}'],
-    reporters:['text']
+    exclude: ['node_modules/'],
   },
   coverage:{
       provider:'v8',
       enabled:false,
       reporter:['text','lcov'],
-      include:['src/**']
+      include:['src/**'],
+      exclude: ['node_modules/', 'src/test/'],
   },
   browser: {
       enabled: true,
