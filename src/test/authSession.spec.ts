@@ -59,4 +59,49 @@ describe("auth callbacks without Prisma adapter", () => {
     const sessionUser = session.user as { id: string };
     expect(sessionUser.id).toBe("user-123");
   });
+
+  it("derives token.id from the sub claim when no user object is supplied", async () => {
+    const jwtCallback = authCallbacks.jwt;
+    if (!jwtCallback) {
+      throw new Error("NextAuth JWT callback missing");
+    }
+
+    const token = await jwtCallback({
+      token: { sub: "user-456" },
+      user: undefined,
+      account: null,
+      profile: undefined,
+      trigger: "signIn",
+      session: undefined,
+      isNewUser: false,
+    });
+
+    expect(token.id).toBe("user-456");
+  });
+
+  it("populates session.user.id from token identifiers when user payload lacks an id", async () => {
+    const sessionCallback = authCallbacks.session;
+    if (!sessionCallback) {
+      throw new Error("NextAuth session callback missing");
+    }
+
+    const session = await sessionCallback({
+      session: {
+        user: {
+          id: "",
+          name: "Callback Tester",
+          email: "cb@example.com",
+          image: null,
+        },
+        expires: new Date().toISOString(),
+      },
+      token: { id: "user-789" },
+      user: undefined,
+      newSession: false,
+      trigger: "update",
+    });
+
+    const sessionUser = session.user as { id: string };
+    expect(sessionUser.id).toBe("user-789");
+  });
 });

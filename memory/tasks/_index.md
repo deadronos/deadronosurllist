@@ -19,6 +19,7 @@ None
 - [TASK006] Lint compliance – Tightened typed database surface, routers, and tests to clear ESLint violations (2025-10-10).
 - [TASK008] JWT-backed sessions – Added NextAuth JWT/session callbacks so session.user.id persists without the Prisma adapter and confirmed Vitest suite (2025-10-10).
 - [TASK009] Auth callback test coverage – Added dedicated Vitest ensuring JWT/session callbacks expose session.user.id under the mock adapterless setup (2025-10-10).
+- [TASK011] Test hardening for link authorization and auth callbacks – Added authorization regression coverage and callback fallback tests (2025-10-11).
 
 ## Abandoned
 
