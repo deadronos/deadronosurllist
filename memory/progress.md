@@ -25,3 +25,4 @@
 - 2025-10-11: Unblocked `npm run lint` by exporting typed NextAuth helpers, adjusting the ESLint project config, and cleaning consumer calls so `authDiagnostics`/`auth()` stay fully typed; re-ran `npm run lint` and `npm run test -- --run`.
 - 2025-10-11: Started TASK010 to design the public collections catalog update and captured requirements plus architectural notes in the memory bank.
 - 2025-10-11: Implemented TASK010 catalog work by adding a `listPublic` tRPC procedure, updating the landing page with a searchable public collections grid, and verified linting via `npm run lint`.
+- 2025-10-11: Completed TASK011 by adding link router authorization regression tests and NextAuth callback fallback coverage; ran `npm run format:check`, `npm run lint`, and `npm run test` (format check reports existing formatting drift).

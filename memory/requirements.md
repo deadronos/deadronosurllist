@@ -22,6 +22,15 @@
 - WHEN a member submits a valid link (URL + name) for one of their collections, THE SYSTEM SHALL assign the next available `order` and persist the record [Acceptance: unit or integration test for `link.create`].
 - WHEN a member updates, deletes, or reorders a link, THE SYSTEM SHALL verify the owning collection belongs to the member before applying changes [Acceptance: link router tests expect FORBIDDEN on foreign collections].
 
+## Link Authorization Hardening
+
+- WHEN a member attempts to create, update, delete, or reorder links within a collection they do not own, THE SYSTEM SHALL reject the request with a `FORBIDDEN` error before mutating any records [Acceptance: Vitest expectations for `linkRouter` mutations assert TRPCError code `FORBIDDEN` for foreign ownership].
+
+## Auth Callback Consistency
+
+- WHEN the JWT callback runs without a user object but receives a token `sub`, THE SYSTEM SHALL persist the identifier on `token.id` so later callbacks see a stable user id [Acceptance: Vitest ensures `authCallbacks.jwt` copies `token.sub` into `token.id`].
+- WHEN the session callback executes without a user id but the token supplies one, THE SYSTEM SHALL propagate the id to `session.user.id` to keep downstream consumers authorized [Acceptance: Vitest verifies `authCallbacks.session` populates `session.user.id` from the token payload].
+
 ## Graceful Auth Configuration
 
 - WHEN OAuth provider credentials are missing or use placeholder values in a non-production environment, THE SYSTEM SHALL disable the affected provider and expose the status for UI messaging [Acceptance: unit test covering the provider diagnostics helper].
