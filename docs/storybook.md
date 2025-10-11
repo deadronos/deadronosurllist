@@ -26,26 +26,33 @@ npx sb init
 ```tsx
 // src/stories/PublicCatalog.stories.tsx
 import React from 'react';
-import { PublicCatalog, PublicCatalogCollection } from '@/app/_components/public-catalog';
+import { PublicCatalog } from '@/app/_components/public-catalog';
 
-const collections: PublicCatalogCollection[] = [
-  {
-    id: '1',
-    name: 'Discover Links',
-    description: 'Curated developer links',
-    updatedAt: new Date().toISOString(),
-    links: [
-      { id: 'l1', name: 'GitHub', url: 'https://github.com', comment: null, order: 0 },
-    ],
-  },
-];
+const initialPage = {
+  items: [
+    {
+      id: '1',
+      name: 'Discover Links',
+      description: 'Curated developer links',
+      isPublic: true,
+      updatedAt: new Date().toISOString(),
+      topLinks: [
+        { id: 'l1', name: 'GitHub', url: 'https://github.com', comment: null, order: 0 },
+      ],
+    },
+  ],
+  nextCursor: null,
+  totalCount: 1,
+};
 
 export default {
   title: 'Landing/PublicCatalog',
   component: PublicCatalog,
 };
 
-export const Default = () => <PublicCatalog collections={collections} />;
+export const Default = () => (
+  <PublicCatalog initialPage={initialPage} pageSize={12} linkLimit={3} />
+);
 ```
 
 1. Run Storybook locally:

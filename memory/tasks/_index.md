@@ -2,7 +2,7 @@
 
 ## In Progress
 
-- [TASK010] Public collections catalog – In progress (2025-10-11).
+None
 
 ## Pending
 
@@ -21,6 +21,7 @@ None
 - [TASK009] Auth callback test coverage – Added dedicated Vitest ensuring JWT/session callbacks expose session.user.id under the mock adapterless setup (2025-10-10).
 - [TASK011] Test hardening for link authorization and auth callbacks – Added authorization regression coverage and callback fallback tests (2025-10-11).
 - [TASK012] Typecheck stabilization – Restored strict compilation by tightening tests, setup, and Vitest config (2025-10-11).
+- [TASK010] Public collections catalog – Delivered typed catalog API, load-more UI, client search, and Vitest coverage for pagination/link trimming (2025-10-11).
 
 ## Abandoned
 

@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState, type ChangeEvent } from "react";
+import { api, type RouterOutputs } from "@/trpc/react";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import {
+  Button,
   Card,
   Flex,
   Heading,
@@ -12,34 +14,55 @@ import {
   Link as RadixLink,
 } from "@radix-ui/themes";
 
-export type PublicCatalogLink = {
-  id: string;
-  name: string;
-  url: string;
-  comment: string | null;
-  order: number;
-};
-
-export type PublicCatalogCollection = {
-  id: string;
-  name: string;
-  description: string | null;
-  updatedAt: string;
-  links: PublicCatalogLink[];
-};
+type PublicCatalogPage = RouterOutputs["collection"]["getPublicCatalog"];
+export type PublicCatalogCollection = PublicCatalogPage["items"][number];
+export type PublicCatalogLink = PublicCatalogCollection["topLinks"][number];
 
 interface PublicCatalogProps {
-  collections: PublicCatalogCollection[];
+  initialPage: PublicCatalogPage;
+  pageSize: number;
+  linkLimit: number;
 }
 
-export function PublicCatalog({ collections }: PublicCatalogProps) {
+export function PublicCatalog({
+  initialPage,
+  pageSize,
+  linkLimit,
+}: PublicCatalogProps) {
   const [query, setQuery] = useState("");
-  const handleQueryChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setQuery(event.target.value);
-  };
+  const trimmedQuery = query.trim().toLowerCase();
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    api.collection.getPublicCatalog.useInfiniteQuery(
+      { limit: pageSize, linkLimit },
+      {
+        initialData: {
+          pageParams: [undefined],
+          pages: [initialPage],
+        },
+        getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+        refetchOnMount: false,
+      },
+    );
+
+  const initialPages = useMemo(() => [initialPage], [initialPage]);
+  const pages = data?.pages ?? initialPages;
+  const totalCount = pages[0]?.totalCount ?? initialPage.totalCount;
+
+  const collections = useMemo(() => {
+    const merged = pages.flatMap((page) => page.items);
+    const deduped = new Map<string, PublicCatalogCollection>();
+    merged.forEach((collection) => {
+      if (!deduped.has(collection.id)) {
+        deduped.set(collection.id, collection);
+      }
+    });
+    return Array.from(deduped.values());
+  }, [pages]);
 
   const filteredCollections = useMemo(() => {
-    const trimmedQuery = query.trim().toLowerCase();
     if (!trimmedQuery) return collections;
     return collections.filter((collection) => {
       const haystack = [collection.name, collection.description ?? ""]
@@ -47,9 +70,19 @@ export function PublicCatalog({ collections }: PublicCatalogProps) {
         .toLowerCase();
       return haystack.includes(trimmedQuery);
     });
-  }, [collections, query]);
+  }, [collections, trimmedQuery]);
 
   const noMatches = filteredCollections.length === 0;
+  const showLoadMore = Boolean(hasNextPage);
+
+  const handleQueryChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setQuery(event.target.value);
+  };
+
+  const handleLoadMore = async () => {
+    if (!hasNextPage || isFetchingNextPage) return;
+    await fetchNextPage();
+  };
 
   return (
     <Card
@@ -77,6 +110,11 @@ export function PublicCatalog({ collections }: PublicCatalogProps) {
           </TextField.Root>
         </Flex>
 
+        <Text size="2" color="gray">
+          Showing {filteredCollections.length} of {totalCount} public lists
+          {trimmedQuery ? " (filtered)" : ""}.
+        </Text>
+
         {noMatches ? (
           <Text size="2" color="gray">
             {query
@@ -103,8 +141,8 @@ export function PublicCatalog({ collections }: PublicCatalogProps) {
                   ) : null}
                   <Separator className="border-white/10" />
                   <Flex direction="column" gap="3">
-                    {collection.links.length > 0 ? (
-                      collection.links.map((link) => (
+                    {collection.topLinks.length > 0 ? (
+                      collection.topLinks.map((link) => (
                         <Card
                           key={link.id}
                           size="1"
@@ -143,6 +181,19 @@ export function PublicCatalog({ collections }: PublicCatalogProps) {
             ))}
           </div>
         )}
+
+        {showLoadMore ? (
+          <Flex justify="center">
+            <Button
+              variant="soft"
+              color="iris"
+              onClick={handleLoadMore}
+              disabled={isFetchingNextPage}
+            >
+              {isFetchingNextPage ? "Loading more..." : "Load more"}
+            </Button>
+          </Flex>
+        ) : null}
       </Flex>
     </Card>
   );
