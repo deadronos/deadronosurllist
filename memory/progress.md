@@ -23,3 +23,5 @@
 - 2025-10-10: Added a dedicated Vitest for the NextAuth callbacks, stubbing Next providers to prove `session.user.id` remains present when the Prisma adapter is disabled and the mock database is in use.
 - 2025-10-10: Hardened the `/api/auth/[...nextauth]` handler to short-circuit HEAD/OPTIONS probes before they hit NextAuth, suppressing the `UnknownAction` noise and documenting the suppressed request in logs; revalidated with `npm run typecheck` and `npm run test`.
 - 2025-10-11: Unblocked `npm run lint` by exporting typed NextAuth helpers, adjusting the ESLint project config, and cleaning consumer calls so `authDiagnostics`/`auth()` stay fully typed; re-ran `npm run lint` and `npm run test -- --run`.
+- 2025-10-11: Started TASK010 to design the public collections catalog update and captured requirements plus architectural notes in the memory bank.
+- 2025-10-11: Implemented TASK010 catalog work by adding a `listPublic` tRPC procedure, updating the landing page with a searchable public collections grid, and verified linting via `npm run lint`.

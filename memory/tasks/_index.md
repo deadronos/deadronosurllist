@@ -2,7 +2,7 @@
 
 ## In Progress
 
-None
+- [TASK010] Public collections catalog – In progress (2025-10-11).
 
 ## Pending
 

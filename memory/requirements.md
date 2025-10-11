@@ -33,6 +33,11 @@
 - WHEN a visitor views any application page, THE SYSTEM SHALL present a persistent navigation control that links back to the home page [Acceptance: manual check confirming the control renders across non-root routes].
 - WHEN an error or not-found page renders, THE SYSTEM SHALL provide a clear action to return to the home page [Acceptance: manual check triggering error/not-found routes].
 
+## Public Collections Catalog
+
+- WHEN the landing page renders, THE SYSTEM SHALL fetch all collections flagged `isPublic` ordered by `updatedAt` descending with their link summaries [Acceptance: unit test for the new tRPC procedure returning every seeded public collection].
+- WHEN the landing page renders, THE SYSTEM SHALL display a section titled "All current public lists" showing one card per public collection with its name, description, and top links [Acceptance: manual UI check confirming cards render for each seeded collection].
+- WHEN a visitor enters text into the catalog search input, THE SYSTEM SHALL filter the rendered cards to collections whose name or description contains the query case-insensitively [Acceptance: component story or manual check filtering seeded data].
 ## Type Safety Hardening
 
 - WHEN TypeScript static analysis runs, THE SYSTEM SHALL compile without reporting implicit `any` parameters in application components or tests [Acceptance: `npm run typecheck` shows zero TS7006 diagnostics].
