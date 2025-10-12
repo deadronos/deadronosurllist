@@ -118,6 +118,40 @@ describe("collectionRouter (mocked)", () => {
     expect(secondPage.items[0]?.id).not.toBe(firstPage.items[0]?.id);
   });
 
+  it("getPublicCatalog trims top links to the default limit", async () => {
+    const created = await caller.collection.create({
+      name: "Overflow Links",
+      description: "Has more than the default top link count",
+      isPublic: true,
+    });
+
+    const linkUrls = Array.from({ length: 12 }, (_, index) => {
+      return `https://example.com/${index + 1}`;
+    });
+
+    for (const [index, url] of linkUrls.entries()) {
+      await caller.link.create({
+        collectionId: created.id,
+        name: `Link ${index + 1}`,
+        url,
+        comment: `Comment ${index + 1}`,
+      });
+    }
+
+    const response = await caller.collection.getPublicCatalog({
+      limit: 1,
+    });
+
+    const [first] = response.items;
+    expect(first).toBeDefined();
+    expect(first?.topLinks).toHaveLength(10);
+    const orders = first?.topLinks.map((link) => link.order) ?? [];
+    const isAscending = orders.every(
+      (value, idx, arr) => idx === 0 || value >= arr[idx - 1]!,
+    );
+    expect(isAscending).toBe(true);
+  });
+
   it("getPublicCatalog filters by case-insensitive query", async () => {
     await caller.collection.create({
       name: "Team Knowledge Base",

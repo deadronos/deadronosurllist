@@ -45,10 +45,17 @@
 ## Public Collections Catalog
 
 - WHEN the `collection.getPublicCatalog` tRPC procedure receives an optional query, limit, and cursor, THE SYSTEM SHALL return public collections ordered by `updatedAt` descending with a maximum of `limit` entries, ISO8601 timestamps, and the next cursor when more results remain [Acceptance: Vitest exercising pagination and cursor advancement].
-- WHEN the catalog response is constructed, THE SYSTEM SHALL include at most three top links per collection ordered by link `order`, ensuring the payload is trimmed for the landing page cards [Acceptance: Vitest verifying link trimming].
+- WHEN the catalog response is constructed, THE SYSTEM SHALL include at most ten top links per collection ordered by link `order`, ensuring the payload stays performant for the landing page cards [Acceptance: Vitest verifying link trimming].
 - WHEN the landing page renders, THE SYSTEM SHALL display a section titled "All current public lists" showing one card per public collection from the first catalog page including name, description, and top links [Acceptance: manual or automated UI check confirming cards render for seeded collections].
 - WHEN a visitor activates the "Load more" control, THE SYSTEM SHALL fetch the next catalog page via tRPC and append it to the rendered grid without duplicates [Acceptance: component-level test or manual verification demonstrating pagination].
 - WHEN a visitor enters text into the catalog search input, THE SYSTEM SHALL filter the rendered cards to collections whose name or description contains the query case-insensitively [Acceptance: component story or manual check filtering seeded data].
+
+## Dashboard Visual Consistency
+
+- WHEN an authenticated member opens `/dashboard`, THE SYSTEM SHALL present the page within the Radix-themed gradient shell used on the landing page so the experience remains visually cohesive [Acceptance: manual UI check verifying gradient background and themed container].
+- WHEN the collection creation form renders, THE SYSTEM SHALL use Radix-form inputs and buttons that match the landing page aesthetic while preserving the ability to submit valid data [Acceptance: manual test confirming styled controls and successful creation].
+- WHEN the dashboard lists existing collections, THE SYSTEM SHALL render each entry as a themed card showing the name, optional description, and link count while keeping navigation to the collection detail page functional [Acceptance: manual UI check ensuring cards display expected data and links remain clickable].
+
 ## Type Safety Hardening
 
 - WHEN TypeScript static analysis runs, THE SYSTEM SHALL compile without reporting implicit `any` parameters in application components or tests [Acceptance: `npm run typecheck` shows zero TS7006 diagnostics].
@@ -73,3 +80,9 @@
 - WHEN Vitest loads the browser testing configuration, THE SYSTEM SHALL compile with a typed `browser` option while gracefully handling missing Playwright provider modules [Acceptance: `npm run test` completes without type errors or runtime exceptions if `@vitest/browser-playwright` is absent].
 - WHEN the lint fixer script runs, THE SYSTEM SHALL lint the Vitest configuration without reporting unresolved type references or unsafe assignments introduced by the tooling upgrade [Acceptance: `npm run lint:fix` exits with code 0 and reports no type-based lint errors in `vitest.config.ts`].
 - WHEN environment variable `VITEST_BROWSER` is unset or not `"true"`, THE SYSTEM SHALL skip enabling the Vitest browser provider so Node-based test runs succeed without Playwright browser binaries [Acceptance: `npm run test` completes without attempting to launch Playwright when `VITEST_BROWSER` is not `"true"`].
+
+## Tooling Maintenance
+
+- WHEN the TypeScript compiler runs via `npm run typecheck` while coverage artifacts exist under `coverage/`, THE SYSTEM SHALL complete without reporting diagnostics originating from those generated files [Acceptance: `npm run typecheck` exits 0 with the `coverage` directory present].
+- WHEN `npm run lint` executes after the tooling adjustments, THE SYSTEM SHALL finish without errors or warnings stemming from configuration updates [Acceptance: `npm run lint` exits successfully].
+- WHEN `npm run format:write` executes, THE SYSTEM SHALL reformat project files without introducing new diffs beyond Prettier's deterministic output [Acceptance: `npm run format:write` exits 0 and reports no outstanding formatting].
