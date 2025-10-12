@@ -28,3 +28,4 @@
 - 2025-10-11: Expanded TASK010 to deliver a typed catalog contract with pagination, load-more UI, search filtering, and Vitest coverage for link trimming and cursor handling; reran formatter, lint, typecheck, and unit tests.
 - 2025-10-11: Completed TASK011 by adding link router authorization regression tests and NextAuth callback fallback coverage; ran `npm run format:check`, `npm run lint`, and `npm run test` (format check reports existing formatting drift).
 - 2025-10-11: Completed TASK013 by retyping `vitest.config.ts`, gating the Playwright provider behind `VITEST_BROWSER`, and confirming `npm run typecheck`, `npm run lint:fix`, `npm run test`, and `npm run format:write` all succeed.
+- 2025-10-12: Completed TASK014 by excluding coverage artifacts from TypeScript, restoring `npm run typecheck`, and verifying `npm run lint` plus `npm run format:write` succeed without modifying files.

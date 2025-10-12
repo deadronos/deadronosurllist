@@ -73,3 +73,9 @@
 - WHEN Vitest loads the browser testing configuration, THE SYSTEM SHALL compile with a typed `browser` option while gracefully handling missing Playwright provider modules [Acceptance: `npm run test` completes without type errors or runtime exceptions if `@vitest/browser-playwright` is absent].
 - WHEN the lint fixer script runs, THE SYSTEM SHALL lint the Vitest configuration without reporting unresolved type references or unsafe assignments introduced by the tooling upgrade [Acceptance: `npm run lint:fix` exits with code 0 and reports no type-based lint errors in `vitest.config.ts`].
 - WHEN environment variable `VITEST_BROWSER` is unset or not `"true"`, THE SYSTEM SHALL skip enabling the Vitest browser provider so Node-based test runs succeed without Playwright browser binaries [Acceptance: `npm run test` completes without attempting to launch Playwright when `VITEST_BROWSER` is not `"true"`].
+
+## Tooling Maintenance
+
+- WHEN the TypeScript compiler runs via `npm run typecheck` while coverage artifacts exist under `coverage/`, THE SYSTEM SHALL complete without reporting diagnostics originating from those generated files [Acceptance: `npm run typecheck` exits 0 with the `coverage` directory present].
+- WHEN `npm run lint` executes after the tooling adjustments, THE SYSTEM SHALL finish without errors or warnings stemming from configuration updates [Acceptance: `npm run lint` exits successfully].
+- WHEN `npm run format:write` executes, THE SYSTEM SHALL reformat project files without introducing new diffs beyond Prettier's deterministic output [Acceptance: `npm run format:write` exits 0 and reports no outstanding formatting].

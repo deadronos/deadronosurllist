@@ -23,6 +23,7 @@ None
 - [TASK012] Typecheck stabilization – Restored strict compilation by tightening tests, setup, and Vitest config (2025-10-11).
 - [TASK010] Public collections catalog – Delivered typed catalog API, load-more UI, client search, and Vitest coverage for pagination/link trimming (2025-10-11).
 - [TASK013] Vitest toolchain compatibility – Repointed config typings, gated Playwright provider behind `VITEST_BROWSER`, and validated lint/test/format commands (2025-10-11).
+- [TASK014] Typecheck maintenance – Excluded coverage artifacts from TypeScript and revalidated lint/format scripts (2025-10-12).
 
 ## Abandoned
 
