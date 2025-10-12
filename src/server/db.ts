@@ -98,7 +98,9 @@ if (useMock) {
           args,
         )) as CollectionRecord | null,
       create: (args) => prismaClient.collection.create(args),
+      update: (args) => prismaClient.collection.update(args),
       updateMany: (args) => prismaClient.collection.updateMany(args),
+      delete: (args) => prismaClient.collection.delete(args),
       deleteMany: (args) => prismaClient.collection.deleteMany(args),
     },
     link: {
