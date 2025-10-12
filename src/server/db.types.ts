@@ -11,7 +11,11 @@ export type LinkRecord = Link & {
 
 export type LinkListDatabase = {
   $transaction(
-    operations: Array<(() => Promise<unknown>) | Promise<unknown>>,
+    operations: Array<
+      | (() => Promise<unknown>)
+      | Promise<unknown>
+      | Prisma.PrismaPromise<unknown>
+    >,
   ): Promise<unknown[]>;
   collection: {
     findMany(args?: Prisma.CollectionFindManyArgs): Promise<CollectionRecord[]>;
@@ -19,9 +23,11 @@ export type LinkListDatabase = {
       args?: Prisma.CollectionFindFirstArgs,
     ): Promise<CollectionRecord | null>;
     create(args: Prisma.CollectionCreateArgs): Promise<Collection>;
+    update(args: Prisma.CollectionUpdateArgs): Promise<Collection>;
     updateMany(
       args: Prisma.CollectionUpdateManyArgs,
     ): Promise<Prisma.BatchPayload>;
+    delete(args: Prisma.CollectionDeleteArgs): Promise<Collection>;
     deleteMany(
       args: Prisma.CollectionDeleteManyArgs,
     ): Promise<Prisma.BatchPayload>;

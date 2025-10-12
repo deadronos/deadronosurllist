@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import {
@@ -63,6 +64,23 @@ const normalizeDescription = (
 ): string | null => {
   if (value === undefined) return null;
   return value;
+};
+
+const normalizeDescriptionForUpdate = (
+  value: string | null | undefined,
+): string | null | undefined => {
+  if (value === undefined) return undefined;
+  if (value === null) return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
+const normalizeDescriptionForCreate = (
+  value: string | null | undefined,
+): string | null => {
+  if (value === undefined || value === null) return null;
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
 };
 
 const toIsoString = (value: Date | string): string => {
@@ -182,7 +200,7 @@ export const collectionRouter = createTRPCRouter({
     return ctx.db.collection.findMany({
       where: { createdById: ctx.session.user.id },
       include: { _count: { select: { links: true } } },
-      orderBy: { updatedAt: "desc" },
+      orderBy: { order: "asc" },
     });
   }),
 
@@ -210,10 +228,18 @@ export const collectionRouter = createTRPCRouter({
         isPublic: z.boolean().default(false),
       }),
     )
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
+      const maxOrder = await ctx.db.collection.findFirst({
+        where: { createdById: ctx.session.user.id },
+        orderBy: { order: "desc" },
+      });
+
       return ctx.db.collection.create({
         data: {
-          ...input,
+          name: input.name,
+          description: normalizeDescriptionForCreate(input.description),
+          isPublic: input.isPublic,
+          order: (maxOrder?.order ?? -1) + 1,
           createdBy: { connect: { id: ctx.session.user.id } },
         },
       });
@@ -225,33 +251,93 @@ export const collectionRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         name: z.string().min(1).max(100).optional(),
-        description: z.string().max(500).optional(),
+        description: z.string().max(500).nullable().optional(),
         isPublic: z.boolean().optional(),
       }),
     )
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
+      const collection = await ctx.db.collection.findFirst({
+        where: {
+          id: input.id,
+          createdById: ctx.session.user.id,
+        },
+      });
+
+      if (!collection) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      const description = normalizeDescriptionForUpdate(input.description);
+      const dataToUpdate: Record<string, unknown> = {};
+      if (input.name !== undefined) {
+        dataToUpdate.name = input.name;
+      }
+      if (description !== undefined) {
+        dataToUpdate.description = description;
+      }
+      if (input.isPublic !== undefined) {
+        dataToUpdate.isPublic = input.isPublic;
+      }
+
       return ctx.db.collection.updateMany({
         where: {
           id: input.id,
           createdById: ctx.session.user.id,
         },
-        data: {
-          name: input.name,
-          description: input.description,
-          isPublic: input.isPublic,
-        },
+        data: dataToUpdate,
       });
     }),
 
   // Delete collection
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
+      const collection = await ctx.db.collection.findFirst({
+        where: {
+          id: input.id,
+          createdById: ctx.session.user.id,
+        },
+      });
+
+      if (!collection) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
       return ctx.db.collection.deleteMany({
         where: {
           id: input.id,
           createdById: ctx.session.user.id,
         },
       });
+    }),
+
+  // Reorder collections
+  reorder: protectedProcedure
+    .input(z.object({ collectionIds: z.array(z.string()) }))
+    .mutation(async ({ ctx, input }) => {
+      const userCollections = await ctx.db.collection.findMany({
+        where: { createdById: ctx.session.user.id },
+        select: { id: true },
+      });
+
+      const ownedIds = new Set(
+        userCollections.map((collection) => collection.id),
+      );
+      const hasUnauthorized = input.collectionIds.some(
+        (collectionId) => !ownedIds.has(collectionId),
+      );
+
+      if (hasUnauthorized) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      const updates = input.collectionIds.map((collectionId, index) =>
+        ctx.db.collection.updateMany({
+          where: { id: collectionId, createdById: ctx.session.user.id },
+          data: { order: index },
+        }),
+      );
+
+      return ctx.db.$transaction(updates);
     }),
 });

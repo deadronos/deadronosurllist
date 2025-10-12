@@ -251,13 +251,13 @@ describe("collectionRouter (mocked)", () => {
     });
 
     const intruder = createTestCaller({ session: createSession("user2") });
-    const updateResult = await intruder.collection.update({
-      id: created.id,
-      name: "Hacked",
-      description: "should not change",
-    });
-
-    expect(updateResult.count).toBe(0);
+    await expect(
+      intruder.collection.update({
+        id: created.id,
+        name: "Hacked",
+        description: "should not change",
+      }),
+    ).rejects.toThrow();
 
     const intruderView = await intruder.collection.getById({ id: created.id });
     expect(intruderView).toBeNull();
