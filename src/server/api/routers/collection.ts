@@ -8,7 +8,7 @@ import {
 } from "@/server/api/trpc";
 
 const PUBLIC_CATALOG_DEFAULT_LIMIT = 12;
-const PUBLIC_CATALOG_DEFAULT_LINK_LIMIT = 3;
+const PUBLIC_CATALOG_DEFAULT_LINK_LIMIT = 10;
 
 const publicCatalogInputSchema = z.object({
   q: z.string().trim().min(1).optional(),

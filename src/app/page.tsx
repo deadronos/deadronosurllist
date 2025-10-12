@@ -25,7 +25,7 @@ type PublicCatalogCollection = PublicCatalogPage["items"][number];
 type PublicLink = PublicCatalogCollection["topLinks"][number];
 
 const PUBLIC_CATALOG_PAGE_SIZE = 12;
-const PUBLIC_CATALOG_LINK_LIMIT = 3;
+const PUBLIC_CATALOG_LINK_LIMIT = 10;
 
 export default async function Home() {
   const sessionPromise = auth();

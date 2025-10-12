@@ -45,10 +45,17 @@
 ## Public Collections Catalog
 
 - WHEN the `collection.getPublicCatalog` tRPC procedure receives an optional query, limit, and cursor, THE SYSTEM SHALL return public collections ordered by `updatedAt` descending with a maximum of `limit` entries, ISO8601 timestamps, and the next cursor when more results remain [Acceptance: Vitest exercising pagination and cursor advancement].
-- WHEN the catalog response is constructed, THE SYSTEM SHALL include at most three top links per collection ordered by link `order`, ensuring the payload is trimmed for the landing page cards [Acceptance: Vitest verifying link trimming].
+- WHEN the catalog response is constructed, THE SYSTEM SHALL include at most ten top links per collection ordered by link `order`, ensuring the payload stays performant for the landing page cards [Acceptance: Vitest verifying link trimming].
 - WHEN the landing page renders, THE SYSTEM SHALL display a section titled "All current public lists" showing one card per public collection from the first catalog page including name, description, and top links [Acceptance: manual or automated UI check confirming cards render for seeded collections].
 - WHEN a visitor activates the "Load more" control, THE SYSTEM SHALL fetch the next catalog page via tRPC and append it to the rendered grid without duplicates [Acceptance: component-level test or manual verification demonstrating pagination].
 - WHEN a visitor enters text into the catalog search input, THE SYSTEM SHALL filter the rendered cards to collections whose name or description contains the query case-insensitively [Acceptance: component story or manual check filtering seeded data].
+
+## Dashboard Visual Consistency
+
+- WHEN an authenticated member opens `/dashboard`, THE SYSTEM SHALL present the page within the Radix-themed gradient shell used on the landing page so the experience remains visually cohesive [Acceptance: manual UI check verifying gradient background and themed container].
+- WHEN the collection creation form renders, THE SYSTEM SHALL use Radix-form inputs and buttons that match the landing page aesthetic while preserving the ability to submit valid data [Acceptance: manual test confirming styled controls and successful creation].
+- WHEN the dashboard lists existing collections, THE SYSTEM SHALL render each entry as a themed card showing the name, optional description, and link count while keeping navigation to the collection detail page functional [Acceptance: manual UI check ensuring cards display expected data and links remain clickable].
+
 ## Type Safety Hardening
 
 - WHEN TypeScript static analysis runs, THE SYSTEM SHALL compile without reporting implicit `any` parameters in application components or tests [Acceptance: `npm run typecheck` shows zero TS7006 diagnostics].

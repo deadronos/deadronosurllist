@@ -2,7 +2,7 @@
 
 ## In Progress
 
-None
+- [TASK015] Dashboard visual refresh & catalog link expansion – Align dashboard theming with landing page and raise catalog link trim limit (2025-10-12).
 
 ## Pending
 

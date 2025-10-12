@@ -36,6 +36,9 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.js",
+    "src/app/**.{ts,tsx,js,cjs}",
+    "src/server/**.{ts,tsx,js,cjs}",
+    "src/trpc/**.{ts,tsx,js,cjs}",
     ".next/types/**/*.ts"
   ],
   "exclude": [

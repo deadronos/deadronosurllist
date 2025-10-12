@@ -1,9 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { api } from "@/trpc/react";
+import {
+  Button,
+  Card,
+  Checkbox,
+  Flex,
+  Heading,
+  Text,
+  TextArea,
+  TextField,
+} from "@radix-ui/themes";
 
 export function CollectionCreateForm() {
   const [name, setName] = useState("");
@@ -21,49 +31,64 @@ export function CollectionCreateForm() {
     },
   });
 
+  const isSubmitting = createMutation.isPending;
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!name.trim()) {
+      return;
+    }
+    createMutation.mutate({ name, description, isPublic });
+  };
+
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!name.trim()) return;
-        createMutation.mutate({ name, description, isPublic });
-      }}
-      className="rounded border p-4"
+    <Card
+      asChild
+      variant="surface"
+      className="border border-white/10 bg-white/5 backdrop-blur"
     >
-      <h2 className="mb-3 font-semibold">Create New Collection</h2>
-      <div className="mb-2 flex gap-2">
-        <input
-          className="flex-1 rounded border px-3 py-2"
-          placeholder="Collection name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-      <div className="mb-2">
-        <input
-          className="w-full rounded border px-3 py-2"
-          placeholder="Description (optional)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
-      <label className="mb-3 flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={isPublic}
-          onChange={(e) => setIsPublic(e.target.checked)}
-        />
-        Public
-      </label>
-      <div>
-        <button
-          type="submit"
-          disabled={createMutation.isPending}
-          className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
-        >
-          {createMutation.isPending ? "Creating..." : "Create"}
-        </button>
-      </div>
-    </form>
+      <form onSubmit={handleSubmit}>
+        <Flex direction="column" gap="4">
+          <Heading as="h2" size="6">
+            Create New Collection
+          </Heading>
+          <Flex direction="column" gap="3">
+            <TextField.Root
+              size="3"
+              placeholder="Collection name"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              disabled={isSubmitting}
+              required
+              aria-label="Collection name"
+            />
+            <TextArea
+              size="3"
+              placeholder="Description (optional)"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              disabled={isSubmitting}
+              aria-label="Collection description"
+              rows={3}
+            />
+            <Flex align="center" gap="2">
+              <Checkbox
+                size="2"
+                checked={isPublic}
+                onCheckedChange={(checked) => setIsPublic(checked === true)}
+                disabled={isSubmitting}
+                aria-label="Make collection public"
+              />
+              <Text size="2" color="gray">
+                Public
+              </Text>
+            </Flex>
+          </Flex>
+          <Button type="submit" size="3" disabled={isSubmitting}>
+            {isSubmitting ? "Creating..." : "Create"}
+          </Button>
+        </Flex>
+      </form>
+    </Card>
   );
 }
