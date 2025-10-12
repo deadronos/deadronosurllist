@@ -34,6 +34,7 @@ type CollectionRecord = {
   createdById: string;
   createdAt: Date;
   updatedAt: Date;
+  order: number;
   linkIds: string[];
 };
 
@@ -138,6 +139,7 @@ const resetStore = () => {
     createdById: userId,
     createdAt: now,
     updatedAt: now,
+    order: 0,
     linkIds: defaultLinks.map((link) => link.id),
   });
 
@@ -245,6 +247,7 @@ const toCollectionResult = (
     createdById: record.createdById,
     createdAt: cloneDate(record.createdAt),
     updatedAt: cloneDate(record.updatedAt),
+    order: record.order,
   };
 
   const includeCount =
@@ -348,7 +351,11 @@ export const db = {
     findMany: async (args?: {
       where?: Record<string, unknown>;
       include?: CollectionInclude;
-      orderBy?: { createdAt?: SortOrder; updatedAt?: SortOrder };
+      orderBy?: {
+        createdAt?: SortOrder;
+        updatedAt?: SortOrder;
+        order?: SortOrder;
+      };
     }) => {
       const where = args?.where;
       const include = args?.include;
@@ -358,7 +365,13 @@ export const db = {
         matchesCollectionWhere(record, where),
       );
 
-      const sorted = orderBy ? sortByDate(items, orderBy) : items;
+      let sorted = items;
+      if (orderBy?.order) {
+        const direction = orderBy.order === "desc" ? -1 : 1;
+        sorted = [...items].sort((a, b) => (a.order - b.order) * direction);
+      } else if (orderBy) {
+        sorted = sortByDate(items, orderBy);
+      }
 
       return sorted.map((record) => toCollectionResult(record, include));
     },
@@ -392,10 +405,39 @@ export const db = {
         createdById,
         createdAt: now,
         updatedAt: now,
+        order:
+          typeof data.order === "number" ? data.order : store.collections.size,
         linkIds: [],
       };
       store.collections.set(record.id, record);
       return toCollectionResult(record);
+    },
+
+    update: async (args: {
+      where: { id: string };
+      data: Record<string, unknown>;
+      include?: CollectionInclude;
+    }) => {
+      const { id } = args.where;
+      const record = store.collections.get(id);
+      if (!record) {
+        throw new Error(`Collection ${id} not found`);
+      }
+
+      const data = args.data ?? {};
+      if (data.name !== undefined) record.name = data.name as string;
+      if (data.description !== undefined) {
+        record.description = data.description as string | null;
+      }
+      if (data.isPublic !== undefined) {
+        record.isPublic = Boolean(data.isPublic);
+      }
+      if (data.order !== undefined) {
+        record.order = data.order as number;
+      }
+      record.updatedAt = new Date();
+
+      return toCollectionResult(record, args.include);
     },
 
     updateMany: async (args: {
@@ -414,9 +456,30 @@ export const db = {
         }
         if (data.isPublic !== undefined)
           record.isPublic = Boolean(data.isPublic);
+        if (data.order !== undefined) {
+          record.order = data.order as number;
+        }
         record.updatedAt = new Date();
       });
       return { count: matched.length };
+    },
+
+    delete: async (args: {
+      where: { id: string };
+      include?: CollectionInclude;
+    }) => {
+      const { id } = args.where;
+      const record = store.collections.get(id);
+      if (!record) {
+        throw new Error(`Collection ${id} not found`);
+      }
+
+      store.collections.delete(id);
+      record.linkIds.forEach((linkId) => {
+        store.links.delete(linkId);
+      });
+
+      return toCollectionResult(record, args.include);
     },
 
     deleteMany: async (args: { where?: Record<string, unknown> }) => {

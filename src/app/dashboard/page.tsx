@@ -3,6 +3,7 @@ import Link from "next/link";
 import { api, HydrateClient } from "@/trpc/server";
 import { auth } from "@/server/auth";
 import { CollectionCreateForm } from "@/app/_components/collection-create-form";
+import { DashboardCollectionsManager } from "@/app/_components/dashboard-collections-manager";
 import {
   Box,
   Button,
@@ -18,6 +19,7 @@ type CollectionSummary = {
   id: string;
   name: string;
   description: string | null;
+  order: number;
   _count?: { links?: number | null } | null;
 };
 
@@ -127,71 +129,15 @@ export default async function DashboardPage() {
                   </Text>
                 </Flex>
                 <Separator className="border-white/10" />
-                <Flex direction="column" gap="3">
-                  {collections.map((collection) => (
-                    <Card
-                      key={collection.id}
-                      size="2"
-                      variant="classic"
-                      className="border-white/10 bg-black/40"
-                    >
-                      <Flex
-                        direction={{ initial: "column", sm: "row" }}
-                        align={{ initial: "start", sm: "center" }}
-                        justify="between"
-                        gap="3"
-                      >
-                        <Flex direction="column" gap="2">
-                          <Heading as="h3" size="4">
-                            <Link
-                              href={`/collections/${collection.id}`}
-                              className="text-white hover:underline"
-                            >
-                              {collection.name}
-                            </Link>
-                          </Heading>
-                          {collection.description ? (
-                            <Text size="2" color="gray">
-                              {collection.description}
-                            </Text>
-                          ) : null}
-                        </Flex>
-                        <Flex
-                          align={{ initial: "start", sm: "center" }}
-                          gap="3"
-                          direction={{ initial: "column", sm: "row" }}
-                        >
-                          <Text size="2" color="gray">
-                            {(collection._count?.links ?? 0).toLocaleString()}{" "}
-                            {collection._count?.links === 1 ? "link" : "links"}
-                          </Text>
-                          <Button size="2" variant="soft" asChild>
-                            <Link href={`/collections/${collection.id}`}>
-                              Open
-                            </Link>
-                          </Button>
-                        </Flex>
-                      </Flex>
-                    </Card>
-                  ))}
-                  {collections.length === 0 ? (
-                    <Card
-                      size="2"
-                      variant="surface"
-                      className="border border-dashed border-white/20 bg-transparent"
-                    >
-                      <Flex direction="column" gap="2">
-                        <Heading as="h3" size="4">
-                          No collections yet
-                        </Heading>
-                        <Text size="2" color="gray">
-                          Use the form above to create your first collection and
-                          start saving links.
-                        </Text>
-                      </Flex>
-                    </Card>
-                  ) : null}
-                </Flex>
+                <DashboardCollectionsManager
+                  initialCollections={collections.map((collection) => ({
+                    id: collection.id,
+                    name: collection.name,
+                    description: collection.description,
+                    order: collection.order,
+                    linkCount: collection._count?.links ?? 0,
+                  }))}
+                />
               </Flex>
             </Card>
           </Flex>
@@ -207,10 +153,14 @@ function isCollectionSummary(value: unknown): value is CollectionSummary {
     id?: unknown;
     name?: unknown;
     description?: unknown;
+    order?: unknown;
     _count?: unknown;
   };
   if (typeof candidate.id !== "string") return false;
   if (candidate.name !== undefined && typeof candidate.name !== "string") {
+    return false;
+  }
+  if (typeof candidate.order !== "number") {
     return false;
   }
   if (
