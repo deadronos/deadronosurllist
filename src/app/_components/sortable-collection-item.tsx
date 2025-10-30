@@ -19,7 +19,7 @@ import {
   TrashIcon,
 } from "@radix-ui/react-icons";
 
-import type { DashboardCollectionModel } from "./dashboard-collections-manager";
+import type { DashboardCollectionModel } from "./dashboard-collections-manager/types";
 
 type SortableCollectionItemProps = {
   collection: DashboardCollectionModel;

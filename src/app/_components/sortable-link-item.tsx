@@ -16,7 +16,7 @@ import {
   TrashIcon,
 } from "@radix-ui/react-icons";
 
-import type { CollectionLinkModel } from "./collection-links-manager";
+import type { CollectionLinkModel } from "./collection-links-manager/types";
 
 type SortableLinkItemProps = {
   link: CollectionLinkModel;
