@@ -95,10 +95,18 @@ if (
   });
 }
 
+/**
+ * Diagnostic information about the authentication providers.
+ * Contains lists of active and disabled providers.
+ */
 export const authDiagnostics: AuthDiagnostics = diagnostics;
 
 const adapter = isMockDb || !prisma ? undefined : PrismaAdapter(prisma);
 
+/**
+ * Configuration for NextAuth.js.
+ * Includes providers, adapter, and callback settings.
+ */
 export const authConfig = {
   // Ensure NextAuth has a stable secret in production. The env helper makes AUTH_SECRET
   // optional during local development but required in production builds.

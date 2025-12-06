@@ -1,48 +1,25 @@
 "use client";
 
-import {
-  Button,
-  Callout,
-  Dialog,
-  Flex,
-  Switch,
-  Text,
-  TextField,
-} from "@radix-ui/themes";
-import {
-  DndContext,
-  type DragEndEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { useMemo, useState } from "react";
+import { DndContext } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { Callout, Flex, Switch, Text, TextField } from "@radix-ui/themes";
 import {
   CheckIcon,
   DotsHorizontalIcon,
   ExclamationTriangleIcon,
 } from "@radix-ui/react-icons";
-import { useEffect, useMemo, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-
-import { api } from "@/trpc/react";
 
 import { SortableLinkItem } from "./sortable-link-item";
+import {
+  DeleteLinkDialog,
+  EditLinkDialog,
+} from "./collection-links-manager/link-dialogs";
+import { useCollectionLinksManager } from "./collection-links-manager/use-collection-links-manager";
+import type { CollectionLinkModel } from "./collection-links-manager/types";
 
-export type CollectionLinkModel = {
-  id: string;
-  name: string;
-  url: string;
-  comment: string | null;
-  order: number;
-};
-
-type Feedback = { type: "success" | "error"; message: string } | null;
+export type { CollectionLinkModel } from "./collection-links-manager/types";
 
 type CollectionLinksManagerProps = {
   collectionId: string;
@@ -50,124 +27,61 @@ type CollectionLinksManagerProps = {
   initialIsPublic: boolean;
 };
 
+/**
+ * Manages the links within a collection.
+ * Provides functionality for reordering, filtering, editing, and deleting links.
+ * Also handles collection visibility toggle.
+ *
+ * @param {CollectionLinksManagerProps} props - Component properties.
+ * @returns {JSX.Element} The manager component.
+ */
 export function CollectionLinksManager({
   collectionId,
   initialLinks,
   initialIsPublic,
 }: CollectionLinksManagerProps) {
-  const [links, setLinks] = useState(initialLinks);
-  const [filterTerm, setFilterTerm] = useState("");
-  const [isPublic, setIsPublic] = useState(initialIsPublic);
+  const {
+    sensors,
+    links,
+    filteredLinks,
+    hasFilter,
+    filterTerm,
+    setFilterTerm,
+    feedback,
+    isPublic,
+    toggleVisibility,
+    handleDragEnd,
+    updateLink,
+    deleteLink,
+    isReordering,
+    isUpdating,
+    isDeleting,
+    isVisibilityUpdating,
+  } = useCollectionLinksManager({
+    collectionId,
+    initialLinks,
+    initialIsPublic,
+  });
+
   const [selectedLinkId, setSelectedLinkId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback>(null);
-  const utils = api.useUtils();
-  const router = useRouter();
-  const [, startTransition] = useTransition();
-
-  useEffect(() => {
-    setLinks(initialLinks);
-  }, [initialLinks]);
-
-  useEffect(() => {
-    setIsPublic(initialIsPublic);
-  }, [initialIsPublic]);
-
-  useEffect(() => {
-    if (!feedback) return;
-    const timeout = setTimeout(() => setFeedback(null), 3000);
-    return () => clearTimeout(timeout);
-  }, [feedback]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 10 },
-    }),
-  );
-
-  const reorderMutation = api.link.reorder.useMutation({
-    onSettled: async () => {
-      await utils.collection.getById.invalidate({ id: collectionId });
-      router.refresh();
-    },
-  });
-
-  const updateMutation = api.link.update.useMutation({
-    onSettled: async () => {
-      await utils.collection.getById.invalidate({ id: collectionId });
-      router.refresh();
-    },
-  });
-
-  const deleteMutation = api.link.delete.useMutation({
-    onSettled: async () => {
-      await utils.collection.getById.invalidate({ id: collectionId });
-      router.refresh();
-    },
-  });
-
-  const visibilityMutation = api.collection.update.useMutation({
-    onSettled: async () => {
-      await utils.collection.getAll.invalidate();
-      await utils.collection.getById.invalidate({ id: collectionId });
-      router.refresh();
-    },
-  });
-
-  const filteredLinks = useMemo(() => {
-    if (!filterTerm.trim()) return links;
-    const query = filterTerm.trim().toLowerCase();
-    return links.filter((link) => {
-      return (
-        link.name.toLowerCase().includes(query) ||
-        link.url.toLowerCase().includes(query) ||
-        (link.comment?.toLowerCase().includes(query) ?? false)
-      );
-    });
-  }, [links, filterTerm]);
-
-  const hasFilter = filterTerm.trim().length > 0;
+  const [isDeletingDialogOpen, setIsDeletingDialogOpen] = useState(false);
 
   const activeLink = useMemo(
     () => links.find((link) => link.id === selectedLinkId) ?? null,
     [links, selectedLinkId],
   );
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) {
-      return;
-    }
+  const hasLinks = filteredLinks.length > 0;
 
-    setLinks((prev) => {
-      const oldIndex = prev.findIndex((link) => link.id === active.id);
-      const newIndex = prev.findIndex((link) => link.id === over.id);
-      const reordered = arrayMove(prev, oldIndex, newIndex);
+  const openEditDialog = (linkId: string) => {
+    setSelectedLinkId(linkId);
+    setIsEditing(true);
+  };
 
-      const previous = prev;
-      startTransition(() => {
-        reorderMutation.mutate(
-          {
-            collectionId,
-            linkIds: reordered.map((link) => link.id),
-          },
-          {
-            onSuccess: () =>
-              setFeedback({ type: "success", message: "Link order updated" }),
-            onError: () => {
-              setLinks(previous);
-              setFeedback({
-                type: "error",
-                message: "Unable to update link order",
-              });
-            },
-          },
-        );
-      });
-
-      return reordered;
-    });
+  const openDeleteDialog = (linkId: string) => {
+    setSelectedLinkId(linkId);
+    setIsDeletingDialogOpen(true);
   };
 
   const handleEditSubmit = (formData: FormData) => {
@@ -189,75 +103,34 @@ export function CollectionLinksManager({
       return;
     }
 
-    const previousLinks = links;
-    setLinks((prev) =>
-      prev.map((link) =>
-        link.id === activeLink.id ? { ...link, url, name, comment } : link,
-      ),
-    );
-
-    updateMutation.mutate(
-      { id: activeLink.id, url, name, comment },
+    updateLink(
+      activeLink.id,
+      { url, name, comment },
       {
         onSuccess: () => {
-          setFeedback({ type: "success", message: "Link updated" });
           setIsEditing(false);
           setSelectedLinkId(null);
         },
         onError: () => {
-          setLinks(previousLinks);
-          setFeedback({ type: "error", message: "Unable to update link" });
+          setIsEditing(false);
         },
       },
     );
   };
 
-  const handleDelete = () => {
+  const handleDeleteConfirm = () => {
     if (!activeLink) return;
 
-    const previousLinks = links;
-    setLinks((prev) => prev.filter((link) => link.id !== activeLink.id));
-    deleteMutation.mutate(
-      { id: activeLink.id },
-      {
-        onSuccess: () => {
-          setFeedback({ type: "success", message: "Link removed" });
-          setIsDeleting(false);
-          setSelectedLinkId(null);
-        },
-        onError: () => {
-          setLinks(previousLinks);
-          setFeedback({ type: "error", message: "Unable to delete link" });
-        },
+    deleteLink(activeLink.id, {
+      onSuccess: () => {
+        setIsDeletingDialogOpen(false);
+        setSelectedLinkId(null);
       },
-    );
-  };
-
-  const handleVisibilityToggle = (checked: boolean) => {
-    const previous = isPublic;
-    setIsPublic(checked);
-    visibilityMutation.mutate(
-      { id: collectionId, isPublic: checked },
-      {
-        onSuccess: () =>
-          setFeedback({
-            type: "success",
-            message: checked
-              ? "Collection is now public"
-              : "Collection is now private",
-          }),
-        onError: () => {
-          setIsPublic(previous);
-          setFeedback({
-            type: "error",
-            message: "Unable to update collection visibility",
-          });
-        },
+      onError: () => {
+        setIsDeletingDialogOpen(false);
       },
-    );
+    });
   };
-
-  const hasLinks = filteredLinks.length > 0;
 
   return (
     <>
@@ -268,7 +141,11 @@ export function CollectionLinksManager({
         className="mt-6 flex-col gap-4 sm:flex-row"
       >
         <Flex align="center" gap="2">
-          <Switch checked={isPublic} onCheckedChange={handleVisibilityToggle} />
+          <Switch
+            checked={isPublic}
+            onCheckedChange={toggleVisibility}
+            disabled={isDeleting || isUpdating || isVisibilityUpdating}
+          />
           <Text size="2" color="gray">
             {isPublic ? "Visible to anyone" : "Only you can see this"}
           </Text>
@@ -321,14 +198,8 @@ export function CollectionLinksManager({
               key={link.id}
               link={link}
               dragDisabled
-              onEdit={() => {
-                setSelectedLinkId(link.id);
-                setIsEditing(true);
-              }}
-              onDelete={() => {
-                setSelectedLinkId(link.id);
-                setIsDeleting(true);
-              }}
+              onEdit={() => openEditDialog(link.id)}
+              onDelete={() => openDeleteDialog(link.id)}
             />
           ))}
         </Flex>
@@ -347,14 +218,9 @@ export function CollectionLinksManager({
                 <SortableLinkItem
                   key={link.id}
                   link={link}
-                  onEdit={() => {
-                    setSelectedLinkId(link.id);
-                    setIsEditing(true);
-                  }}
-                  onDelete={() => {
-                    setSelectedLinkId(link.id);
-                    setIsDeleting(true);
-                  }}
+                  dragDisabled={isReordering}
+                  onEdit={() => openEditDialog(link.id)}
+                  onDelete={() => openDeleteDialog(link.id)}
                 />
               ))}
             </Flex>
@@ -362,75 +228,31 @@ export function CollectionLinksManager({
         </DndContext>
       )}
 
-      <Dialog.Root open={isEditing} onOpenChange={setIsEditing}>
-        <Dialog.Content maxWidth="400px">
-          <Dialog.Title>Edit Link</Dialog.Title>
-          <Dialog.Description>
-            Update the URL, title, or description for this link.
-          </Dialog.Description>
-          <form
-            className="mt-4 flex flex-col gap-3"
-            action={handleEditSubmit}
-            onSubmit={(event) => {
-              event.preventDefault();
-              const formData = new FormData(event.currentTarget);
-              handleEditSubmit(formData);
-            }}
-          >
-            <TextField.Root
-              name="url"
-              defaultValue={activeLink?.url ?? ""}
-              placeholder="https://example.com"
-              required
-            />
-            <TextField.Root
-              name="name"
-              defaultValue={activeLink?.name ?? ""}
-              placeholder="Display name"
-              required
-            />
-            <TextField.Root
-              name="comment"
-              defaultValue={activeLink?.comment ?? ""}
-              placeholder="Comment (optional)"
-            />
-            <Flex gap="3" justify="end">
-              <Dialog.Close>
-                <Button variant="soft" color="gray">
-                  Cancel
-                </Button>
-              </Dialog.Close>
-              <Button type="submit" loading={updateMutation.isPending}>
-                Save changes
-              </Button>
-            </Flex>
-          </form>
-        </Dialog.Content>
-      </Dialog.Root>
+      <EditLinkDialog
+        open={isEditing && !!activeLink}
+        onOpenChange={(open) => {
+          setIsEditing(open);
+          if (!open) {
+            setSelectedLinkId(null);
+          }
+        }}
+        link={activeLink}
+        onSubmit={handleEditSubmit}
+        isSubmitting={isUpdating}
+      />
 
-      <Dialog.Root open={isDeleting} onOpenChange={setIsDeleting}>
-        <Dialog.Content maxWidth="360px">
-          <Dialog.Title>Delete link</Dialog.Title>
-          <Dialog.Description>
-            This removes <strong>{activeLink?.name ?? "this link"}</strong> from
-            the collection. This action cannot be undone.
-          </Dialog.Description>
-          <Flex mt="4" gap="3" justify="end">
-            <Dialog.Close>
-              <Button variant="soft" color="gray">
-                Cancel
-              </Button>
-            </Dialog.Close>
-            <Button
-              color="red"
-              onClick={handleDelete}
-              loading={deleteMutation.isPending}
-            >
-              Delete
-            </Button>
-          </Flex>
-        </Dialog.Content>
-      </Dialog.Root>
+      <DeleteLinkDialog
+        open={isDeletingDialogOpen && !!activeLink}
+        onOpenChange={(open) => {
+          setIsDeletingDialogOpen(open);
+          if (!open) {
+            setSelectedLinkId(null);
+          }
+        }}
+        link={activeLink}
+        onConfirm={handleDeleteConfirm}
+        isDeleting={isDeleting}
+      />
     </>
   );
 }

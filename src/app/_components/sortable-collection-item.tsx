@@ -19,7 +19,7 @@ import {
   TrashIcon,
 } from "@radix-ui/react-icons";
 
-import type { DashboardCollectionModel } from "./dashboard-collections-manager";
+import type { DashboardCollectionModel } from "./dashboard-collections-manager/types";
 
 type SortableCollectionItemProps = {
   collection: DashboardCollectionModel;
@@ -28,6 +28,13 @@ type SortableCollectionItemProps = {
   dragDisabled?: boolean;
 };
 
+/**
+ * A collection item within a sortable list.
+ * Supports drag-and-drop, editing, and deletion.
+ *
+ * @param {SortableCollectionItemProps} props - Component properties.
+ * @returns {JSX.Element} The sortable item component.
+ */
 export function SortableCollectionItem({
   collection,
   onEdit,

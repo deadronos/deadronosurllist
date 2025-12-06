@@ -1,164 +1,70 @@
 "use client";
 
-import {
-  type FormEvent,
-  useEffect,
-  useMemo,
-  useState,
-  useTransition,
-} from "react";
-import { useRouter } from "next/navigation";
-import {
-  Button,
-  Callout,
-  Card,
-  Dialog,
-  Flex,
-  Heading,
-  Text,
-  TextArea,
-  TextField,
-} from "@radix-ui/themes";
-import {
-  DndContext,
-  PointerSensor,
-  type DragEndEvent,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
+import { useState } from "react";
+import { DndContext } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+import { Callout, Card, Flex, Heading, Text } from "@radix-ui/themes";
 import { CheckIcon, ExclamationTriangleIcon } from "@radix-ui/react-icons";
 
-import { api } from "@/trpc/react";
-
 import { SortableCollectionItem } from "./sortable-collection-item";
+import {
+  DeleteCollectionDialog,
+  EditCollectionDialog,
+} from "./dashboard-collections-manager/collection-dialogs";
+import { useDashboardCollectionsManager } from "./dashboard-collections-manager/use-dashboard-collections-manager";
+import type { DashboardCollectionModel } from "./dashboard-collections-manager/types";
 
-export type DashboardCollectionModel = {
-  id: string;
-  name: string;
-  description: string | null;
-  order: number;
-  linkCount: number;
-};
-
-type Feedback = { type: "success" | "error"; message: string } | null;
+export type { DashboardCollectionModel } from "./dashboard-collections-manager/types";
 
 type DashboardCollectionsManagerProps = {
   initialCollections: DashboardCollectionModel[];
 };
 
+/**
+ * Manages the user's collections on the dashboard.
+ * Provides functionality for reordering, editing, and deleting collections.
+ *
+ * @param {DashboardCollectionsManagerProps} props - Component properties.
+ * @returns {JSX.Element} The manager component.
+ */
 export function DashboardCollectionsManager({
   initialCollections,
 }: DashboardCollectionsManagerProps) {
-  const [collections, setCollections] = useState(initialCollections);
+  const {
+    sensors,
+    collections,
+    feedback,
+    handleDragEnd,
+    updateCollection,
+    deleteCollection,
+    getCollectionById,
+    isReordering,
+    isUpdating,
+    isDeleting,
+  } = useDashboardCollectionsManager({ initialCollections });
+
   const [activeCollectionId, setActiveCollectionId] = useState<string | null>(
     null,
   );
-  const [isEditing, setIsEditing] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [feedback, setFeedback] = useState<Feedback>(null);
-  const utils = api.useUtils();
-  const router = useRouter();
-  const [, startTransition] = useTransition();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
-  useEffect(() => {
-    setCollections(initialCollections);
-  }, [initialCollections]);
+  const activeCollection = getCollectionById(activeCollectionId);
 
-  useEffect(() => {
-    if (!feedback) return;
-    const timeout = setTimeout(() => setFeedback(null), 3000);
-    return () => clearTimeout(timeout);
-  }, [feedback]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 10 },
-    }),
-  );
-
-  const reorderMutation = api.collection.reorder.useMutation({
-    onSettled: async () => {
-      await utils.collection.getAll.invalidate();
-      router.refresh();
-    },
-  });
-
-  const updateMutation = api.collection.update.useMutation({
-    onSettled: async () => {
-      await utils.collection.getAll.invalidate();
-      router.refresh();
-    },
-  });
-
-  const deleteMutation = api.collection.delete.useMutation({
-    onSettled: async () => {
-      await utils.collection.getAll.invalidate();
-      router.refresh();
-    },
-  });
-
-  const activeCollection = useMemo(
-    () =>
-      collections.find((collection) => collection.id === activeCollectionId) ??
-      null,
-    [collections, activeCollectionId],
-  );
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) {
-      return;
-    }
-
-    setCollections((prev) => {
-      const oldIndex = prev.findIndex(
-        (collection) => collection.id === active.id,
-      );
-      const newIndex = prev.findIndex(
-        (collection) => collection.id === over.id,
-      );
-      if (oldIndex === -1 || newIndex === -1) {
-        return prev;
-      }
-
-      const reordered = arrayMove(prev, oldIndex, newIndex);
-      const previous = prev;
-
-      startTransition(() => {
-        reorderMutation.mutate(
-          { collectionIds: reordered.map((collection) => collection.id) },
-          {
-            onSuccess: () =>
-              setFeedback({
-                type: "success",
-                message: "Collection order updated",
-              }),
-            onError: () => {
-              setCollections(previous);
-              setFeedback({
-                type: "error",
-                message: "Unable to update collection order",
-              });
-            },
-          },
-        );
-      });
-
-      return reordered;
-    });
+  const openEditDialog = (collectionId: string) => {
+    setActiveCollectionId(collectionId);
+    setIsEditDialogOpen(true);
   };
 
-  const handleEditSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const openDeleteDialog = (collectionId: string) => {
+    setActiveCollectionId(collectionId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleEditSubmit = (formData: FormData) => {
     if (!activeCollection) return;
 
-    const formData = new FormData(event.currentTarget);
     const nameValue = formData.get("name");
     const descriptionValue = formData.get("description");
 
@@ -173,37 +79,16 @@ export function DashboardCollectionsManager({
       return;
     }
 
-    const previousCollections = collections;
-    setCollections((prev) =>
-      prev.map((collection) =>
-        collection.id === activeCollection.id
-          ? {
-              ...collection,
-              name,
-              description: description.length > 0 ? description : null,
-            }
-          : collection,
-      ),
-    );
-
-    updateMutation.mutate(
-      {
-        id: activeCollection.id,
-        name,
-        description: description.length > 0 ? description : null,
-      },
+    updateCollection(
+      activeCollection.id,
+      { name, description: description.length > 0 ? description : null },
       {
         onSuccess: () => {
-          setFeedback({ type: "success", message: "Collection updated" });
-          setIsEditing(false);
+          setIsEditDialogOpen(false);
           setActiveCollectionId(null);
         },
         onError: () => {
-          setCollections(previousCollections);
-          setFeedback({
-            type: "error",
-            message: "Unable to update collection",
-          });
+          setIsEditDialogOpen(false);
         },
       },
     );
@@ -212,33 +97,16 @@ export function DashboardCollectionsManager({
   const handleDelete = () => {
     if (!activeCollection) return;
 
-    const previousCollections = collections;
-    setCollections((prev) =>
-      prev.filter((collection) => collection.id !== activeCollection.id),
-    );
-
-    deleteMutation.mutate(
-      { id: activeCollection.id },
-      {
-        onSuccess: () => {
-          setFeedback({ type: "success", message: "Collection deleted" });
-          setIsDeleting(false);
-          setActiveCollectionId(null);
-          router.refresh();
-        },
-        onError: () => {
-          setCollections(previousCollections);
-          setFeedback({
-            type: "error",
-            message: "Unable to delete collection",
-          });
-        },
+    deleteCollection(activeCollection.id, {
+      onSuccess: () => {
+        setIsDeleteDialogOpen(false);
+        setActiveCollectionId(null);
       },
-    );
+      onError: () => {
+        setIsDeleteDialogOpen(false);
+      },
+    });
   };
-
-  const isUpdating = updateMutation.isPending;
-  const isDeletingCollection = deleteMutation.isPending;
 
   return (
     <Flex direction="column" gap="4">
@@ -273,15 +141,9 @@ export function DashboardCollectionsManager({
                 <SortableCollectionItem
                   key={collection.id}
                   collection={collection}
-                  onEdit={() => {
-                    setActiveCollectionId(collection.id);
-                    setIsEditing(true);
-                  }}
-                  onDelete={() => {
-                    setActiveCollectionId(collection.id);
-                    setIsDeleting(true);
-                  }}
-                  dragDisabled={reorderMutation.isPending}
+                  onEdit={() => openEditDialog(collection.id)}
+                  onDelete={() => openDeleteDialog(collection.id)}
+                  dragDisabled={isReordering}
                 />
               ))}
             </Flex>
@@ -305,107 +167,31 @@ export function DashboardCollectionsManager({
         </Card>
       )}
 
-      <Dialog.Root
-        open={isEditing && !!activeCollection}
+      <EditCollectionDialog
+        open={isEditDialogOpen && !!activeCollection}
         onOpenChange={(open) => {
-          setIsEditing(open);
+          setIsEditDialogOpen(open);
           if (!open) {
             setActiveCollectionId(null);
           }
         }}
-      >
-        <Dialog.Content maxWidth="450px">
-          <Dialog.Title>Edit collection</Dialog.Title>
-          <Dialog.Description>
-            Update the collection name or description.
-          </Dialog.Description>
-          <form
-            onSubmit={handleEditSubmit}
-            className="mt-4"
-            key={activeCollection?.id ?? "new"}
-          >
-            <Flex direction="column" gap="3">
-              <TextField.Root
-                name="name"
-                defaultValue={activeCollection?.name ?? ""}
-                required
-                disabled={isUpdating}
-                aria-label="Collection name"
-              />
-              <TextArea
-                name="description"
-                defaultValue={activeCollection?.description ?? ""}
-                rows={3}
-                disabled={isUpdating}
-                aria-label="Collection description"
-              />
-              <Flex gap="3" justify="end">
-                <Button
-                  type="button"
-                  variant="soft"
-                  color="gray"
-                  onClick={() => {
-                    setIsEditing(false);
-                    setActiveCollectionId(null);
-                  }}
-                  disabled={isUpdating}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isUpdating}>
-                  {isUpdating ? "Saving..." : "Save changes"}
-                </Button>
-              </Flex>
-            </Flex>
-          </form>
-        </Dialog.Content>
-      </Dialog.Root>
+        collection={activeCollection}
+        onSubmit={handleEditSubmit}
+        isSubmitting={isUpdating}
+      />
 
-      <Dialog.Root
-        open={isDeleting && !!activeCollection}
+      <DeleteCollectionDialog
+        open={isDeleteDialogOpen && !!activeCollection}
         onOpenChange={(open) => {
-          setIsDeleting(open);
+          setIsDeleteDialogOpen(open);
           if (!open) {
             setActiveCollectionId(null);
           }
         }}
-      >
-        <Dialog.Content maxWidth="400px">
-          <Dialog.Title>Delete collection</Dialog.Title>
-          <Dialog.Description>
-            This action cannot be undone. All links in this collection will be
-            removed.
-          </Dialog.Description>
-          <Flex direction="column" gap="3" mt="4">
-            <Text>
-              Are you sure you want to delete{" "}
-              <strong>{activeCollection?.name}</strong>?
-            </Text>
-            <Flex gap="3" justify="end">
-              <Button
-                type="button"
-                variant="soft"
-                color="gray"
-                onClick={() => {
-                  setIsDeleting(false);
-                  setActiveCollectionId(null);
-                }}
-                disabled={isDeletingCollection}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                color="red"
-                onClick={handleDelete}
-                disabled={isDeletingCollection}
-              >
-                {isDeletingCollection ? "Deleting..." : "Delete"}
-              </Button>
-            </Flex>
-          </Flex>
-        </Dialog.Content>
-      </Dialog.Root>
+        collection={activeCollection}
+        onConfirm={handleDelete}
+        isDeleting={isDeleting}
+      />
     </Flex>
   );
 }

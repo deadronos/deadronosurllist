@@ -24,6 +24,11 @@ const createContext = cache(async () => {
 const getQueryClient = cache(createQueryClient);
 const caller = createCaller(createContext);
 
+/**
+ * Server-side tRPC helpers.
+ * `api` allows calling procedures directly from server components.
+ * `HydrateClient` allows hydrating the client-side cache with data fetched on the server.
+ */
 export const { trpc: api, HydrateClient } = createHydrationHelpers<AppRouter>(
   caller,
   getQueryClient,

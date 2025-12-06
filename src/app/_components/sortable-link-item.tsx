@@ -16,7 +16,7 @@ import {
   TrashIcon,
 } from "@radix-ui/react-icons";
 
-import type { CollectionLinkModel } from "./collection-links-manager";
+import type { CollectionLinkModel } from "./collection-links-manager/types";
 
 type SortableLinkItemProps = {
   link: CollectionLinkModel;
@@ -25,6 +25,13 @@ type SortableLinkItemProps = {
   dragDisabled?: boolean;
 };
 
+/**
+ * A link item within a sortable list.
+ * Supports drag-and-drop, editing, and deletion.
+ *
+ * @param {SortableLinkItemProps} props - Component properties.
+ * @returns {JSX.Element} The sortable item component.
+ */
 export function SortableLinkItem({
   link,
   onEdit,

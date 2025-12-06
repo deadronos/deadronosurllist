@@ -4,6 +4,11 @@ import {
 } from "@tanstack/react-query";
 import SuperJSON from "superjson";
 
+/**
+ * Creates a new QueryClient instance with default options.
+ *
+ * @returns {QueryClient} A new QueryClient instance.
+ */
 export const createQueryClient = () =>
   new QueryClient({
     defaultOptions: {

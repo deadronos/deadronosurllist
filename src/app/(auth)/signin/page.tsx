@@ -18,6 +18,12 @@ import type { AuthDiagnostics } from "@/server/auth/provider-helpers";
 
 import { SignInButtons } from "./sign-in-buttons";
 
+/**
+ * The sign-in page.
+ * Displays available authentication providers and diagnostics.
+ *
+ * @returns {JSX.Element} The sign-in page component.
+ */
 export default function SignInPage() {
   const {
     enabledProviders,

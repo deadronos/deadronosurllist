@@ -5,180 +5,26 @@ import {
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
-  type TRPCContext,
 } from "@/server/api/trpc";
 
-const PUBLIC_CATALOG_DEFAULT_LIMIT = 12;
-const PUBLIC_CATALOG_DEFAULT_LINK_LIMIT = 10;
-
-const publicCatalogInputSchema = z.object({
-  q: z.string().trim().min(1).optional(),
-  limit: z.number().int().min(1).max(50).default(PUBLIC_CATALOG_DEFAULT_LIMIT),
-  cursor: z.string().min(1).optional(),
-  linkLimit: z
-    .number()
-    .int()
-    .min(1)
-    .max(10)
-    .default(PUBLIC_CATALOG_DEFAULT_LINK_LIMIT),
-});
-
-const publicLinkSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  url: z.string().url(),
-  comment: z.string().nullable(),
-  order: z.number().int(),
-});
-
-const publicCollectionSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  description: z.string().nullable(),
-  isPublic: z.literal(true),
-  updatedAt: z.string(),
-  topLinks: z.array(publicLinkSchema),
-});
-
-const publicCatalogResponseSchema = z.object({
-  items: z.array(publicCollectionSchema),
-  nextCursor: z.string().nullable(),
-  totalCount: z.number().int(),
-});
-
-type PublicCatalogInput = z.infer<typeof publicCatalogInputSchema>;
-type PublicCatalogItem = z.infer<typeof publicCollectionSchema>;
-type PublicCatalogResponse = z.infer<typeof publicCatalogResponseSchema>;
-
-const publicCatalogQuery = {
-  where: { isPublic: true },
-  include: {
-    links: {
-      orderBy: { order: "asc" as const },
-    },
-  },
-} as const;
-
-const normalizeDescription = (
-  value: string | null | undefined,
-): string | null => {
-  if (value === undefined) return null;
-  return value;
-};
-
-const normalizeDescriptionForUpdate = (
-  value: string | null | undefined,
-): string | null | undefined => {
-  if (value === undefined) return undefined;
-  if (value === null) return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-};
-
-const normalizeDescriptionForCreate = (
-  value: string | null | undefined,
-): string | null => {
-  if (value === undefined || value === null) return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-};
-
-const toIsoString = (value: Date | string): string => {
-  if (typeof value === "string") {
-    return value;
-  }
-  return value.toISOString();
-};
-
-const mapCollectionRecordToCatalogItem = (
-  collection: {
-    id: string;
-    name: string;
-    description: string | null;
-    isPublic: boolean;
-    updatedAt: Date | string;
-    links?: Array<{
-      id: string;
-      name: string;
-      url: string;
-      comment: string | null;
-      order: number;
-    }>;
-  },
-  linkLimit: number,
-): PublicCatalogItem => {
-  const links = Array.isArray(collection.links) ? collection.links : [];
-  const sortedLinks = [...links].sort((a, b) => a.order - b.order);
-  const trimmedLinks = sortedLinks.slice(0, linkLimit).map((link) => ({
-    id: link.id,
-    name: link.name,
-    url: link.url,
-    comment: link.comment,
-    order: link.order,
-  }));
-
-  return {
-    id: collection.id,
-    name: collection.name,
-    description: normalizeDescription(collection.description),
-    isPublic: true,
-    updatedAt: toIsoString(collection.updatedAt),
-    topLinks: trimmedLinks,
-  };
-};
-
-async function fetchPublicCatalog(
-  ctx: TRPCContext,
-  input: PublicCatalogInput,
-): Promise<PublicCatalogResponse> {
-  const query = input.q?.trim().toLowerCase();
-  const linkLimit = input.linkLimit ?? PUBLIC_CATALOG_DEFAULT_LINK_LIMIT;
-  const limit = input.limit ?? PUBLIC_CATALOG_DEFAULT_LIMIT;
-
-  const collections = await ctx.db.collection.findMany(publicCatalogQuery);
-
-  const filtered = collections.filter((collection) => {
-    if (!query) return true;
-    const haystack = [collection.name, collection.description ?? ""]
-      .join(" ")
-      .toLowerCase();
-    return haystack.includes(query);
-  });
-
-  const sorted = filtered.sort((a, b) => {
-    const dateDiff =
-      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-    if (dateDiff !== 0) {
-      return dateDiff;
-    }
-    return b.id.localeCompare(a.id);
-  });
-
-  const allItems = sorted.map((collection) =>
-    mapCollectionRecordToCatalogItem(collection, linkLimit),
-  );
-
-  const totalCount = allItems.length;
-  const cursorId = input.cursor;
-  let startIndex = 0;
-  if (cursorId) {
-    const cursorIndex = allItems.findIndex((item) => item.id === cursorId);
-    startIndex = cursorIndex >= 0 ? cursorIndex + 1 : 0;
-  }
-  const pageItems = allItems.slice(startIndex, startIndex + limit);
-  const hasMore = startIndex + limit < allItems.length;
-  const lastItem = pageItems.at(-1);
-  const nextCursor = hasMore && lastItem ? lastItem.id : null;
-
-  return {
-    items: pageItems,
-    nextCursor,
-    totalCount,
-  } satisfies PublicCatalogResponse;
-}
+import {
+  PUBLIC_CATALOG_DEFAULT_LINK_LIMIT,
+  fetchPublicCatalog,
+  publicCatalogInputSchema,
+  publicCatalogResponseSchema,
+} from "./collection/catalog";
+import {
+  normalizeDescriptionForCreate,
+  normalizeDescriptionForUpdate,
+} from "./collection/normalizers";
 
 export const collectionRouter = createTRPCRouter({
-  // Get the most recently updated public collection with links
+  /**
+   * Get the most recently updated public collection with links.
+   * Useful for the landing page hero section.
+   *
+   * @returns {Promise<PublicCatalogItem | null>} The most recent public collection or null.
+   */
   getPublic: publicProcedure.query(async ({ ctx }) => {
     const catalog = await fetchPublicCatalog(ctx, {
       limit: 1,
@@ -187,7 +33,13 @@ export const collectionRouter = createTRPCRouter({
     return catalog.items.at(0) ?? null;
   }),
 
-  // Get all public collections with link summaries and pagination metadata
+  /**
+   * Get all public collections with link summaries and pagination metadata.
+   * Supports search, pagination (cursor-based), and configurable link limits.
+   *
+   * @param {PublicCatalogInput} input - Search and pagination parameters.
+   * @returns {Promise<PublicCatalogResponse>} A page of public collections.
+   */
   getPublicCatalog: publicProcedure
     .input(publicCatalogInputSchema)
     .output(publicCatalogResponseSchema)
@@ -195,7 +47,12 @@ export const collectionRouter = createTRPCRouter({
       return fetchPublicCatalog(ctx, input);
     }),
 
-  // Get all collections for current user
+  /**
+   * Get all collections for the current authenticated user.
+   * Returns a list of collections with link counts, ordered by user-defined order.
+   *
+   * @returns {Promise<CollectionRecord[]>} The user's collections.
+   */
   getAll: protectedProcedure.query(({ ctx }) => {
     return ctx.db.collection.findMany({
       where: { createdById: ctx.session.user.id },
@@ -204,7 +61,14 @@ export const collectionRouter = createTRPCRouter({
     });
   }),
 
-  // Get single collection with all links
+  /**
+   * Get a single collection with all its links.
+   * Ensures the collection belongs to the authenticated user.
+   *
+   * @param {object} input - The input object.
+   * @param {string} input.id - The ID of the collection to retrieve.
+   * @returns {Promise<CollectionRecord | null>} The collection with links, or null if not found.
+   */
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(({ ctx, input }) => {
@@ -219,7 +83,16 @@ export const collectionRouter = createTRPCRouter({
       });
     }),
 
-  // Create new collection
+  /**
+   * Create a new collection.
+   * Automatically assigns the next available order index.
+   *
+   * @param {object} input - The input object.
+   * @param {string} input.name - The name of the collection.
+   * @param {string} [input.description] - Optional description.
+   * @param {boolean} [input.isPublic=false] - Whether the collection is public.
+   * @returns {Promise<CollectionRecord>} The created collection.
+   */
   create: protectedProcedure
     .input(
       z.object({
@@ -245,7 +118,17 @@ export const collectionRouter = createTRPCRouter({
       });
     }),
 
-  // Update collection
+  /**
+   * Update an existing collection.
+   * Only allows updating fields that are provided.
+   *
+   * @param {object} input - The input object.
+   * @param {string} input.id - The ID of the collection to update.
+   * @param {string} [input.name] - New name.
+   * @param {string|null} [input.description] - New description.
+   * @param {boolean} [input.isPublic] - New visibility status.
+   * @returns {Promise<{ count: number }>} Result of the update operation.
+   */
   update: protectedProcedure
     .input(
       z.object({
@@ -288,7 +171,13 @@ export const collectionRouter = createTRPCRouter({
       });
     }),
 
-  // Delete collection
+  /**
+   * Delete a collection.
+   *
+   * @param {object} input - The input object.
+   * @param {string} input.id - The ID of the collection to delete.
+   * @returns {Promise<{ count: number }>} Result of the delete operation.
+   */
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -311,7 +200,14 @@ export const collectionRouter = createTRPCRouter({
       });
     }),
 
-  // Reorder collections
+  /**
+   * Reorder collections based on a provided list of IDs.
+   * Updates the `order` field for all collections to match the array index.
+   *
+   * @param {object} input - The input object.
+   * @param {string[]} input.collectionIds - Ordered list of collection IDs.
+   * @returns {Promise<unknown[]>} Result of the transaction.
+   */
   reorder: protectedProcedure
     .input(z.object({ collectionIds: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {

@@ -1,6 +1,10 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+/**
+ * Configuration for environment variables using T3 Env.
+ * Validates and exposes server-side and client-side environment variables.
+ */
 export const env = createEnv({
   /**
    * Specify your server-side environment variables schema here. This way you can ensure the app
