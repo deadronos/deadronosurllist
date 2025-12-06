@@ -13,6 +13,17 @@ const __dirname = path.dirname(__filename);
 const isMock = !!process.env.USE_MOCK_DB;
 
 const config = /** @type {import("next").NextConfig} */ ({
+  // Configure Turbopack to mirror the webpack aliasing used for mocks.
+  // When `USE_MOCK_DB` is set we alias server imports to the mock implementations
+  // so Turbopack builds behave the same as the current webpack-based dev setup.
+  turbopack: isMock
+    ? {
+        resolveAlias: {
+          "@/server/db": path.resolve(__dirname, "src/server/db.mock.ts"),
+          "@/server/auth": path.resolve(__dirname, "src/server/auth.mock.ts"),
+        },
+      }
+    : {},
   // Cast the webpack function to NextConfig['webpack'] so TS knows the parameter types
   webpack: /** @type {import("next").NextConfig['webpack']} */ (
     (cfg, options) => {
