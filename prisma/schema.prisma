@@ -10,8 +10,9 @@ datasource db {
   // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
   // Further reading:
   // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
-  url      = env("DATABASE_URL")
+  // Connection URL for v7+ is read from prisma.config.ts instead of the
+  // datasource `url` inside schema.prisma. See prisma.config.ts in the project
+  // root for the datasource configuration.
 }
 
 model Post {

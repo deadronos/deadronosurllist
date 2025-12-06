@@ -68,12 +68,17 @@ if (useMock) {
   }
 } else {
   const { PrismaClient } = await import("@prisma/client");
+  // Prisma v7 requires either a driver adapter for a direct DB connection
+  // or an accelerateUrl when using Prisma Accelerate. For PostgreSQL we use
+  // the official '@prisma/adapter-pg' driver adapter and pass it to the
+  // PrismaClient constructor via the `adapter` option.
+  const { PrismaPg } = await import("@prisma/adapter-pg");
 
   const createPrismaClient = () =>
     new PrismaClient({
       log:
         env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-      datasources: { db: { url: datasourceUrl } },
+      adapter: new PrismaPg({ connectionString: datasourceUrl }),
     });
 
   const globalForPrisma = globalThis as unknown as {
