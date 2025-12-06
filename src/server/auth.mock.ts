@@ -1,11 +1,12 @@
 // Simple mock of server auth helper used in createTRPCContext
 
+import type { Session } from "next-auth";
+
 /**
  * A mock authentication helper for testing purposes.
  * Returns a fixed session with a mock user.
- *
- * @returns {Promise<{ user: { id: string; name: string; email: string } }>} A promise resolving to the mock session.
  */
-export const auth = async () => ({
+export const auth = async (): Promise<Session | null> => ({
   user: { id: "user1", name: "Mock User", email: "mock@example.com" },
+  expires: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
 });

@@ -9,6 +9,8 @@ if (typeof process === "undefined") {
 // Set NODE_ENV and required env vars expected by src/env.js
 const env = process.env as Record<string, string | undefined>;
 env.NODE_ENV = env.NODE_ENV ?? "test";
+// minimal required env for createEnv validations
+env.HELLO = env.HELLO ?? "hello";
 env.DATABASE_URL = env.DATABASE_URL ?? "file:memory.db";
 env.AUTH_DISCORD_ID = env.AUTH_DISCORD_ID ?? "discord-id";
 env.AUTH_DISCORD_SECRET = env.AUTH_DISCORD_SECRET ?? "discord-secret";
