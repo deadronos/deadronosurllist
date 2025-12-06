@@ -5,6 +5,13 @@ import { useRouter } from "next/navigation";
 
 import { api } from "@/trpc/react";
 
+/**
+ * Form component for adding a new link to a collection.
+ *
+ * @param {object} props - The component props.
+ * @param {string} props.collectionId - The ID of the collection to add the link to.
+ * @returns {JSX.Element} The form component.
+ */
 export function LinkCreateForm({ collectionId }: { collectionId: string }) {
   const [url, setUrl] = useState("");
   const [name, setName] = useState("");

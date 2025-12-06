@@ -24,6 +24,16 @@ interface PublicCatalogProps {
   linkLimit: number;
 }
 
+/**
+ * Displays the public catalog of collections with search and pagination.
+ * Supports infinite scrolling using `useInfiniteQuery`.
+ *
+ * @param {PublicCatalogProps} props - Component properties.
+ * @param {PublicCatalogPage} props.initialPage - The initial page of data loaded from the server.
+ * @param {number} props.pageSize - Number of items per page.
+ * @param {number} props.linkLimit - Number of links to show per collection.
+ * @returns {JSX.Element} The public catalog component.
+ */
 export function PublicCatalog({
   initialPage,
   pageSize,

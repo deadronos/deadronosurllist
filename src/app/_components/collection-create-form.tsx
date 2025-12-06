@@ -15,6 +15,12 @@ import {
   TextField,
 } from "@radix-ui/themes";
 
+/**
+ * Form component for creating a new collection.
+ * Includes fields for name, description, and visibility.
+ *
+ * @returns {JSX.Element} The form component.
+ */
 export function CollectionCreateForm() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");

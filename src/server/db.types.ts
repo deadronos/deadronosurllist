@@ -1,14 +1,23 @@
 import type { Collection, Link, Post, Prisma } from "@prisma/client";
 
+/**
+ * Represents a Collection record, optionally including related Links and counts.
+ */
 export type CollectionRecord = Collection & {
   links?: LinkRecord[];
   _count?: { links: number };
 };
 
+/**
+ * Represents a Link record, optionally including its parent Collection.
+ */
 export type LinkRecord = Link & {
   collection?: CollectionRecord;
 };
 
+/**
+ * Abstract interface for the database, compatible with both Prisma and the mock DB.
+ */
 export type LinkListDatabase = {
   $transaction(
     operations: Array<

@@ -1,3 +1,6 @@
+/**
+ * Model representing a collection on the dashboard.
+ */
 export type DashboardCollectionModel = {
   id: string;
   name: string;
@@ -6,4 +9,7 @@ export type DashboardCollectionModel = {
   linkCount: number;
 };
 
+/**
+ * Feedback state for UI notifications.
+ */
 export type Feedback = { type: "success" | "error"; message: string } | null;

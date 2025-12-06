@@ -27,6 +27,14 @@ type CollectionLinksManagerProps = {
   initialIsPublic: boolean;
 };
 
+/**
+ * Manages the links within a collection.
+ * Provides functionality for reordering, filtering, editing, and deleting links.
+ * Also handles collection visibility toggle.
+ *
+ * @param {CollectionLinksManagerProps} props - Component properties.
+ * @returns {JSX.Element} The manager component.
+ */
 export function CollectionLinksManager({
   collectionId,
   initialLinks,

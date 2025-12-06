@@ -37,6 +37,13 @@ type UseCollectionLinksManagerOptions = {
   initialIsPublic: boolean;
 };
 
+/**
+ * Hook for managing collection links logic.
+ * Handles state for links, filtering, visibility, and mutation operations.
+ *
+ * @param {UseCollectionLinksManagerOptions} options - Hook options.
+ * @returns {object} The manager state and handlers.
+ */
 export function useCollectionLinksManager({
   collectionId,
   initialLinks,

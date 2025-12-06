@@ -98,5 +98,14 @@ const withAvailabilityGuard =
 
 const nextAuthHandler = NextAuth(authConfig) as RouteHandler;
 
+/**
+ * GET handler for NextAuth.js.
+ * Handles authentication requests (signin, signout, callback).
+ */
 export const GET = withAvailabilityGuard(nextAuthHandler);
+
+/**
+ * POST handler for NextAuth.js.
+ * Handles authentication actions.
+ */
 export const POST = withAvailabilityGuard(nextAuthHandler);
