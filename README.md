@@ -73,6 +73,14 @@ Application overview
 - tRPC routers live in `src/server/api/routers/` and are registered in `src/server/api/root.ts`.
 - The mock database used for fast unit tests is at `src/server/db.mock.ts`.
 
+Note on dev bundlers
+
+- Historically this project used build-time aliasing so `@/server/db` and
+  `@/server/auth` could be redirected to mock files while developing. That
+  behavior has been migrated to runtime: the application now selects mocks at
+  runtime (see `src/server/db.ts` and `src/server/auth/index.ts`), so Webpack or
+  Turbopack aliases are not required anymore.
+
 Architecture diagram
 
 ![Architecture diagram](docs/architecture.svg)
