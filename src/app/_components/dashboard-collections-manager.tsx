@@ -21,6 +21,13 @@ type DashboardCollectionsManagerProps = {
   initialCollections: DashboardCollectionModel[];
 };
 
+/**
+ * Manages the user's collections on the dashboard.
+ * Provides functionality for reordering, editing, and deleting collections.
+ *
+ * @param {DashboardCollectionsManagerProps} props - Component properties.
+ * @returns {JSX.Element} The manager component.
+ */
 export function DashboardCollectionsManager({
   initialCollections,
 }: DashboardCollectionsManagerProps) {

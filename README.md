@@ -50,6 +50,8 @@ npm run db:push
 npm run db:studio
 ```
 
+Alternatively, you can skip the database setup and use the **in-memory mock database** for rapid prototyping. The app defaults to the mock DB if `DATABASE_URL` is missing or `USE_MOCK_DB=true` is set.
+
 1. Run the development server
 
 ```bash
@@ -58,6 +60,7 @@ npm run dev
 
 Quality and checks
 
+- **Combined check**: `npm run check` (Runs lint and typecheck)
 - Type check: `npm run typecheck`
 - Lint: `npm run lint`
 - Tests: `npm run test` (Vitest)

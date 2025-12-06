@@ -27,6 +27,12 @@ type DeleteCollectionDialogProps = {
   isDeleting: boolean;
 };
 
+/**
+ * Dialog for editing a collection's details.
+ *
+ * @param {EditCollectionDialogProps} props - Component properties.
+ * @returns {JSX.Element} The dialog component.
+ */
 export function EditCollectionDialog({
   open,
   onOpenChange,
@@ -86,6 +92,12 @@ export function EditCollectionDialog({
   );
 }
 
+/**
+ * Dialog for confirming collection deletion.
+ *
+ * @param {DeleteCollectionDialogProps} props - Component properties.
+ * @returns {JSX.Element} The dialog component.
+ */
 export function DeleteCollectionDialog({
   open,
   onOpenChange,

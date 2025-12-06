@@ -125,6 +125,17 @@ if (useMock) {
   prismaSingleton = prismaClient;
 }
 
+/**
+ * The database interface, abstracting over either Prisma or the in-memory mock.
+ */
 export const db: LinkListDatabase = dbInternal;
+
+/**
+ * Indicates whether the application is running with the in-memory mock database.
+ */
 export const isMockDb = useMock;
+
+/**
+ * The underlying Prisma client instance, or null if using the mock database.
+ */
 export const prisma = prismaSingleton;

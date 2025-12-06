@@ -27,6 +27,12 @@ type PublicLink = PublicCatalogCollection["topLinks"][number];
 const PUBLIC_CATALOG_PAGE_SIZE = 12;
 const PUBLIC_CATALOG_LINK_LIMIT = 10;
 
+/**
+ * The landing page of the application.
+ * Displays the hero section, featured public collection, and the public catalog.
+ *
+ * @returns {Promise<JSX.Element>} The home page component.
+ */
 export default async function Home() {
   const sessionPromise = auth();
   const featuredCollectionPromise = api.collection.getPublic();

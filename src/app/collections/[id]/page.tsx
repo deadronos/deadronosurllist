@@ -26,6 +26,14 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+/**
+ * The collection detail page.
+ * Displays links within a specific collection and allows adding/managing links.
+ *
+ * @param {PageProps} props - The page properties.
+ * @param {Promise<{ id: string }>} props.params - The route parameters containing the collection ID.
+ * @returns {Promise<JSX.Element>} The collection page component.
+ */
 export default async function CollectionPage({ params }: PageProps) {
   const { id } = await params;
   const session = await auth();

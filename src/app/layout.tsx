@@ -21,6 +21,14 @@ const geist = Geist({
   variable: "--font-geist-sans",
 });
 
+/**
+ * Root layout component.
+ * Wraps the application with providers, theme, and global structure.
+ *
+ * @param {object} props - Component props.
+ * @param {React.ReactNode} props.children - The content to render.
+ * @returns {JSX.Element} The root HTML structure.
+ */
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {

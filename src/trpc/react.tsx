@@ -22,6 +22,10 @@ const getQueryClient = () => {
   return clientQueryClientSingleton;
 };
 
+/**
+ * tRPC React hooks for the AppRouter.
+ * Used to call tRPC procedures from client components.
+ */
 export const api = createTRPCReact<AppRouter>();
 
 /**
@@ -38,6 +42,13 @@ export type RouterInputs = inferRouterInputs<AppRouter>;
  */
 export type RouterOutputs = inferRouterOutputs<AppRouter>;
 
+/**
+ * A provider component that sets up the tRPC client and QueryClient.
+ *
+ * @param {object} props - The component props.
+ * @param {React.ReactNode} props.children - The child components to render within the provider.
+ * @returns {JSX.Element} The provider component.
+ */
 export function TRPCReactProvider(props: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
 

@@ -31,4 +31,8 @@ const handler = (req: NextRequest) =>
         : undefined,
   });
 
+/**
+ * tRPC API handler.
+ * Serves all tRPC procedures over HTTP.
+ */
 export { handler as GET, handler as POST };

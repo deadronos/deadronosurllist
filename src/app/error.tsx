@@ -18,6 +18,15 @@ type ErrorPageProps = {
   reset: () => void;
 };
 
+/**
+ * The global error boundary page.
+ * Catches runtime errors in the application and displays a friendly message.
+ *
+ * @param {ErrorPageProps} props - Component properties.
+ * @param {Error} props.error - The error object.
+ * @param {Function} props.reset - Function to reset the error boundary.
+ * @returns {JSX.Element} The error page component.
+ */
 export default function GlobalError({ error, reset }: ErrorPageProps) {
   return (
     <Box className="min-h-[60vh] bg-[radial-gradient(circle_at_top,_#1a1c2c,_#050508)] text-white">

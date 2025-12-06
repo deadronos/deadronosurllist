@@ -111,6 +111,14 @@ const resolveErrorCopy = (code?: string) => {
   };
 };
 
+/**
+ * The authentication error page.
+ * Displays user-friendly error messages based on the error code from NextAuth.
+ *
+ * @param {object} props - The page properties.
+ * @param {Promise<{ error?: string }>} props.searchParams - Query parameters containing the error code.
+ * @returns {Promise<JSX.Element>} The auth error page component.
+ */
 export default async function AuthErrorPage({
   searchParams,
 }: {

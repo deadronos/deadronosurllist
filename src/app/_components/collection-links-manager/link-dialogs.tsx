@@ -20,6 +20,12 @@ type DeleteLinkDialogProps = {
   isDeleting: boolean;
 };
 
+/**
+ * Dialog for editing a link's details.
+ *
+ * @param {EditLinkDialogProps} props - Component properties.
+ * @returns {JSX.Element} The dialog component.
+ */
 export function EditLinkDialog({
   open,
   onOpenChange,
@@ -76,6 +82,12 @@ export function EditLinkDialog({
   );
 }
 
+/**
+ * Dialog for confirming link deletion.
+ *
+ * @param {DeleteLinkDialogProps} props - Component properties.
+ * @returns {JSX.Element} The dialog component.
+ */
 export function DeleteLinkDialog({
   open,
   onOpenChange,

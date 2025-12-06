@@ -335,6 +335,10 @@ const resolveCreatedById = (data: Record<string, unknown>): string => {
   return "user1";
 };
 
+/**
+ * The in-memory mock database implementation.
+ * Mimics the Prisma client interface for supported operations.
+ */
 export const db = {
   $transaction: async (
     operations: Array<(() => Promise<unknown>) | Promise<unknown>>,
@@ -687,6 +691,10 @@ export const db = {
   },
 } as LinkListDatabase;
 
+/**
+ * Helper utilities for managing the in-memory mock database state.
+ * Useful for testing and development.
+ */
 export const __memoryDb = {
   reset: resetStore,
   ensureUser,

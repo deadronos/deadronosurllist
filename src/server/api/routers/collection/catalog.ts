@@ -4,7 +4,9 @@ import type { TRPCContext } from "@/server/api/trpc";
 
 import { normalizeDescription } from "./normalizers";
 
+/** Default number of collections to return per page in the public catalog. */
 export const PUBLIC_CATALOG_DEFAULT_LIMIT = 12;
+/** Default number of links to include per collection in the public catalog. */
 export const PUBLIC_CATALOG_DEFAULT_LINK_LIMIT = 10;
 
 const publicLinkSchema = z.object({
@@ -24,6 +26,10 @@ const publicCollectionSchema = z.object({
   topLinks: z.array(publicLinkSchema),
 });
 
+/**
+ * Zod schema for public catalog query input.
+ * Includes search query, pagination limit/cursor, and link limit.
+ */
 export const publicCatalogInputSchema = z.object({
   q: z.string().trim().min(1).optional(),
   limit: z.number().int().min(1).max(50).default(PUBLIC_CATALOG_DEFAULT_LIMIT),
@@ -36,6 +42,10 @@ export const publicCatalogInputSchema = z.object({
     .default(PUBLIC_CATALOG_DEFAULT_LINK_LIMIT),
 });
 
+/**
+ * Zod schema for public catalog response.
+ * Includes the list of items, the next cursor for pagination, and total count.
+ */
 export const publicCatalogResponseSchema = z.object({
   items: z.array(publicCollectionSchema),
   nextCursor: z.string().nullable(),
@@ -77,6 +87,14 @@ const toIsoString = (value: Date | string): string => {
   return value.toISOString();
 };
 
+/**
+ * Maps a database collection record to a public catalog item.
+ * Trims the number of links to the specified limit.
+ *
+ * @param {CollectionRecord} collection - The database record.
+ * @param {number} linkLimit - The maximum number of links to include.
+ * @returns {PublicCatalogItem} The formatted catalog item.
+ */
 export const mapCollectionRecordToCatalogItem = (
   collection: CollectionRecord,
   linkLimit: number,
@@ -101,6 +119,14 @@ export const mapCollectionRecordToCatalogItem = (
   } satisfies PublicCatalogItem;
 };
 
+/**
+ * Fetches the public catalog of collections.
+ * Handles filtering by search query and pagination.
+ *
+ * @param {TRPCContext} ctx - The tRPC context (containing database access).
+ * @param {PublicCatalogInput} input - Search and pagination parameters.
+ * @returns {Promise<PublicCatalogResponse>} The paginated catalog response.
+ */
 export async function fetchPublicCatalog(
   ctx: TRPCContext,
   input: PublicCatalogInput,
