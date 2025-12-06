@@ -25,6 +25,13 @@ type SortableLinkItemProps = {
   dragDisabled?: boolean;
 };
 
+/**
+ * A link item within a sortable list.
+ * Supports drag-and-drop, editing, and deletion.
+ *
+ * @param {SortableLinkItemProps} props - Component properties.
+ * @returns {JSX.Element} The sortable item component.
+ */
 export function SortableLinkItem({
   link,
   onEdit,

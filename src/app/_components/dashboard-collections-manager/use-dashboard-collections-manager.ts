@@ -34,6 +34,13 @@ type UseDashboardCollectionsManagerOptions = {
   initialCollections: DashboardCollectionModel[];
 };
 
+/**
+ * Hook for managing dashboard collections logic.
+ * Handles state for collections, drag-and-drop, and mutation operations.
+ *
+ * @param {UseDashboardCollectionsManagerOptions} options - Hook options.
+ * @returns {object} The manager state and handlers.
+ */
 export function useDashboardCollectionsManager({
   initialCollections,
 }: UseDashboardCollectionsManagerOptions) {

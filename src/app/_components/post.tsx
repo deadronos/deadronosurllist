@@ -4,6 +4,12 @@ import { useState } from "react";
 
 import { api } from "@/trpc/react";
 
+/**
+ * Component displaying the latest post and a form to create a new one.
+ * Demonstrates basic tRPC query and mutation usage.
+ *
+ * @returns {JSX.Element} The component.
+ */
 export function LatestPost() {
   const { data: latestPost } = api.post.getLatest.useQuery(undefined, {
     suspense: true,

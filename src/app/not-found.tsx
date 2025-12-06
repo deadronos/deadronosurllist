@@ -10,6 +10,12 @@ import {
   Text,
 } from "@radix-ui/themes";
 
+/**
+ * The 404 Not Found page.
+ * Displayed when a user navigates to a non-existent route.
+ *
+ * @returns {JSX.Element} The not found page component.
+ */
 export default function NotFound() {
   return (
     <Box className="min-h-[60vh] bg-[radial-gradient(circle_at_top,_#1a1c2c,_#050508)] text-white">

@@ -26,6 +26,13 @@ type CollectionSummary = {
 const gradientBackground =
   "min-h-screen bg-[radial-gradient(circle_at_top,_#101220,_#040406)] text-white";
 
+/**
+ * The user dashboard page.
+ * Displays the list of user collections and allows creating new ones.
+ * Requires authentication.
+ *
+ * @returns {Promise<JSX.Element>} The dashboard component.
+ */
 export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) {

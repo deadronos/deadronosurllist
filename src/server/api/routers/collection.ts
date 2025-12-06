@@ -19,7 +19,12 @@ import {
 } from "./collection/normalizers";
 
 export const collectionRouter = createTRPCRouter({
-  // Get the most recently updated public collection with links
+  /**
+   * Get the most recently updated public collection with links.
+   * Useful for the landing page hero section.
+   *
+   * @returns {Promise<PublicCatalogItem | null>} The most recent public collection or null.
+   */
   getPublic: publicProcedure.query(async ({ ctx }) => {
     const catalog = await fetchPublicCatalog(ctx, {
       limit: 1,
@@ -28,7 +33,13 @@ export const collectionRouter = createTRPCRouter({
     return catalog.items.at(0) ?? null;
   }),
 
-  // Get all public collections with link summaries and pagination metadata
+  /**
+   * Get all public collections with link summaries and pagination metadata.
+   * Supports search, pagination (cursor-based), and configurable link limits.
+   *
+   * @param {PublicCatalogInput} input - Search and pagination parameters.
+   * @returns {Promise<PublicCatalogResponse>} A page of public collections.
+   */
   getPublicCatalog: publicProcedure
     .input(publicCatalogInputSchema)
     .output(publicCatalogResponseSchema)
@@ -36,7 +47,12 @@ export const collectionRouter = createTRPCRouter({
       return fetchPublicCatalog(ctx, input);
     }),
 
-  // Get all collections for current user
+  /**
+   * Get all collections for the current authenticated user.
+   * Returns a list of collections with link counts, ordered by user-defined order.
+   *
+   * @returns {Promise<CollectionRecord[]>} The user's collections.
+   */
   getAll: protectedProcedure.query(({ ctx }) => {
     return ctx.db.collection.findMany({
       where: { createdById: ctx.session.user.id },
@@ -45,7 +61,14 @@ export const collectionRouter = createTRPCRouter({
     });
   }),
 
-  // Get single collection with all links
+  /**
+   * Get a single collection with all its links.
+   * Ensures the collection belongs to the authenticated user.
+   *
+   * @param {object} input - The input object.
+   * @param {string} input.id - The ID of the collection to retrieve.
+   * @returns {Promise<CollectionRecord | null>} The collection with links, or null if not found.
+   */
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(({ ctx, input }) => {
@@ -60,7 +83,16 @@ export const collectionRouter = createTRPCRouter({
       });
     }),
 
-  // Create new collection
+  /**
+   * Create a new collection.
+   * Automatically assigns the next available order index.
+   *
+   * @param {object} input - The input object.
+   * @param {string} input.name - The name of the collection.
+   * @param {string} [input.description] - Optional description.
+   * @param {boolean} [input.isPublic=false] - Whether the collection is public.
+   * @returns {Promise<CollectionRecord>} The created collection.
+   */
   create: protectedProcedure
     .input(
       z.object({
@@ -86,7 +118,17 @@ export const collectionRouter = createTRPCRouter({
       });
     }),
 
-  // Update collection
+  /**
+   * Update an existing collection.
+   * Only allows updating fields that are provided.
+   *
+   * @param {object} input - The input object.
+   * @param {string} input.id - The ID of the collection to update.
+   * @param {string} [input.name] - New name.
+   * @param {string|null} [input.description] - New description.
+   * @param {boolean} [input.isPublic] - New visibility status.
+   * @returns {Promise<{ count: number }>} Result of the update operation.
+   */
   update: protectedProcedure
     .input(
       z.object({
@@ -129,7 +171,13 @@ export const collectionRouter = createTRPCRouter({
       });
     }),
 
-  // Delete collection
+  /**
+   * Delete a collection.
+   *
+   * @param {object} input - The input object.
+   * @param {string} input.id - The ID of the collection to delete.
+   * @returns {Promise<{ count: number }>} Result of the delete operation.
+   */
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -152,7 +200,14 @@ export const collectionRouter = createTRPCRouter({
       });
     }),
 
-  // Reorder collections
+  /**
+   * Reorder collections based on a provided list of IDs.
+   * Updates the `order` field for all collections to match the array index.
+   *
+   * @param {object} input - The input object.
+   * @param {string[]} input.collectionIds - Ordered list of collection IDs.
+   * @returns {Promise<unknown[]>} Result of the transaction.
+   */
   reorder: protectedProcedure
     .input(z.object({ collectionIds: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
