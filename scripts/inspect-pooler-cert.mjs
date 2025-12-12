@@ -1,8 +1,13 @@
 import tls from 'tls';
 
-const [host, port, servername] = process.argv.slice(2);
+// Check for --insecure flag (optionally anywhere in arguments)
+const args = process.argv.slice(2);
+const insecureFlagIndex = args.indexOf('--insecure');
+const filteredArgs = insecureFlagIndex !== -1 ? args.filter((arg) => arg !== '--insecure') : args;
+const [host, port, servername] = filteredArgs;
 if (!host || !port) {
-  console.error('Usage: node scripts/inspect-pooler-cert.mjs <host> <port> [servername]');
+  console.error('Usage: node scripts/inspect-pooler-cert.mjs <host> <port> [servername] [--insecure]');
+  console.error('         --insecure disables certificate validation (NOT RECOMMENDED unless debugging non-compliant servers)');
   process.exit(2);
 }
 
@@ -10,8 +15,10 @@ const opts = {
   host,
   port: Number(port),
   servername: servername || host,
-  rejectUnauthorized: false, // we only want to inspect the chain
   timeout: 10000,
+if (insecureFlagIndex !== -1) {
+  opts.rejectUnauthorized = false; // disable cert validation only if explicitly requested
+}
 };
 
 const sock = tls.connect(opts, () => {
