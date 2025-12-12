@@ -3,6 +3,18 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 
+const urlSchema = z.string().url().refine(
+  (val) => {
+    try {
+      const protocol = new URL(val).protocol;
+      return ["http:", "https:"].includes(protocol);
+    } catch {
+      return false;
+    }
+  },
+  { message: "Only http and https URLs are allowed" },
+);
+
 export const linkRouter = createTRPCRouter({
   /**
    * Create a new link within a collection.
@@ -19,7 +31,7 @@ export const linkRouter = createTRPCRouter({
     .input(
       z.object({
         collectionId: z.string(),
-        url: z.string().url(),
+        url: urlSchema,
         name: z.string().min(1).max(200),
         comment: z.string().max(1000).optional(),
       }),
@@ -63,7 +75,7 @@ export const linkRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-        url: z.string().url().optional(),
+        url: urlSchema.optional(),
         name: z.string().min(1).max(200).optional(),
         comment: z.string().max(1000).optional(),
       }),
