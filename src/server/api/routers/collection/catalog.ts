@@ -9,10 +9,25 @@ export const PUBLIC_CATALOG_DEFAULT_LIMIT = 12;
 /** Default number of links to include per collection in the public catalog. */
 export const PUBLIC_CATALOG_DEFAULT_LINK_LIMIT = 10;
 
+/**
+ * Validates that the URL uses a safe protocol (http or https).
+ * Prevents Stored XSS via javascript: or data: URLs.
+ */
+const isSafeUrl = (val: string) => {
+  try {
+    const protocol = new URL(val).protocol;
+    return ["http:", "https:"].includes(protocol);
+  } catch {
+    return false;
+  }
+};
+
 const publicLinkSchema = z.object({
   id: z.string(),
   name: z.string(),
-  url: z.string().url(),
+  url: z.string().url().refine(isSafeUrl, {
+    message: "Only http and https URLs are allowed",
+  }),
   comment: z.string().nullable(),
   order: z.number().int(),
 });
@@ -101,7 +116,11 @@ export const mapCollectionRecordToCatalogItem = (
 ): PublicCatalogItem => {
   const links = Array.isArray(collection.links) ? collection.links : [];
   const sortedLinks = [...links].sort((a, b) => a.order - b.order);
-  const trimmedLinks = sortedLinks.slice(0, linkLimit).map((link) => ({
+
+  // Filter unsafe links (javascript:, etc.) to prevent Stored XSS
+  const safeLinks = sortedLinks.filter((link) => isSafeUrl(link.url));
+
+  const trimmedLinks = safeLinks.slice(0, linkLimit).map((link) => ({
     id: link.id,
     name: link.name,
     url: link.url,
