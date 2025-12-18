@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { load } from "cheerio";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
@@ -16,6 +17,48 @@ const urlSchema = z.string().url().refine(
 );
 
 export const linkRouter = createTRPCRouter({
+  /**
+   * Fetch metadata (title, description) for a given URL.
+   *
+   * @param {object} input - The input object.
+   * @param {string} input.url - The URL to fetch metadata for.
+   * @returns {Promise<{ title: string; description: string }>} The extracted metadata.
+   */
+  preview: protectedProcedure
+    .input(z.object({ url: urlSchema }))
+    .mutation(async ({ input }) => {
+      try {
+        const response = await fetch(input.url, {
+          headers: {
+            "User-Agent": "LinkList-Bot/1.0",
+          },
+        });
+        const html = await response.text();
+        const $ = load(html);
+
+        const title =
+          $("title").text() ||
+          $('meta[property="og:title"]').attr("content") ||
+          "";
+
+        const description =
+          $('meta[name="description"]').attr("content") ||
+          $('meta[property="og:description"]').attr("content") ||
+          "";
+
+        return {
+          title: title.trim(),
+          description: description.trim(),
+        };
+      } catch (error) {
+        console.error("Failed to fetch metadata for", input.url, error);
+        return {
+          title: "",
+          description: "",
+        };
+      }
+    }),
+
   /**
    * Create a new link within a collection.
    * Automatically assigns the next available order index.
