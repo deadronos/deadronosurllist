@@ -4,9 +4,11 @@ import { getServerSession } from "next-auth";
 import { authConfig } from "./config";
 
 // Prefer runtime selection of the implementation so downstream code doesn't
-// need a bundler-level alias. If `USE_MOCK_DB` is set the mock implementation
-// will be used at runtime; otherwise we call into NextAuth's server session.
-const useMock = !!process.env.USE_MOCK_DB;
+// need a bundler-level alias. Mock auth is controlled independently from the
+// mock database so local dev can use the in-memory DB while still exercising
+// real OAuth sign-in flows.
+const useMock =
+  process.env.USE_MOCK_AUTH === "true" || process.env.USE_MOCK_AUTH === "1";
 
 let authImpl: () => Promise<Session | null>;
 
