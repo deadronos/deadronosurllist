@@ -28,6 +28,29 @@ export function LinkCreateForm({ collectionId }: { collectionId: string }) {
     },
   });
 
+  const previewMutation = api.link.preview.useMutation({
+    onSuccess: (data) => {
+      if (!name && data.title) {
+        setName(data.title);
+      }
+      if (!comment && data.description) {
+        setComment(data.description);
+      }
+    },
+  });
+
+  const handleUrlBlur = () => {
+    if (!url) return;
+    try {
+      const u = new URL(url);
+      if (["http:", "https:"].includes(u.protocol)) {
+        previewMutation.mutate({ url });
+      }
+    } catch {
+      // ignore invalid urls
+    }
+  };
+
   return (
     <form
       onSubmit={(e) => {
@@ -44,7 +67,11 @@ export function LinkCreateForm({ collectionId }: { collectionId: string }) {
           placeholder="https://example.com"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
+          onBlur={handleUrlBlur}
         />
+        {previewMutation.isPending && (
+          <span className="text-xs text-gray-500">Fetching metadata...</span>
+        )}
       </div>
       <div className="mb-2">
         <input
