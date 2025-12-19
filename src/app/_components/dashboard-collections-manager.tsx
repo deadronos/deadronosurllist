@@ -2,10 +2,24 @@
 
 import { useState } from "react";
 import { DndContext } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { Callout, Card, Flex, Heading, Text } from "@radix-ui/themes";
-import { CheckIcon, ExclamationTriangleIcon } from "@radix-ui/react-icons";
+import {
+  Callout,
+  Card,
+  Flex,
+  Heading,
+  Text,
+  TextField,
+} from "@radix-ui/themes";
+import {
+  CheckIcon,
+  ExclamationTriangleIcon,
+  MagnifyingGlassIcon,
+} from "@radix-ui/react-icons";
 
 import { SortableCollectionItem } from "./sortable-collection-item";
 import {
@@ -44,6 +58,7 @@ export function DashboardCollectionsManager({
     isDeleting,
   } = useDashboardCollectionsManager({ initialCollections });
 
+  const [filterText, setFilterText] = useState("");
   const [activeCollectionId, setActiveCollectionId] = useState<string | null>(
     null,
   );
@@ -51,6 +66,16 @@ export function DashboardCollectionsManager({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const activeCollection = getCollectionById(activeCollectionId);
+
+  const filteredCollections = collections.filter(
+    (c) =>
+      c.name.toLowerCase().includes(filterText.toLowerCase()) ||
+      (c.description &&
+        c.description.toLowerCase().includes(filterText.toLowerCase())),
+  );
+
+  const isFiltering = filterText.trim().length > 0;
+  const displayCollections = isFiltering ? filteredCollections : collections;
 
   const openEditDialog = (collectionId: string) => {
     setActiveCollectionId(collectionId);
@@ -110,6 +135,16 @@ export function DashboardCollectionsManager({
 
   return (
     <Flex direction="column" gap="4">
+      <TextField.Root
+        placeholder="Filter collections..."
+        value={filterText}
+        onChange={(e) => setFilterText(e.target.value)}
+      >
+        <TextField.Slot>
+          <MagnifyingGlassIcon height="16" width="16" />
+        </TextField.Slot>
+      </TextField.Root>
+
       {feedback ? (
         <Callout.Root
           color={feedback.type === "success" ? "green" : "red"}
@@ -126,24 +161,24 @@ export function DashboardCollectionsManager({
         </Callout.Root>
       ) : null}
 
-      {collections.length > 0 ? (
+      {displayCollections.length > 0 ? (
         <DndContext
           sensors={sensors}
           onDragEnd={handleDragEnd}
           modifiers={[restrictToVerticalAxis]}
         >
           <SortableContext
-            items={collections.map((collection) => collection.id)}
+            items={displayCollections.map((collection) => collection.id)}
             strategy={verticalListSortingStrategy}
           >
             <Flex direction="column" gap="3">
-              {collections.map((collection) => (
+              {displayCollections.map((collection) => (
                 <SortableCollectionItem
                   key={collection.id}
                   collection={collection}
                   onEdit={() => openEditDialog(collection.id)}
                   onDelete={() => openDeleteDialog(collection.id)}
-                  dragDisabled={isReordering}
+                  dragDisabled={isReordering || isFiltering}
                 />
               ))}
             </Flex>
