@@ -1,5 +1,0 @@
-
-> deadronosurllist@0.1.0 check
-> next lint && tsc --noEmit
-
-sh: 1: next: not found
