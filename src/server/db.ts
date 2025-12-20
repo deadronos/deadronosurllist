@@ -105,6 +105,7 @@ if (useMock) {
       create: (args) => prismaClient.collection.create(args),
       update: (args) => prismaClient.collection.update(args),
       updateMany: (args) => prismaClient.collection.updateMany(args),
+      count: (args) => prismaClient.collection.count(args),
       delete: (args) => prismaClient.collection.delete(args),
       deleteMany: (args) => prismaClient.collection.deleteMany(args),
     },
