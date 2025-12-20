@@ -16,10 +16,11 @@ const opts = {
   port: Number(port),
   servername: servername || host,
   timeout: 10000,
+};
+
 if (insecureFlagIndex !== -1) {
   opts.rejectUnauthorized = false; // disable cert validation only if explicitly requested
 }
-};
 
 const sock = tls.connect(opts, () => {
   try {

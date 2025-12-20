@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
@@ -20,8 +21,8 @@ import type { CollectionLinkModel } from "./collection-links-manager/types";
 
 type SortableLinkItemProps = {
   link: CollectionLinkModel;
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
   dragDisabled?: boolean;
 };
 
@@ -32,7 +33,7 @@ type SortableLinkItemProps = {
  * @param {SortableLinkItemProps} props - Component properties.
  * @returns {JSX.Element} The sortable item component.
  */
-export function SortableLinkItem({
+export const SortableLinkItem = memo(function SortableLinkItem({
   link,
   onEdit,
   onDelete,
@@ -101,12 +102,16 @@ export function SortableLinkItem({
         </Flex>
         <Flex gap="2">
           <Tooltip content="Edit link">
-            <IconButton variant="outline" onClick={onEdit}>
+            <IconButton variant="outline" onClick={() => onEdit(link.id)}>
               <Pencil2Icon />
             </IconButton>
           </Tooltip>
           <Tooltip content="Delete link">
-            <IconButton variant="outline" color="red" onClick={onDelete}>
+            <IconButton
+              variant="outline"
+              color="red"
+              onClick={() => onDelete(link.id)}
+            >
               <TrashIcon />
             </IconButton>
           </Tooltip>
@@ -114,4 +119,4 @@ export function SortableLinkItem({
       </Flex>
     </Card>
   );
-}
+});
