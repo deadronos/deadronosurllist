@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 import type { TRPCContext } from "@/server/api/trpc";
@@ -86,15 +87,6 @@ type CollectionRecord = {
   }>;
 };
 
-const publicCatalogQuery = {
-  where: { isPublic: true },
-  include: {
-    links: {
-      orderBy: { order: "asc" as const },
-    },
-  },
-} as const;
-
 const toIsoString = (value: Date | string): string => {
   if (typeof value === "string") {
     return value;
@@ -150,47 +142,50 @@ export async function fetchPublicCatalog(
   ctx: TRPCContext,
   input: PublicCatalogInput,
 ): Promise<PublicCatalogResponse> {
-  const query = input.q?.trim().toLowerCase();
+  const query = input.q?.trim();
   const linkLimit = input.linkLimit ?? PUBLIC_CATALOG_DEFAULT_LINK_LIMIT;
   const limit = input.limit ?? PUBLIC_CATALOG_DEFAULT_LIMIT;
-
-  const collections = await ctx.db.collection.findMany(publicCatalogQuery);
-
-  const filtered = collections.filter((collection) => {
-    if (!query) return true;
-    const haystack = [collection.name, collection.description ?? ""]
-      .join(" ")
-      .toLowerCase();
-    return haystack.includes(query);
-  });
-
-  const sorted = filtered.sort((a, b) => {
-    const dateDiff =
-      new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-    if (dateDiff !== 0) {
-      return dateDiff;
-    }
-    return b.id.localeCompare(a.id);
-  });
-
-  const allItems = sorted.map((collection) =>
-    mapCollectionRecordToCatalogItem(collection, linkLimit),
-  );
-
-  const totalCount = allItems.length;
   const cursorId = input.cursor;
-  let startIndex = 0;
-  if (cursorId) {
-    const cursorIndex = allItems.findIndex((item) => item.id === cursorId);
-    startIndex = cursorIndex >= 0 ? cursorIndex + 1 : 0;
-  }
-  const pageItems = allItems.slice(startIndex, startIndex + limit);
-  const hasMore = startIndex + limit < allItems.length;
+
+  const whereClause: Prisma.CollectionWhereInput = {
+    isPublic: true,
+    ...(query
+      ? {
+          OR: [
+            { name: { contains: query, mode: "insensitive" } },
+            { description: { contains: query, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+  };
+
+  const [totalCount, collections] = await Promise.all([
+    ctx.db.collection.count({ where: whereClause }),
+    ctx.db.collection.findMany({
+      where: whereClause,
+      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+      take: limit + 1,
+      cursor: cursorId ? { id: cursorId } : undefined,
+      skip: cursorId ? 1 : 0,
+      include: {
+        links: {
+          orderBy: { order: "asc" },
+        },
+      },
+    }),
+  ]);
+
+  const hasMore = collections.length > limit;
+  const pageItems = hasMore ? collections.slice(0, limit) : collections;
   const lastItem = pageItems.at(-1);
   const nextCursor = hasMore && lastItem ? lastItem.id : null;
 
+  const items = pageItems.map((collection) =>
+    mapCollectionRecordToCatalogItem(collection, linkLimit),
+  );
+
   return {
-    items: pageItems,
+    items,
     nextCursor,
     totalCount,
   } satisfies PublicCatalogResponse;

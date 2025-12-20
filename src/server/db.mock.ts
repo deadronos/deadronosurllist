@@ -159,11 +159,41 @@ const resetStore = () => {
 
 resetStore();
 
+const matchStringFilter = (actual: string | null, filter: unknown): boolean => {
+  if (typeof filter === "string") return actual === filter;
+  if (typeof filter === "object" && filter !== null) {
+    const f = filter as { contains?: string; mode?: "insensitive" };
+    if (f.contains) {
+      const needle =
+        f.mode === "insensitive" ? f.contains.toLowerCase() : f.contains;
+      const haystack =
+        f.mode === "insensitive" ? (actual ?? "").toLowerCase() : actual ?? "";
+      return haystack.includes(needle);
+    }
+  }
+  return true;
+};
+
 const matchesCollectionWhere = (
   record: CollectionRecord,
   where?: Record<string, unknown>,
 ) => {
   if (!where) return true;
+
+  if (where.OR && Array.isArray(where.OR)) {
+    const matchesOr = where.OR.some((cond: Record<string, unknown>) =>
+      matchesCollectionWhere(record, cond),
+    );
+    if (!matchesOr) return false;
+  }
+
+  if (where.name && !matchStringFilter(record.name, where.name)) return false;
+  if (
+    where.description &&
+    !matchStringFilter(record.description, where.description)
+  )
+    return false;
+
   if (where.id && record.id !== where.id) return false;
   if (where.createdById && record.createdById !== where.createdById)
     return false;
@@ -355,29 +385,73 @@ export const db = {
     findMany: async (args?: {
       where?: Record<string, unknown>;
       include?: CollectionInclude;
-      orderBy?: {
-        createdAt?: SortOrder;
-        updatedAt?: SortOrder;
-        order?: SortOrder;
-      };
+      orderBy?:
+        | {
+            createdAt?: SortOrder;
+            updatedAt?: SortOrder;
+            order?: SortOrder;
+          }
+        | Array<{
+            createdAt?: SortOrder;
+            updatedAt?: SortOrder;
+            id?: SortOrder;
+          }>;
+      take?: number;
+      skip?: number;
+      cursor?: { id: string };
     }) => {
-      const where = args?.where;
-      const include = args?.include;
-      const orderBy = args?.orderBy;
+      const { where, include, orderBy, take, skip, cursor } = args ?? {};
 
-      const items = Array.from(store.collections.values()).filter((record) =>
+      let items = Array.from(store.collections.values()).filter((record) =>
         matchesCollectionWhere(record, where),
       );
 
-      let sorted = items;
-      if (orderBy?.order) {
+      // Sort
+      if (Array.isArray(orderBy)) {
+        items.sort((a, b) => {
+          for (const sort of orderBy) {
+            if (sort.updatedAt) {
+              const dateA = a.updatedAt.getTime();
+              const dateB = b.updatedAt.getTime();
+              const diff =
+                (dateA - dateB) * (sort.updatedAt === "desc" ? -1 : 1);
+              if (diff !== 0) return diff;
+            }
+            if (sort.id) {
+              const diff =
+                a.id.localeCompare(b.id) * (sort.id === "desc" ? -1 : 1);
+              if (diff !== 0) return diff;
+            }
+          }
+          return 0;
+        });
+      } else if (orderBy && "order" in orderBy && orderBy.order) {
         const direction = orderBy.order === "desc" ? -1 : 1;
-        sorted = [...items].sort((a, b) => (a.order - b.order) * direction);
-      } else if (orderBy) {
-        sorted = sortByDate(items, orderBy);
+        items.sort((a, b) => (a.order - b.order) * direction);
+      } else if (orderBy && !Array.isArray(orderBy)) {
+        items = sortByDate(items, orderBy);
       }
 
-      return sorted.map((record) => toCollectionResult(record, include));
+      // Cursor & Pagination
+      let startIndex = 0;
+      if (cursor?.id) {
+        const idx = items.findIndex((i) => i.id === cursor.id);
+        if (idx !== -1) {
+          startIndex = idx;
+        }
+      }
+
+      if (skip) {
+        startIndex += skip;
+      }
+
+      let result = items.slice(startIndex);
+
+      if (take !== undefined) {
+        result = result.slice(0, take);
+      }
+
+      return result.map((record) => toCollectionResult(record, include));
     },
 
     findFirst: async (args?: {
@@ -466,6 +540,14 @@ export const db = {
         record.updatedAt = new Date();
       });
       return { count: matched.length };
+    },
+
+    count: async (args?: { where?: Record<string, unknown> }) => {
+      const where = args?.where;
+      const count = Array.from(store.collections.values()).filter((record) =>
+        matchesCollectionWhere(record, where),
+      ).length;
+      return count;
     },
 
     delete: async (args: {
