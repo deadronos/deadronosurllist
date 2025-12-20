@@ -36,6 +36,7 @@ export type LinkListDatabase = {
     updateMany(
       args: Prisma.CollectionUpdateManyArgs,
     ): Promise<Prisma.BatchPayload>;
+    count(args?: Prisma.CollectionCountArgs): Promise<number>;
     delete(args: Prisma.CollectionDeleteArgs): Promise<Collection>;
     deleteMany(
       args: Prisma.CollectionDeleteManyArgs,
