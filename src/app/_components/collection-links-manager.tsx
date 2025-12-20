@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { DndContext } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
@@ -74,15 +74,15 @@ export function CollectionLinksManager({
 
   const hasLinks = filteredLinks.length > 0;
 
-  const openEditDialog = (linkId: string) => {
+  const openEditDialog = useCallback((linkId: string) => {
     setSelectedLinkId(linkId);
     setIsEditing(true);
-  };
+  }, []);
 
-  const openDeleteDialog = (linkId: string) => {
+  const openDeleteDialog = useCallback((linkId: string) => {
     setSelectedLinkId(linkId);
     setIsDeletingDialogOpen(true);
-  };
+  }, []);
 
   const handleEditSubmit = (formData: FormData) => {
     if (!activeLink) return;
@@ -198,8 +198,8 @@ export function CollectionLinksManager({
               key={link.id}
               link={link}
               dragDisabled
-              onEdit={() => openEditDialog(link.id)}
-              onDelete={() => openDeleteDialog(link.id)}
+              onEdit={openEditDialog}
+              onDelete={openDeleteDialog}
             />
           ))}
         </Flex>
@@ -219,8 +219,8 @@ export function CollectionLinksManager({
                   key={link.id}
                   link={link}
                   dragDisabled={isReordering}
-                  onEdit={() => openEditDialog(link.id)}
-                  onDelete={() => openDeleteDialog(link.id)}
+                  onEdit={openEditDialog}
+                  onDelete={openDeleteDialog}
                 />
               ))}
             </Flex>

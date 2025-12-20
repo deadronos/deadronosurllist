@@ -1,7 +1,4 @@
 import type { Session } from "next-auth";
-import { getServerSession } from "next-auth";
-
-import { authConfig } from "./config";
 
 // Prefer runtime selection of the implementation so downstream code doesn't
 // need a bundler-level alias. Mock auth is controlled independently from the
@@ -18,10 +15,14 @@ if (useMock) {
   // matches the mock module (useful for tests that compare identities).
   authImpl = mod.auth;
 } else {
+  // Lazy-import heavy modules only when not using mock auth. This keeps the
+  // module fast to evaluate in tests that set USE_MOCK_AUTH.
+  const { getServerSession } = await import("next-auth");
+  const { authConfig } = await import("./config");
   authImpl = async () => getServerSession(authConfig);
 }
 
 export const auth = authImpl;
 
 export { authDiagnostics } from "./config";
-export { authConfig };
+export { authConfig } from "./config";
