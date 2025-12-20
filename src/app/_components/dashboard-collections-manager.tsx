@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { DndContext } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -77,15 +77,15 @@ export function DashboardCollectionsManager({
   const isFiltering = filterText.trim().length > 0;
   const displayCollections = isFiltering ? filteredCollections : collections;
 
-  const openEditDialog = (collectionId: string) => {
+  const openEditDialog = useCallback((collectionId: string) => {
     setActiveCollectionId(collectionId);
     setIsEditDialogOpen(true);
-  };
+  }, []);
 
-  const openDeleteDialog = (collectionId: string) => {
+  const openDeleteDialog = useCallback((collectionId: string) => {
     setActiveCollectionId(collectionId);
     setIsDeleteDialogOpen(true);
-  };
+  }, []);
 
   const handleEditSubmit = (formData: FormData) => {
     if (!activeCollection) return;
@@ -176,8 +176,8 @@ export function DashboardCollectionsManager({
                 <SortableCollectionItem
                   key={collection.id}
                   collection={collection}
-                  onEdit={() => openEditDialog(collection.id)}
-                  onDelete={() => openDeleteDialog(collection.id)}
+                  onEdit={openEditDialog}
+                  onDelete={openDeleteDialog}
                   dragDisabled={isReordering || isFiltering}
                 />
               ))}

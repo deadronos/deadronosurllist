@@ -1,6 +1,6 @@
 "use client";
 
-import { type CSSProperties } from "react";
+import { type CSSProperties, memo } from "react";
 import Link from "next/link";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -23,8 +23,8 @@ import type { DashboardCollectionModel } from "./dashboard-collections-manager/t
 
 type SortableCollectionItemProps = {
   collection: DashboardCollectionModel;
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
   dragDisabled?: boolean;
 };
 
@@ -35,7 +35,7 @@ type SortableCollectionItemProps = {
  * @param {SortableCollectionItemProps} props - Component properties.
  * @returns {JSX.Element} The sortable item component.
  */
-export function SortableCollectionItem({
+export const SortableCollectionItem = memo(function SortableCollectionItem({
   collection,
   onEdit,
   onDelete,
@@ -117,12 +117,19 @@ export function SortableCollectionItem({
             <Link href={`/collections/${collection.id}`}>Open</Link>
           </Button>
           <Tooltip content="Edit collection">
-            <IconButton variant="outline" onClick={onEdit}>
+            <IconButton
+              variant="outline"
+              onClick={() => onEdit(collection.id)}
+            >
               <Pencil2Icon />
             </IconButton>
           </Tooltip>
           <Tooltip content="Delete collection">
-            <IconButton variant="outline" color="red" onClick={onDelete}>
+            <IconButton
+              variant="outline"
+              color="red"
+              onClick={() => onDelete(collection.id)}
+            >
               <TrashIcon />
             </IconButton>
           </Tooltip>
@@ -130,4 +137,4 @@ export function SortableCollectionItem({
       </Flex>
     </Card>
   );
-}
+});
