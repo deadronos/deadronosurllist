@@ -115,6 +115,7 @@ if (useMock) {
       findMany: async (args) =>
         (await prismaClient.link.findMany(args)) as LinkRecord[],
       create: (args) => prismaClient.link.create(args),
+      createMany: (args) => prismaClient.link.createMany(args),
       update: async (args) =>
         (await prismaClient.link.update(args)) as LinkRecord,
       updateMany: (args) => prismaClient.link.updateMany(args),

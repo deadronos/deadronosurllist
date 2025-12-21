@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { api } from "@/trpc/react";
+import { BulkImportDialog } from "./collection-links-manager/bulk-import-dialog";
 
 /**
  * Form component for adding a new link to a collection.
@@ -89,13 +90,26 @@ export function LinkCreateForm({ collectionId }: { collectionId: string }) {
           onChange={(e) => setComment(e.target.value)}
         />
       </div>
-      <button
-        type="submit"
-        disabled={createMutation.isPending}
-        className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
-      >
-        {createMutation.isPending ? "Adding..." : "Add"}
-      </button>
+      <div className="flex items-center justify-between">
+        <button
+          type="submit"
+          disabled={createMutation.isPending}
+          className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
+        >
+          {createMutation.isPending ? "Adding..." : "Add"}
+        </button>
+        <BulkImportDialog
+          collectionId={collectionId}
+          trigger={
+            <button
+              type="button"
+              className="text-sm text-slate-500 hover:text-slate-700 hover:underline"
+            >
+              Bulk Import
+            </button>
+          }
+        />
+      </div>
     </form>
   );
 }

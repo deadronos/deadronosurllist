@@ -46,6 +46,7 @@ export type LinkListDatabase = {
     findFirst(args?: Prisma.LinkFindFirstArgs): Promise<LinkRecord | null>;
     findMany(args?: Prisma.LinkFindManyArgs): Promise<LinkRecord[]>;
     create(args: Prisma.LinkCreateArgs): Promise<Link>;
+    createMany(args: Prisma.LinkCreateManyArgs): Promise<Prisma.BatchPayload>;
     update(args: Prisma.LinkUpdateArgs): Promise<LinkRecord>;
     updateMany(args: Prisma.LinkUpdateManyArgs): Promise<Prisma.BatchPayload>;
     delete(args: Prisma.LinkDeleteArgs): Promise<LinkRecord>;

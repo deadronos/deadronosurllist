@@ -105,6 +105,56 @@ export const linkRouter = createTRPCRouter({
     }),
 
   /**
+   * Create multiple links at once.
+   *
+   * @param {object} input - The input object.
+   * @param {string} input.collectionId - The ID of the parent collection.
+   * @param {object[]} input.links - Array of links to create.
+   * @returns {Promise<unknown>} The result of the creation.
+   */
+  createBatch: protectedProcedure
+    .input(
+      z.object({
+        collectionId: z.string(),
+        links: z
+          .array(
+            z.object({
+              url: urlSchema,
+              name: z.string().min(1).max(200),
+              comment: z.string().max(1000).optional(),
+            }),
+          )
+          .min(1)
+          .max(50),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const collection = await ctx.db.collection.findFirst({
+        where: {
+          id: input.collectionId,
+          createdById: ctx.session.user.id,
+        },
+      });
+
+      if (!collection) throw new TRPCError({ code: "FORBIDDEN" });
+
+      const maxOrder = await ctx.db.link.findFirst({
+        where: { collectionId: input.collectionId },
+        orderBy: { order: "desc" },
+      });
+
+      const startOrder = (maxOrder?.order ?? 0) + 1;
+
+      return ctx.db.link.createMany({
+        data: input.links.map((link, index) => ({
+          ...link,
+          collectionId: input.collectionId,
+          order: startOrder + index,
+        })),
+      });
+    }),
+
+  /**
    * Update an existing link.
    *
    * @param {object} input - The input object.

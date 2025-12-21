@@ -87,7 +87,11 @@ const createStore = (): Store => ({
   postSequence: 1,
 });
 
-let store: Store = createStore();
+const globalForMock = globalThis as unknown as {
+  mockStore: Store | undefined;
+};
+
+let store: Store;
 
 const ensureUser = (userId: string) => {
   if (!store.users.has(userId)) {
@@ -104,6 +108,8 @@ const ensureUser = (userId: string) => {
 
 const resetStore = () => {
   store = createStore();
+  globalForMock.mockStore = store;
+
   // Seed with a predictable user/collection/link so the UI has data.
   const now = new Date();
   const userId = "user1";
@@ -157,7 +163,11 @@ const resetStore = () => {
   });
 };
 
-resetStore();
+if (globalForMock.mockStore) {
+  store = globalForMock.mockStore;
+} else {
+  resetStore();
+}
 
 const matchStringFilter = (actual: string | null, filter: unknown): boolean => {
   if (typeof filter === "string") return actual === filter;
@@ -658,6 +668,43 @@ export const db = {
       collection.updatedAt = now;
 
       return toLinkResult(record);
+    },
+
+    createMany: async (args: {
+      data: Record<string, unknown>[] | Record<string, unknown>;
+    }) => {
+      const dataArray = Array.isArray(args.data) ? args.data : [args.data];
+      const now = new Date();
+      let count = 0;
+
+      for (const data of dataArray) {
+        const collectionId = data.collectionId as string;
+        const collection = store.collections.get(collectionId);
+        if (!collection) {
+          throw new Error(`Collection ${collectionId} not found`);
+        }
+
+        const record: LinkRecord = {
+          id: (data.id as string) ?? randomId("link"),
+          collectionId,
+          url: data.url as string,
+          name: data.name as string,
+          comment:
+            data.comment === undefined ? null : (data.comment as string | null),
+          order: (data.order as number) ?? 0,
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        store.links.set(record.id, record);
+        if (!collection.linkIds.includes(record.id)) {
+          collection.linkIds.push(record.id);
+        }
+        collection.updatedAt = now;
+        count++;
+      }
+
+      return { count };
     },
 
     update: async (args: {
