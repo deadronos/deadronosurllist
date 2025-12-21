@@ -1,24 +1,13 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useState,
-  useTransition,
-  useCallback,
-} from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  type DragEndEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
+import { type DragEndEvent } from "@dnd-kit/core";
 
+import { useOptimisticList } from "@/hooks/use-optimistic-list";
 import { api } from "@/trpc/react";
 
-import type { CollectionLinkModel, Feedback } from "./types";
+import type { CollectionLinkModel } from "./types";
 
 type OperationCallbacks = {
   onSuccess?: () => void;
@@ -49,33 +38,24 @@ export function useCollectionLinksManager({
   initialLinks,
   initialIsPublic,
 }: UseCollectionLinksManagerOptions) {
-  const [links, setLinks] = useState(initialLinks);
+  const {
+    items: links,
+    feedback,
+    setFeedback,
+    sensors,
+    handleDragEnd: handleListDragEnd,
+    optimisticUpdate,
+    optimisticDelete,
+  } = useOptimisticList(initialLinks);
+
   const [filterTerm, setFilterTerm] = useState("");
   const [isPublic, setIsPublic] = useState(initialIsPublic);
-  const [feedback, setFeedback] = useState<Feedback>(null);
   const utils = api.useUtils();
   const router = useRouter();
-  const [, startTransition] = useTransition();
-
-  useEffect(() => {
-    setLinks(initialLinks);
-  }, [initialLinks]);
 
   useEffect(() => {
     setIsPublic(initialIsPublic);
   }, [initialIsPublic]);
-
-  useEffect(() => {
-    if (!feedback) return;
-    const timeout = setTimeout(() => setFeedback(null), 3000);
-    return () => clearTimeout(timeout);
-  }, [feedback]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 10 },
-    }),
-  );
 
   const reorderMutation = api.link.reorder.useMutation({
     onSettled: async () => {
@@ -122,48 +102,22 @@ export function useCollectionLinksManager({
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
-      const { active, over } = event;
-      if (!over || active.id === over.id) {
-        return;
-      }
-
-      setLinks((previousLinks) => {
-        const oldIndex = previousLinks.findIndex(
-          (link) => link.id === active.id,
-        );
-        const newIndex = previousLinks.findIndex((link) => link.id === over.id);
-
-        if (oldIndex === -1 || newIndex === -1) {
-          return previousLinks;
-        }
-
-        const reordered = arrayMove(previousLinks, oldIndex, newIndex);
-        const rollback = previousLinks;
-
-        startTransition(() => {
+      handleListDragEnd(
+        event,
+        (reordered, callbacks) => {
           reorderMutation.mutate(
             {
               collectionId,
               linkIds: reordered.map((link) => link.id),
             },
-            {
-              onSuccess: () =>
-                setFeedback({ type: "success", message: "Link order updated" }),
-              onError: () => {
-                setLinks(rollback);
-                setFeedback({
-                  type: "error",
-                  message: "Unable to update link order",
-                });
-              },
-            },
+            callbacks,
           );
-        });
-
-        return reordered;
-      });
+        },
+        "Link order updated",
+        "Unable to update link order",
+      );
     },
-    [collectionId, reorderMutation, startTransition],
+    [handleListDragEnd, reorderMutation, collectionId],
   );
 
   const updateLink = useCallback(
@@ -172,52 +126,31 @@ export function useCollectionLinksManager({
       updates: UpdatePayload,
       callbacks: OperationCallbacks = {},
     ) => {
-      const previousLinks = links;
-      setLinks((prev) =>
-        prev.map((link) =>
-          link.id === linkId ? { ...link, ...updates } : link,
-        ),
-      );
-
-      updateMutation.mutate(
-        { id: linkId, ...updates },
-        {
-          onSuccess: () => {
-            setFeedback({ type: "success", message: "Link updated" });
-            callbacks.onSuccess?.();
-          },
-          onError: () => {
-            setLinks(previousLinks);
-            setFeedback({ type: "error", message: "Unable to update link" });
-            callbacks.onError?.();
-          },
-        },
+      optimisticUpdate(
+        linkId,
+        (link) => ({ ...link, ...updates }),
+        (mutationCallbacks) =>
+          updateMutation.mutate({ id: linkId, ...updates }, mutationCallbacks),
+        "Link updated",
+        "Unable to update link",
+        callbacks,
       );
     },
-    [links, updateMutation],
+    [optimisticUpdate, updateMutation],
   );
 
   const deleteLink = useCallback(
     (linkId: string, callbacks: OperationCallbacks = {}) => {
-      const previousLinks = links;
-      setLinks((prev) => prev.filter((link) => link.id !== linkId));
-
-      deleteMutation.mutate(
-        { id: linkId },
-        {
-          onSuccess: () => {
-            setFeedback({ type: "success", message: "Link removed" });
-            callbacks.onSuccess?.();
-          },
-          onError: () => {
-            setLinks(previousLinks);
-            setFeedback({ type: "error", message: "Unable to delete link" });
-            callbacks.onError?.();
-          },
-        },
+      optimisticDelete(
+        linkId,
+        (mutationCallbacks) =>
+          deleteMutation.mutate({ id: linkId }, mutationCallbacks),
+        "Link removed",
+        "Unable to delete link",
+        callbacks,
       );
     },
-    [deleteMutation, links],
+    [optimisticDelete, deleteMutation],
   );
 
   const toggleVisibility = useCallback(
@@ -244,7 +177,7 @@ export function useCollectionLinksManager({
         },
       );
     },
-    [collectionId, isPublic, visibilityMutation],
+    [collectionId, isPublic, visibilityMutation, setFeedback],
   );
 
   return {

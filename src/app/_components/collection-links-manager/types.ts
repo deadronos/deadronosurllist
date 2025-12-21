@@ -1,3 +1,5 @@
+import type { Feedback } from "../types";
+
 /**
  * Model representing a link in a collection for the UI.
  */
@@ -9,7 +11,4 @@ export type CollectionLinkModel = {
   order: number;
 };
 
-/**
- * Feedback state for UI notifications.
- */
-export type Feedback = { type: "success" | "error"; message: string } | null;
+export type { Feedback };

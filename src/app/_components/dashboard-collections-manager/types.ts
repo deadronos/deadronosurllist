@@ -1,3 +1,5 @@
+import type { Feedback } from "../types";
+
 /**
  * Model representing a collection on the dashboard.
  */
@@ -9,7 +11,4 @@ export type DashboardCollectionModel = {
   linkCount: number;
 };
 
-/**
- * Feedback state for UI notifications.
- */
-export type Feedback = { type: "success" | "error"; message: string } | null;
+export type { Feedback };

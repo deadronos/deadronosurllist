@@ -1,24 +1,13 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useTransition,
-} from "react";
+import { useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import {
-  type DragEndEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
+import { type DragEndEvent } from "@dnd-kit/core";
 
+import { useOptimisticList } from "@/hooks/use-optimistic-list";
 import { api } from "@/trpc/react";
 
-import type { DashboardCollectionModel, Feedback } from "./types";
+import type { DashboardCollectionModel } from "./types";
 
 type OperationCallbacks = {
   onSuccess?: () => void;
@@ -44,27 +33,17 @@ type UseDashboardCollectionsManagerOptions = {
 export function useDashboardCollectionsManager({
   initialCollections,
 }: UseDashboardCollectionsManagerOptions) {
-  const [collections, setCollections] = useState(initialCollections);
-  const [feedback, setFeedback] = useState<Feedback>(null);
+  const {
+    items: collections,
+    feedback,
+    sensors,
+    handleDragEnd: handleListDragEnd,
+    optimisticUpdate,
+    optimisticDelete,
+  } = useOptimisticList(initialCollections);
+
   const utils = api.useUtils();
   const router = useRouter();
-  const [, startTransition] = useTransition();
-
-  useEffect(() => {
-    setCollections(initialCollections);
-  }, [initialCollections]);
-
-  useEffect(() => {
-    if (!feedback) return;
-    const timeout = setTimeout(() => setFeedback(null), 3000);
-    return () => clearTimeout(timeout);
-  }, [feedback]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 10 },
-    }),
-  );
 
   const reorderMutation = api.collection.reorder.useMutation({
     onSettled: async () => {
@@ -89,50 +68,19 @@ export function useDashboardCollectionsManager({
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
-      const { active, over } = event;
-      if (!over || active.id === over.id) {
-        return;
-      }
-
-      setCollections((previousCollections) => {
-        const oldIndex = previousCollections.findIndex(
-          (collection) => collection.id === active.id,
-        );
-        const newIndex = previousCollections.findIndex(
-          (collection) => collection.id === over.id,
-        );
-
-        if (oldIndex === -1 || newIndex === -1) {
-          return previousCollections;
-        }
-
-        const reordered = arrayMove(previousCollections, oldIndex, newIndex);
-        const rollback = previousCollections;
-
-        startTransition(() => {
+      handleListDragEnd(
+        event,
+        (reordered, callbacks) => {
           reorderMutation.mutate(
             { collectionIds: reordered.map((collection) => collection.id) },
-            {
-              onSuccess: () =>
-                setFeedback({
-                  type: "success",
-                  message: "Collection order updated",
-                }),
-              onError: () => {
-                setCollections(rollback);
-                setFeedback({
-                  type: "error",
-                  message: "Unable to update collection order",
-                });
-              },
-            },
+            callbacks,
           );
-        });
-
-        return reordered;
-      });
+        },
+        "Collection order updated",
+        "Unable to update collection order",
+      );
     },
-    [reorderMutation, startTransition],
+    [handleListDragEnd, reorderMutation],
   );
 
   const updateCollection = useCallback(
@@ -141,62 +89,34 @@ export function useDashboardCollectionsManager({
       updates: UpdatePayload,
       callbacks: OperationCallbacks = {},
     ) => {
-      const previousCollections = collections;
-      setCollections((prev) =>
-        prev.map((collection) =>
-          collection.id === collectionId
-            ? { ...collection, ...updates }
-            : collection,
-        ),
-      );
-
-      updateMutation.mutate(
-        { id: collectionId, ...updates },
-        {
-          onSuccess: () => {
-            setFeedback({ type: "success", message: "Collection updated" });
-            callbacks.onSuccess?.();
-          },
-          onError: () => {
-            setCollections(previousCollections);
-            setFeedback({
-              type: "error",
-              message: "Unable to update collection",
-            });
-            callbacks.onError?.();
-          },
-        },
+      optimisticUpdate(
+        collectionId,
+        (collection) => ({ ...collection, ...updates }),
+        (mutationCallbacks) =>
+          updateMutation.mutate(
+            { id: collectionId, ...updates },
+            mutationCallbacks,
+          ),
+        "Collection updated",
+        "Unable to update collection",
+        callbacks,
       );
     },
-    [collections, updateMutation],
+    [optimisticUpdate, updateMutation],
   );
 
   const deleteCollection = useCallback(
     (collectionId: string, callbacks: OperationCallbacks = {}) => {
-      const previousCollections = collections;
-      setCollections((prev) =>
-        prev.filter((collection) => collection.id !== collectionId),
-      );
-
-      deleteMutation.mutate(
-        { id: collectionId },
-        {
-          onSuccess: () => {
-            setFeedback({ type: "success", message: "Collection deleted" });
-            callbacks.onSuccess?.();
-          },
-          onError: () => {
-            setCollections(previousCollections);
-            setFeedback({
-              type: "error",
-              message: "Unable to delete collection",
-            });
-            callbacks.onError?.();
-          },
-        },
+      optimisticDelete(
+        collectionId,
+        (mutationCallbacks) =>
+          deleteMutation.mutate({ id: collectionId }, mutationCallbacks),
+        "Collection deleted",
+        "Unable to delete collection",
+        callbacks,
       );
     },
-    [collections, deleteMutation],
+    [optimisticDelete, deleteMutation],
   );
 
   const activeCollectionLookup = useMemo(() => {
