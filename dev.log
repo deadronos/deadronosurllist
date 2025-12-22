@@ -1,0 +1,87 @@
+
+> deadronosurllist@0.1.0 dev
+> dotenvx run -- next dev --turbo
+
+[38;5;142m[dotenvx@1.51.1] injecting env (3) from .env[39m
+   ▲ Next.js 16.0.10 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.0.2:3000
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 1081ms
+ ○ Compiling /dashboard ...
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[TRPC] collection.getAll took 390ms to execute
+ GET /dashboard 200 in 10.8s (compile: 9.2s, render: 1563ms)
+[TRPC] collection.getAll took 115ms to execute
+ GET /dashboard 200 in 346ms (compile: 8ms, render: 339ms)
+[TRPC] collection.getAll took 411ms to execute
+ GET /dashboard 200 in 635ms (compile: 5ms, render: 630ms)
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[TRPC] collection.getById took 253ms to execute
+ GET /collections/col_public_discover 200 in 3.2s (compile: 2.9s, render: 309ms)
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+ POST /api/trpc/link.createBatch?batch=1 200 in 5.0s (compile: 5.0s, render: 39ms)
+[TRPC] link.createBatch took 172ms to execute
+❌ tRPC failed on link.createBatch: aborted
+[TRPC] collection.getAll took 329ms to execute
+ GET /dashboard 200 in 578ms (compile: 6ms, render: 572ms)
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[TRPC] collection.getById took 302ms to execute
+ GET /collections/col_public_discover 200 in 980ms (compile: 463ms, render: 517ms)
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[TRPC] link.createBatch took 262ms to execute
+ POST /api/trpc/link.createBatch?batch=1 200 in 309ms (compile: 31ms, render: 278ms)
+[TRPC] collection.getById took 118ms to execute
+ GET /collections/col_public_discover 200 in 218ms (compile: 39ms, render: 179ms)
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[TRPC] collection.getAll took 284ms to execute
+ GET /dashboard 200 in 532ms (compile: 8ms, render: 524ms)
+[TRPC] collection.getById took 412ms to execute
+ GET /collections/col_public_discover 200 in 493ms (compile: 39ms, render: 454ms)
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[TRPC] link.createBatch took 177ms to execute
+ POST /api/trpc/link.createBatch?batch=1 200 in 218ms (compile: 30ms, render: 188ms)
+[TRPC] collection.getById took 468ms to execute
+ GET /collections/col_public_discover 200 in 569ms (compile: 41ms, render: 527ms)
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[TRPC] collection.getById took 139ms to execute
+ GET /collections/col_public_discover 200 in 771ms (compile: 32ms, render: 739ms)
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+ ✓ Compiled in 38ms
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[TRPC] collection.getAll took 142ms to execute
+ GET /dashboard 200 in 1055ms (compile: 315ms, render: 740ms)
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[TRPC] collection.getById took 104ms to execute
+ GET /collections/col_public_discover 200 in 632ms (compile: 319ms, render: 313ms)
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[TRPC] link.createBatch took 198ms to execute
+ POST /api/trpc/link.createBatch?batch=1 200 in 629ms (compile: 405ms, render: 224ms)
+[TRPC] collection.getById took 431ms to execute
+ GET /collections/col_public_discover 200 in 550ms (compile: 37ms, render: 513ms)
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
+[auth] Disabled Discord provider (AUTH_DISCORD_ID and AUTH_DISCORD_SECRET are missing or look like placeholder values).
+[auth] Disabled Google provider (AUTH_GOOGLE_ID and AUTH_GOOGLE_SECRET are missing or look like placeholder values).
