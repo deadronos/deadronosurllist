@@ -117,6 +117,33 @@ describe("linkRouter with in-memory db", () => {
     const afterDeleteLinks = afterDelete.links;
     expect(afterDeleteLinks.some((link) => link.id === created.id)).toBe(false);
   });
+
+  it("creates multiple links at once using createBatch", async () => {
+    const collectionId = "col_public_discover";
+    const initialCollection = await getCollectionOrThrow(collectionId);
+    const initialCount = initialCollection.links.length;
+
+    await caller.link.createBatch({
+      collectionId,
+      links: [
+        { url: "https://example.com/batch1", name: "Batch 1" },
+        { url: "https://example.com/batch2", name: "Batch 2" },
+      ],
+    });
+
+    const afterBatch = await getCollectionOrThrow(collectionId);
+    expect(afterBatch.links.length).toBe(initialCount + 2);
+
+    const newLinks = afterBatch.links.filter(
+      (link) => link.name === "Batch 1" || link.name === "Batch 2",
+    );
+    expect(newLinks.length).toBe(2);
+    // Check order
+    const batch1 = newLinks.find((l) => l.name === "Batch 1");
+    const batch2 = newLinks.find((l) => l.name === "Batch 2");
+    expect(batch1?.order).toBe(initialCount);
+    expect(batch2?.order).toBe(initialCount + 1);
+  });
 });
 
 describe("linkRouter authorization guards", () => {
