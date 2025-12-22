@@ -22,7 +22,7 @@ const tsTypeChecked = compat
 
 export default [
   {
-    ignores: [".next", "node_modules", "coverage"],
+    ignores: [".next", "node_modules", "coverage", ".github/**"],
   },
 
   // NOTE: Skipping `next/core-web-vitals` here due to a config-time circular

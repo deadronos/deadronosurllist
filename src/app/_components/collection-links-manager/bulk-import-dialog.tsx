@@ -79,9 +79,16 @@ export function BulkImportDialog({
     }
   };
 
-  const handleUpdateLink = (index: number, field: keyof ParsedLink, value: string) => {
+  const handleUpdateLink = (
+    index: number,
+    field: keyof ParsedLink,
+    value: string,
+  ) => {
     const newLinks = [...parsedLinks];
-    newLinks[index] = { ...newLinks[index], [field]: value };
+    newLinks[index] = {
+      ...newLinks[index],
+      [field]: value,
+    } as ParsedLink;
     setParsedLinks(newLinks);
   };
 
