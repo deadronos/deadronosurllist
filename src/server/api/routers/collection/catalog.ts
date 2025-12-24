@@ -170,6 +170,8 @@ export async function fetchPublicCatalog(
       include: {
         links: {
           orderBy: { order: "asc" },
+          // Fetch a bit more than requested to account for potential filtering of unsafe links
+          take: linkLimit + 10,
         },
       },
     }),
