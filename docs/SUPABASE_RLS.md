@@ -29,9 +29,21 @@ Because these IDs do not match, **standard Supabase RLS policies relying on `aut
 
 **Recommendation**: Enable RLS to "lock down" the database by default, allowing only Public Read access where appropriate. Leave Write access exclusive to the Prisma backend.
 
-## SQL Setup Script
+## Applying the RLS Configuration
 
-Run the following SQL in the Supabase SQL Editor to enable RLS and set up "Default Secure" policies.
+### Option 1: Using Prisma Migrations (Recommended)
+A migration file has been added to the project at `prisma/migrations/<timestamp>_enable_rls/migration.sql`.
+
+To apply this to your database, simply run:
+
+```bash
+npx prisma migrate deploy
+```
+
+This ensures the RLS settings are version-controlled and applied consistently across environments.
+
+### Option 2: Manual SQL
+If you prefer to run the SQL manually in the Supabase Dashboard SQL Editor, use the script below:
 
 ```sql
 -- 1. Enable RLS on all application tables
