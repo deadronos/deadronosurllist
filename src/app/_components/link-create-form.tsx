@@ -2,6 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  Button,
+  Card,
+  Flex,
+  Heading,
+  Text,
+  TextField,
+} from "@radix-ui/themes";
 
 import { api } from "@/trpc/react";
 import { BulkImportDialog } from "./collection-links-manager/bulk-import-dialog";
@@ -52,64 +60,79 @@ export function LinkCreateForm({ collectionId }: { collectionId: string }) {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!url || !name) return;
+    createMutation.mutate({ collectionId, url, name, comment });
+  };
+
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!url || !name) return;
-        createMutation.mutate({ collectionId, url, name, comment });
-      }}
-      className="rounded border p-4"
-    >
-      <h2 className="mb-3 font-semibold">Add Link</h2>
-      <div className="mb-2">
-        <input
-          className="w-full rounded border px-3 py-2"
-          placeholder="https://example.com"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          onBlur={handleUrlBlur}
-        />
-        {previewMutation.isPending && (
-          <span className="text-xs text-gray-500">Fetching metadata...</span>
-        )}
-      </div>
-      <div className="mb-2">
-        <input
-          className="w-full rounded border px-3 py-2"
-          placeholder="Display name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-      <div className="mb-3">
-        <input
-          className="w-full rounded border px-3 py-2"
-          placeholder="Comment (optional)"
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-        />
-      </div>
-      <div className="flex items-center justify-between">
-        <button
-          type="submit"
-          disabled={createMutation.isPending}
-          className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
-        >
-          {createMutation.isPending ? "Adding..." : "Add"}
-        </button>
-        <BulkImportDialog
-          collectionId={collectionId}
-          trigger={
-            <button
-              type="button"
-              className="text-sm text-slate-500 hover:text-slate-700 hover:underline"
-            >
-              Bulk Import
-            </button>
-          }
-        />
-      </div>
-    </form>
+    <Card variant="surface" className="mb-6">
+      <form onSubmit={handleSubmit}>
+        <Flex direction="column" gap="4">
+          <Flex justify="between" align="center">
+            <Heading size="4">Add Link</Heading>
+            <BulkImportDialog
+              collectionId={collectionId}
+              trigger={
+                <Button variant="ghost" size="2" type="button">
+                  Bulk Import
+                </Button>
+              }
+            />
+          </Flex>
+
+          <Flex direction="column" gap="3">
+            <label>
+              <Text as="div" size="2" mb="1" weight="bold">
+                URL <Text color="red">*</Text>
+              </Text>
+              <TextField.Root
+                placeholder="https://example.com"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                onBlur={handleUrlBlur}
+                disabled={createMutation.isPending}
+                required
+              />
+              {previewMutation.isPending && (
+                <Text size="1" color="gray" mt="1">
+                  Fetching metadata...
+                </Text>
+              )}
+            </label>
+
+            <label>
+              <Text as="div" size="2" mb="1" weight="bold">
+                Display Name <Text color="red">*</Text>
+              </Text>
+              <TextField.Root
+                placeholder="My Awesome Link"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={createMutation.isPending}
+                required
+              />
+            </label>
+
+            <label>
+              <Text as="div" size="2" mb="1" weight="bold">
+                Comment
+              </Text>
+              <TextField.Root
+                placeholder="Optional comment"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                disabled={createMutation.isPending}
+              />
+            </label>
+          </Flex>
+
+          <Button disabled={createMutation.isPending} size="3">
+            {createMutation.isPending ? "Adding..." : "Add Link"}
+          </Button>
+        </Flex>
+      </form>
+    </Card>
   );
 }
