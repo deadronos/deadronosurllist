@@ -8,6 +8,7 @@ Key points:
 - Authenticated members can create collections, add links, and reorder entries
 - Built with Next.js (App Router), tRPC, Prisma, NextAuth, Radix UI Themes and Tailwind CSS
 - Unit tests with Vitest and a small in-repo mock database for isolated testing
+- Security-hardened with CSP, HSTS headers, automated secret scanning, and database RLS support
 
 This repository is intended for maintainers and contributors. The `memory/` folder contains task and design artifacts used by the development workflow.
 
@@ -18,6 +19,7 @@ Quick links
 - Database schema: `prisma/schema.prisma`
 - Tests: `src/test/`
 - Development notes & tasks: `memory/`
+- Security documentation: `docs/database-security.md`
 - License: `LICENSE.MD`
 
 Getting started
@@ -117,6 +119,45 @@ Development notes
 - Follow the spec-driven workflow documented in `.github/instructions/spec-driven-workflow-v1.instructions.md` and update the `memory/tasks/` files for new work.
 - UI primitives use `@radix-ui/themes` with Tailwind utility classes for layout.
 - For end-to-end testing or visual validation, add Playwright tests under `tests/` (the repository includes Playwright guidance in `.github/instructions/playwright-typescript.instructions.md`).
+
+## Security
+
+This application implements multiple layers of security:
+
+### Security Headers
+
+All responses include security headers via Next.js middleware (`src/middleware.ts`):
+- **Content Security Policy (CSP)**: Restricts resource loading to prevent XSS attacks
+- **HTTP Strict Transport Security (HSTS)**: Forces HTTPS connections in production
+- **X-Frame-Options**: Prevents clickjacking attacks
+- **X-Content-Type-Options**: Prevents MIME type sniffing
+- **Referrer-Policy**: Controls referrer information leakage
+- **Permissions-Policy**: Disables unnecessary browser features
+
+### Database Security
+
+- **Row Level Security (RLS)** is enabled on all database tables as a defense-in-depth measure
+- Application-level authorization enforced in tRPC procedures (primary security layer)
+- See `docs/database-security.md` for implementation options:
+  - Full RLS with transaction-level user context
+  - Least-privilege database credentials (recommended)
+  - Hybrid approach combining both methods
+
+### Automated Security Scanning
+
+GitHub Actions workflow (`.github/workflows/security.yml`) runs:
+- **Gitleaks**: Scans for exposed secrets in code and history
+- **npm audit**: Checks dependencies for known vulnerabilities
+- **ESLint & TypeScript**: Enforces type safety and code quality
+
+### Best Practices
+
+- Secrets managed via environment variables (never committed to code)
+- OAuth authentication with Discord and Google providers
+- Type-safe API layer with Zod validation
+- Input sanitization via tRPC input schemas
+
+For detailed database security setup, see `docs/database-security.md`.
 
 Contributing
 
