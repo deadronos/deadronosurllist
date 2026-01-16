@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { Flex, Text } from "@radix-ui/themes";
 import type { ComponentProps } from "react";
-import { PublicCatalog } from "./public-catalog";
+import { type PublicCatalog } from "./public-catalog";
 
 const PublicCatalogDynamic = dynamic(
   () => import("./public-catalog").then((mod) => mod.PublicCatalog),
