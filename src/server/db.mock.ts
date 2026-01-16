@@ -18,14 +18,6 @@ type UserRecord = {
   updatedAt: Date;
 };
 
-type PostRecord = {
-  id: number;
-  name: string;
-  createdById: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
 type CollectionRecord = {
   id: string;
   name: string;
@@ -62,10 +54,8 @@ type LinkInclude =
 
 type Store = {
   users: Map<string, UserRecord>;
-  posts: Map<number, PostRecord>;
   collections: Map<string, CollectionRecord>;
   links: Map<string, LinkRecord>;
-  postSequence: number;
 };
 
 const randomId = (prefix: string) => {
@@ -81,10 +71,8 @@ const cloneDate = (value: Date) => new Date(value.getTime());
 
 const createStore = (): Store => ({
   users: new Map(),
-  posts: new Map(),
   collections: new Map(),
   links: new Map(),
-  postSequence: 1,
 });
 
 const globalForMock = globalThis as unknown as {
@@ -232,25 +220,6 @@ const matchesLinkWhere = (
   if (where.id && record.id !== where.id) return false;
   if (where.collectionId && record.collectionId !== where.collectionId)
     return false;
-  return true;
-};
-
-const matchesPostWhere = (
-  record: PostRecord,
-  where?: Record<string, unknown>,
-) => {
-  if (!where) return true;
-  if (where.id && record.id !== where.id) return false;
-  if (where.createdById && record.createdById !== where.createdById)
-    return false;
-  if (
-    typeof where.createdBy === "object" &&
-    where.createdBy &&
-    "id" in where.createdBy &&
-    record.createdById !== (where.createdBy as { id: string }).id
-  ) {
-    return false;
-  }
   return true;
 };
 
@@ -768,54 +737,6 @@ export const db = {
         collection.updatedAt = new Date();
       }
       return toLinkResult(record);
-    },
-  },
-
-  post: {
-    findFirst: async (args?: {
-      where?: Record<string, unknown>;
-      orderBy?: { createdAt?: SortOrder; updatedAt?: SortOrder };
-    }) => {
-      const where = args?.where;
-      const orderBy = args?.orderBy;
-
-      const items = Array.from(store.posts.values()).filter((record) =>
-        matchesPostWhere(record, where),
-      );
-
-      if (items.length === 0) return null;
-      const sorted = orderBy ? sortByDate(items, orderBy) : items;
-      const record = sorted[0];
-      if (!record) return null;
-      return {
-        id: record.id,
-        name: record.name,
-        createdAt: cloneDate(record.createdAt),
-        updatedAt: cloneDate(record.updatedAt),
-        createdById: record.createdById,
-      };
-    },
-
-    create: async (args: { data: Record<string, unknown> }) => {
-      const data = args.data;
-      const createdById = resolveCreatedById(data);
-      ensureUser(createdById);
-      const now = new Date();
-      const record: PostRecord = {
-        id: store.postSequence++,
-        name: data.name as string,
-        createdById,
-        createdAt: now,
-        updatedAt: now,
-      };
-      store.posts.set(record.id, record);
-      return {
-        id: record.id,
-        name: record.name,
-        createdById: record.createdById,
-        createdAt: cloneDate(record.createdAt),
-        updatedAt: cloneDate(record.updatedAt),
-      };
     },
   },
 } as LinkListDatabase;

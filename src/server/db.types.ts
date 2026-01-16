@@ -1,4 +1,4 @@
-import type { Collection, Link, Post, Prisma } from "@prisma/client";
+import type { Collection, Link, Prisma } from "@prisma/client";
 
 /**
  * Represents a Collection record, optionally including related Links and counts.
@@ -50,9 +50,5 @@ export type LinkListDatabase = {
     update(args: Prisma.LinkUpdateArgs): Promise<LinkRecord>;
     updateMany(args: Prisma.LinkUpdateManyArgs): Promise<Prisma.BatchPayload>;
     delete(args: Prisma.LinkDeleteArgs): Promise<LinkRecord>;
-  };
-  post: {
-    findFirst(args?: Prisma.PostFindFirstArgs): Promise<Post | null>;
-    create(args: Prisma.PostCreateArgs): Promise<Post>;
   };
 };

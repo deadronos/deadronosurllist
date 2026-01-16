@@ -15,18 +15,6 @@ datasource db {
   // root for the datasource configuration.
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  createdBy   User   @relation(fields: [createdById], references: [id])
-  createdById String
-
-  @@index([name])
-}
-
 model Collection {
   id          String   @id @default(cuid())
   name        String
@@ -44,6 +32,7 @@ model Collection {
   @@index([createdById])
   @@index([createdAt])
   @@index([order])
+  @@index([isPublic, updatedAt])
 }
 
 model Link {
@@ -98,7 +87,6 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  posts         Post[]
   collections   Collection[]
 }
 
