@@ -19,7 +19,7 @@ export type PublicCatalogCollection = PublicCatalogPage["items"][number];
 export type PublicCatalogLink = PublicCatalogCollection["topLinks"][number];
 
 interface PublicCatalogProps {
-  initialPage: PublicCatalogPage;
+  initialPage?: PublicCatalogPage;
   pageSize: number;
   linkLimit: number;
 }
@@ -29,7 +29,7 @@ interface PublicCatalogProps {
  * Supports infinite scrolling using `useInfiniteQuery`.
  *
  * @param {PublicCatalogProps} props - Component properties.
- * @param {PublicCatalogPage} props.initialPage - The initial page of data loaded from the server.
+ * @param {PublicCatalogPage} [props.initialPage] - The initial page of data loaded from the server.
  * @param {number} props.pageSize - Number of items per page.
  * @param {number} props.linkLimit - Number of links to show per collection.
  * @returns {JSX.Element} The public catalog component.
@@ -42,24 +42,31 @@ export function PublicCatalog({
   const [query, setQuery] = useState("");
   const trimmedQuery = query.trim().toLowerCase();
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    api.collection.getPublicCatalog.useInfiniteQuery(
-      { limit: pageSize, linkLimit },
-      {
-        initialData: {
-          pageParams: [undefined],
-          pages: [initialPage],
-        },
-        getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-        refetchOnWindowFocus: false,
-        refetchOnReconnect: false,
-        refetchOnMount: false,
-      },
-    );
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+  } = api.collection.getPublicCatalog.useInfiniteQuery(
+    { limit: pageSize, linkLimit },
+    {
+      initialData: initialPage
+        ? {
+            pageParams: [undefined],
+            pages: [initialPage],
+          }
+        : undefined,
+      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+    },
+  );
 
-  const initialPages = useMemo(() => [initialPage], [initialPage]);
-  const pages = data?.pages ?? initialPages;
-  const totalCount = pages[0]?.totalCount ?? initialPage.totalCount;
+  const pages = data?.pages ?? (initialPage ? [initialPage] : []);
+  const totalCount = pages[0]?.totalCount ?? 0;
 
   const collections = useMemo(() => {
     const merged = pages.flatMap((page) => page.items);
@@ -125,7 +132,15 @@ export function PublicCatalog({
           {trimmedQuery ? " (filtered)" : ""}.
         </Text>
 
-        {noMatches ? (
+        {isLoading ? (
+          <Flex align="center" justify="center" p="9">
+            <Text color="gray">Loading public catalog...</Text>
+          </Flex>
+        ) : isError ? (
+          <Flex align="center" justify="center" p="9">
+            <Text color="red">Failed to load public catalog.</Text>
+          </Flex>
+        ) : noMatches ? (
           <Text size="2" color="gray">
             {query
               ? "No public lists match your search yet."
