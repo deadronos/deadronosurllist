@@ -1,5 +1,4 @@
 import Link from "next/link";
-import * as dotenvx from "@dotenvx/dotenvx";
 
 import {
   Box,
@@ -192,7 +191,6 @@ export default async function Home() {
           />
         </Flex>
       </Container>
-      <Text>Hello {dotenvx.get("HELLO")}</Text>
     </Box>
   );
 }
