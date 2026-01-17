@@ -125,18 +125,16 @@ describe("collectionRouter (mocked)", () => {
       isPublic: true,
     });
 
-    const linkUrls = Array.from({ length: 12 }, (_, index) => {
-      return `https://example.com/${index + 1}`;
-    });
+    const links = Array.from({ length: 12 }, (_, index) => ({
+      url: `https://example.com/${index + 1}`,
+      name: `Link ${index + 1}`,
+      comment: `Comment ${index + 1}`,
+    }));
 
-    for (const [index, url] of linkUrls.entries()) {
-      await caller.link.create({
-        collectionId: created.id,
-        name: `Link ${index + 1}`,
-        url,
-        comment: `Comment ${index + 1}`,
-      });
-    }
+    await caller.link.createBatch({
+      collectionId: created.id,
+      links,
+    });
 
     const response = await caller.collection.getPublicCatalog({
       limit: 1,
@@ -187,14 +185,14 @@ describe("collectionRouter (mocked)", () => {
       "https://example.com/4",
     ];
 
-    for (const [index, url] of linkUrls.entries()) {
-      await caller.link.create({
-        collectionId: collection.id,
+    await caller.link.createBatch({
+      collectionId: collection.id,
+      links: linkUrls.map((url, index) => ({
         name: `Link ${index + 1}`,
         url,
         comment: `Comment ${index + 1}`,
-      });
-    }
+      })),
+    });
 
     const response = await caller.collection.getPublicCatalog({
       limit: 1,
