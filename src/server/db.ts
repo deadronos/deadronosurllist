@@ -122,10 +122,6 @@ if (useMock) {
       delete: async (args) =>
         (await prismaClient.link.delete(args)) as LinkRecord,
     },
-    post: {
-      findFirst: (args) => prismaClient.post.findFirst(args),
-      create: (args) => prismaClient.post.create(args),
-    },
   };
 
   dbInternal = prismaDb;

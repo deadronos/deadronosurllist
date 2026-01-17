@@ -1,5 +1,4 @@
 import Link from "next/link";
-import * as dotenvx from "@dotenvx/dotenvx";
 
 import {
   Box,
@@ -15,8 +14,8 @@ import {
 
 import { auth, authDiagnostics } from "@/server/auth";
 import { api } from "@/trpc/server";
-import { PublicCatalog } from "@/app/_components/public-catalog";
 import type { RouterOutputs } from "@/trpc/react";
+import { LazyPublicCatalog } from "@/app/_components/lazy-public-catalog";
 
 import { Analytics } from "@vercel/analytics/next";
 
@@ -36,15 +35,10 @@ const PUBLIC_CATALOG_LINK_LIMIT = 10;
 export default async function Home() {
   const sessionPromise = auth();
   const featuredCollectionPromise = api.collection.getPublic();
-  const publicCatalogPromise = api.collection.getPublicCatalog({
-    limit: PUBLIC_CATALOG_PAGE_SIZE,
-    linkLimit: PUBLIC_CATALOG_LINK_LIMIT,
-  });
 
-  const [session, featuredCollection, publicCatalog] = await Promise.all([
+  const [session, featuredCollection] = await Promise.all([
     sessionPromise,
     featuredCollectionPromise,
-    publicCatalogPromise,
   ]);
 
   const hasEnabledProvider = authDiagnostics.hasEnabledProvider;
@@ -191,14 +185,12 @@ export default async function Home() {
             </Flex>
           </Card>
 
-          <PublicCatalog
-            initialPage={publicCatalog}
+          <LazyPublicCatalog
             pageSize={PUBLIC_CATALOG_PAGE_SIZE}
             linkLimit={PUBLIC_CATALOG_LINK_LIMIT}
           />
         </Flex>
       </Container>
-      <Text>Hello {dotenvx.get("HELLO")}</Text>
     </Box>
   );
 }
