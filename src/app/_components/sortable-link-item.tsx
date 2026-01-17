@@ -64,7 +64,7 @@ export const SortableLinkItem = memo(function SortableLinkItem({
       className="border border-white/10 bg-white/5 backdrop-blur"
     >
       <Flex align="center" justify="between" gap="3">
-        <Flex align="center" gap="3" className="flex-1">
+        <Flex align="center" gap="3" className="flex-1 min-w-0">
           <Tooltip
             content={
               dragDisabled
@@ -81,7 +81,7 @@ export const SortableLinkItem = memo(function SortableLinkItem({
               <DotsVerticalIcon />
             </IconButton>
           </Tooltip>
-          <Flex direction="column" gap="1" className="overflow-hidden">
+          <Flex direction="column" gap="1" className="overflow-hidden min-w-0">
             <RadixLink
               href={link.url}
               target="_blank"
