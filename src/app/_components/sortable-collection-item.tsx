@@ -71,7 +71,7 @@ export const SortableCollectionItem = memo(function SortableCollectionItem({
         justify="between"
         gap="3"
       >
-        <Flex align="start" gap="3" className="flex-1">
+        <Flex align="start" gap="3" className="flex-1 min-w-0">
           <Tooltip
             content={
               dragDisabled
@@ -88,7 +88,7 @@ export const SortableCollectionItem = memo(function SortableCollectionItem({
               <DotsVerticalIcon />
             </IconButton>
           </Tooltip>
-          <Flex direction="column" gap="2" className="flex-1">
+          <Flex direction="column" gap="2" className="flex-1 min-w-0 break-words">
             <Heading as="h3" size="4">
               <Link
                 href={`/collections/${collection.id}`}
