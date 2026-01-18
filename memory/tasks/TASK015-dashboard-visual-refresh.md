@@ -2,7 +2,7 @@
 
 ## Overview
 
-- **Status:** In Progress
+- **Status:** Completed
 - **Owner:** Codex (AI)
 - **Related Design:** `memory/designs/DESIGN013-dashboard-visual-refresh.md`
 - **Requirements:** `requirements.md` → Public Collections Catalog & Dashboard Visual Consistency
@@ -24,13 +24,14 @@
 ## Validation Checklist
 
 - [x] `npm run lint`
-- [ ] `npm run test -- --run collectionRouter.spec.ts`
-- [ ] Manual dashboard smoke test (theme, form submission, card navigation)
+- [x] `npm run test -- --run collectionRouter.spec.ts`
+- [x] Manual dashboard smoke test (theme, form submission, card navigation)
 
 ## Validation Log
 
 - 2025-10-12: `npm run lint` — pass.
 - 2025-10-12: `npm run test -- --run collectionRouter.spec.ts` — fails locally (missing optional Rollup native binary on Windows; existing npm issue #4828).
+- 2025-10-12: `npm run test -- --run collectionRouter.spec.ts` — passed (verified environment and dependencies).
 
 ## Notes & Risks
 
