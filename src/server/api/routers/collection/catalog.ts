@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 
 import type { TRPCContext } from "@/server/api/trpc";
+import { isSafeUrl } from "@/server/api/validation";
 
 import { normalizeDescription } from "./normalizers";
 
@@ -9,19 +10,6 @@ import { normalizeDescription } from "./normalizers";
 export const PUBLIC_CATALOG_DEFAULT_LIMIT = 12;
 /** Default number of links to include per collection in the public catalog. */
 export const PUBLIC_CATALOG_DEFAULT_LINK_LIMIT = 10;
-
-/**
- * Validates that the URL uses a safe protocol (http or https).
- * Prevents Stored XSS via javascript: or data: URLs.
- */
-const isSafeUrl = (val: string) => {
-  try {
-    const protocol = new URL(val).protocol;
-    return ["http:", "https:"].includes(protocol);
-  } catch {
-    return false;
-  }
-};
 
 const publicLinkSchema = z.object({
   id: z.string(),

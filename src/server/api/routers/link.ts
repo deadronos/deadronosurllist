@@ -1,20 +1,12 @@
-import { TRPCError } from "@trpc/server";
 import { load } from "cheerio";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-
-const urlSchema = z.string().url().refine(
-  (val) => {
-    try {
-      const protocol = new URL(val).protocol;
-      return ["http:", "https:"].includes(protocol);
-    } catch {
-      return false;
-    }
-  },
-  { message: "Only http and https URLs are allowed" },
-);
+import { urlSchema } from "@/server/api/validation";
+import {
+  verifyCollectionOwnership,
+  verifyLinkOwnership,
+} from "./router-helpers";
 
 export const linkRouter = createTRPCRouter({
   /**
@@ -80,15 +72,7 @@ export const linkRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Verify collection belongs to user
-      const collection = await ctx.db.collection.findFirst({
-        where: {
-          id: input.collectionId,
-          createdById: ctx.session.user.id,
-        },
-      });
-
-      if (!collection) throw new TRPCError({ code: "FORBIDDEN" });
+      await verifyCollectionOwnership(ctx, input.collectionId);
 
       // Get max order for new link
       const maxOrder = await ctx.db.link.findFirst({
@@ -129,14 +113,7 @@ export const linkRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const collection = await ctx.db.collection.findFirst({
-        where: {
-          id: input.collectionId,
-          createdById: ctx.session.user.id,
-        },
-      });
-
-      if (!collection) throw new TRPCError({ code: "FORBIDDEN" });
+      await verifyCollectionOwnership(ctx, input.collectionId);
 
       const maxOrder = await ctx.db.link.findFirst({
         where: { collectionId: input.collectionId },
@@ -174,19 +151,7 @@ export const linkRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Verify link belongs to user's collection
-      const link = await ctx.db.link.findFirst({
-        where: { id: input.id },
-        include: { collection: true },
-      });
-
-      if (
-        !link ||
-        !link.collection ||
-        link.collection.createdById !== ctx.session.user.id
-      ) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
+      await verifyLinkOwnership(ctx, input.id);
 
       return ctx.db.link.update({
         where: { id: input.id },
@@ -208,19 +173,7 @@ export const linkRouter = createTRPCRouter({
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // Verify ownership
-      const link = await ctx.db.link.findFirst({
-        where: { id: input.id },
-        include: { collection: true },
-      });
-
-      if (
-        !link ||
-        !link.collection ||
-        link.collection.createdById !== ctx.session.user.id
-      ) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
+      await verifyLinkOwnership(ctx, input.id);
 
       return ctx.db.link.delete({
         where: { id: input.id },
@@ -243,15 +196,7 @@ export const linkRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Verify collection ownership
-      const collection = await ctx.db.collection.findFirst({
-        where: {
-          id: input.collectionId,
-          createdById: ctx.session.user.id,
-        },
-      });
-
-      if (!collection) throw new TRPCError({ code: "FORBIDDEN" });
+      await verifyCollectionOwnership(ctx, input.collectionId);
 
       // 1. Fetch current links to determine which orders actually changed
       const currentLinks = await ctx.db.link.findMany({
