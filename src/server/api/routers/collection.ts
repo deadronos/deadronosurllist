@@ -17,6 +17,7 @@ import {
   normalizeDescriptionForCreate,
   normalizeDescriptionForUpdate,
 } from "./collection/normalizers";
+import { verifyCollectionOwnership } from "./router-helpers";
 
 export const collectionRouter = createTRPCRouter({
   /**
@@ -139,16 +140,7 @@ export const collectionRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const collection = await ctx.db.collection.findFirst({
-        where: {
-          id: input.id,
-          createdById: ctx.session.user.id,
-        },
-      });
-
-      if (!collection) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
+      await verifyCollectionOwnership(ctx, input.id);
 
       const description = normalizeDescriptionForUpdate(input.description);
       const dataToUpdate: Record<string, unknown> = {};
@@ -181,16 +173,7 @@ export const collectionRouter = createTRPCRouter({
   delete: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const collection = await ctx.db.collection.findFirst({
-        where: {
-          id: input.id,
-          createdById: ctx.session.user.id,
-        },
-      });
-
-      if (!collection) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
+      await verifyCollectionOwnership(ctx, input.id);
 
       return ctx.db.collection.deleteMany({
         where: {
