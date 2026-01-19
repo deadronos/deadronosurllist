@@ -2,19 +2,32 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Button,
-  Dialog,
-  Flex,
-  Text,
-  TextArea,
-  TextField,
-  ScrollArea,
-  Table,
-  Callout,
-} from "@radix-ui/themes";
-import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
+
+import { Trash2Icon, TriangleAlertIcon } from "lucide-react";
+
 import { api } from "@/trpc/react";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 
 type BulkImportDialogProps = {
   collectionId: string;
@@ -108,108 +121,135 @@ export function BulkImportDialog({
   };
 
   return (
-    <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger>
-        {trigger ?? <Button variant="soft">Bulk Import</Button>}
-      </Dialog.Trigger>
-
-      <Dialog.Content maxWidth="600px">
-        <Dialog.Title>Bulk Import Links</Dialog.Title>
-        <Dialog.Description>
-          {step === "input"
-            ? "Paste a list of URLs (one per line)."
-            : "Review and edit links before importing."}
-        </Dialog.Description>
-
-        {createBatchMutation.error && (
-          <Callout.Root color="red" className="mb-4 mt-4">
-            <Callout.Icon>
-              <ExclamationTriangleIcon />
-            </Callout.Icon>
-            <Callout.Text>{createBatchMutation.error.message}</Callout.Text>
-          </Callout.Root>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {trigger ?? (
+          <Button variant="secondary" type="button">
+            Bulk import
+          </Button>
         )}
+      </DialogTrigger>
+
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Bulk import links</DialogTitle>
+          <DialogDescription>
+            {step === "input"
+              ? "Paste a list of URLs (one per line)."
+              : "Review and edit links before importing."}
+          </DialogDescription>
+        </DialogHeader>
+
+        {createBatchMutation.error ? (
+          <Alert variant="destructive">
+            <TriangleAlertIcon className="size-4" />
+            <AlertDescription>
+              {createBatchMutation.error.message}
+            </AlertDescription>
+          </Alert>
+        ) : null}
 
         {step === "input" ? (
-          <div className="mt-4 flex flex-col gap-4">
-            <TextArea
-              placeholder="https://example.com/page1&#10;https://example.com/page2"
+          <div className="grid gap-4">
+            <Textarea
+              placeholder="https://example.com/page1\nhttps://example.com/page2"
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              onChange={(event) => setInputText(event.target.value)}
               rows={10}
               className="font-mono text-sm"
             />
-            <Flex justify="end" gap="3">
-              <Dialog.Close>
-                <Button variant="soft" color="gray">
-                  Cancel
-                </Button>
-              </Dialog.Close>
-              <Button onClick={handleParse} disabled={!inputText.trim()}>
+
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleParse}
+                disabled={!inputText.trim()}
+              >
                 Preview
               </Button>
-            </Flex>
+            </div>
           </div>
         ) : (
-          <div className="mt-4 flex flex-col gap-4">
-            <ScrollArea type="auto" scrollbars="vertical" style={{ maxHeight: 400 }}>
-              <Table.Root variant="surface">
-                <Table.Header>
-                  <Table.Row>
-                    <Table.ColumnHeaderCell>URL</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
+          <div className="grid gap-4">
+            <ScrollArea className="max-h-[420px] rounded-xl border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>URL</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead className="w-0"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {parsedLinks.map((link, index) => (
-                    <Table.Row key={link.id}>
-                      <Table.Cell>
-                        <TextField.Root
+                    <TableRow key={link.id}>
+                      <TableCell className="align-top">
+                        <Input
                           value={link.url}
-                          onChange={(e) =>
-                            handleUpdateLink(index, "url", e.target.value)
+                          onChange={(event) =>
+                            handleUpdateLink(index, "url", event.target.value)
                           }
                         />
-                      </Table.Cell>
-                      <Table.Cell>
-                        <TextField.Root
+                      </TableCell>
+                      <TableCell className="align-top">
+                        <Input
                           value={link.name}
-                          onChange={(e) =>
-                            handleUpdateLink(index, "name", e.target.value)
+                          onChange={(event) =>
+                            handleUpdateLink(index, "name", event.target.value)
                           }
                         />
-                      </Table.Cell>
-                      <Table.Cell>
+                      </TableCell>
+                      <TableCell className="align-top">
                         <Button
+                          type="button"
                           variant="ghost"
-                          color="red"
+                          size="icon-sm"
+                          className="text-destructive hover:bg-destructive/10"
                           onClick={() => handleRemoveLink(index)}
+                          aria-label="Remove"
                         >
-                          ×
+                          <Trash2Icon className="size-4" />
                         </Button>
-                      </Table.Cell>
-                    </Table.Row>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                </Table.Body>
-              </Table.Root>
+                </TableBody>
+              </Table>
             </ScrollArea>
-            <Flex justify="between" align="center">
-              <Text size="2" color="gray">
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="text-muted-foreground text-sm">
                 {parsedLinks.length} valid links found
-              </Text>
-              <Flex gap="3">
-                <Button variant="soft" color="gray" onClick={() => setStep("input")}>
+              </div>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setStep("input")}
+                >
                   Back
                 </Button>
-                <Button onClick={handleSubmit} loading={createBatchMutation.isPending}>
-                  Import {parsedLinks.length} Links
+                <Button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={createBatchMutation.isPending}
+                >
+                  {createBatchMutation.isPending
+                    ? "Importing..."
+                    : `Import ${parsedLinks.length} links`}
                 </Button>
-              </Flex>
-            </Flex>
+              </div>
+            </div>
           </div>
         )}
-      </Dialog.Content>
-    </Dialog.Root>
+      </DialogContent>
+    </Dialog>
   );
 }

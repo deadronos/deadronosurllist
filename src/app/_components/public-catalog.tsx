@@ -1,18 +1,28 @@
 "use client";
 
-import { useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+
+import Link from "next/link";
+
+import { ExternalLinkIcon, SearchIcon } from "lucide-react";
+
 import { api, type RouterOutputs } from "@/trpc/react";
-import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
-  Button,
   Card,
-  Flex,
-  Heading,
-  Text,
-  TextField,
-  Separator,
-  Link as RadixLink,
-} from "@radix-ui/themes";
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { Stagger } from "@/components/motion/stagger";
 
 type PublicCatalogPage = RouterOutputs["collection"]["getPublicCatalog"];
 export type PublicCatalogCollection = PublicCatalogPage["items"][number];
@@ -22,6 +32,8 @@ interface PublicCatalogProps {
   initialPage?: PublicCatalogPage;
   pageSize: number;
   linkLimit: number;
+  showTabs?: boolean;
+  autoLoadMore?: boolean;
 }
 
 /**
@@ -38,9 +50,13 @@ export function PublicCatalog({
   initialPage,
   pageSize,
   linkLimit,
+  showTabs = false,
+  autoLoadMore = false,
 }: PublicCatalogProps) {
   const [query, setQuery] = useState("");
   const trimmedQuery = query.trim().toLowerCase();
+
+  const [tab, setTab] = useState<"new" | "updated">("updated");
 
   const {
     data,
@@ -79,18 +95,26 @@ export function PublicCatalog({
     return Array.from(deduped.values());
   }, [pages]);
 
+  const sortedCollections = useMemo(() => {
+    const list = [...collections];
+    list.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    return tab === "new" ? [...list].reverse() : list;
+  }, [collections, tab]);
+
   const filteredCollections = useMemo(() => {
-    if (!trimmedQuery) return collections;
-    return collections.filter((collection) => {
+    if (!trimmedQuery) return sortedCollections;
+    return sortedCollections.filter((collection) => {
       const haystack = [collection.name, collection.description ?? ""]
         .join(" ")
         .toLowerCase();
       return haystack.includes(trimmedQuery);
     });
-  }, [collections, trimmedQuery]);
+  }, [sortedCollections, trimmedQuery]);
 
   const noMatches = filteredCollections.length === 0;
   const showLoadMore = Boolean(hasNextPage);
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
   const handleQueryChange = (event: ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
@@ -101,125 +125,201 @@ export function PublicCatalog({
     await fetchNextPage();
   };
 
+  useEffect(() => {
+    if (!autoLoadMore) return;
+    if (!hasNextPage) return;
+
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting) return;
+        void handleLoadMore();
+      },
+      {
+        root: null,
+        rootMargin: "400px 0px",
+        threshold: 0.01,
+      },
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [autoLoadMore, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   return (
-    <Card
-      variant="surface"
-      className="border border-white/10 bg-white/5 backdrop-blur"
-    >
-      <Flex direction="column" gap="5">
-        <Flex
-          align={{ initial: "stretch", md: "center" }}
-          direction={{ initial: "column", md: "row" }}
-          justify="between"
-          gap="4"
-        >
-          <Heading size="6">All current public lists</Heading>
-          <TextField.Root
-            size="3"
-            className="w-full md:w-80"
-            value={query}
-            onChange={handleQueryChange}
-            placeholder="Search by name or description"
-          >
-            <TextField.Slot>
-              <MagnifyingGlassIcon />
-            </TextField.Slot>
-          </TextField.Root>
-        </Flex>
+    <Card className="bg-background/55 border backdrop-blur">
+      <CardHeader className="space-y-3">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <CardTitle className="text-lg">All current public lists</CardTitle>
+            <CardDescription>
+              Browse collections published by the community.
+            </CardDescription>
+          </div>
 
-        <Text size="2" color="gray">
-          Showing {filteredCollections.length} of {totalCount} public lists
-          {trimmedQuery ? " (filtered)" : ""}.
-        </Text>
+          <div className="relative w-full md:w-80">
+            <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+            <Input
+              value={query}
+              onChange={handleQueryChange}
+              placeholder="Search by name or description"
+              className="pl-9"
+            />
+          </div>
+        </div>
 
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-muted-foreground text-sm">
+            Showing {filteredCollections.length} of {totalCount} public lists
+            {trimmedQuery ? " (filtered)" : ""}.
+          </p>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {showTabs ? (
+              <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
+                <TabsList>
+                  <TabsTrigger value="updated">Recently updated</TabsTrigger>
+                  <TabsTrigger value="new">New</TabsTrigger>
+                </TabsList>
+              </Tabs>
+            ) : null}
+
+            {trimmedQuery ? (
+              <Badge variant="secondary">Filtered</Badge>
+            ) : (
+              <Badge variant="secondary">Live catalog</Badge>
+            )}
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="space-y-5">
         {isLoading ? (
-          <Flex align="center" justify="center" p="9">
-            <Text color="gray">Loading public catalog...</Text>
-          </Flex>
+          <div className="grid gap-4 md:grid-cols-2">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div
+                key={index}
+                className="bg-background/40 rounded-xl border p-5"
+              >
+                <div className="space-y-3">
+                  <Skeleton className="h-5 w-2/3" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <div className="pt-2">
+                    <Skeleton className="h-8 w-24" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         ) : isError ? (
-          <Flex align="center" justify="center" p="9">
-            <Text color="red">Failed to load public catalog.</Text>
-          </Flex>
+          <div className="bg-background/40 text-destructive rounded-xl border p-6 text-sm">
+            Failed to load public catalog.
+          </div>
         ) : noMatches ? (
-          <Text size="2" color="gray">
+          <div className="bg-background/40 text-muted-foreground rounded-xl border p-6 text-sm">
             {query
               ? "No public lists match your search yet."
               : "Public collections will appear here as soon as members share them."}
-          </Text>
+          </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
+          <Stagger className="grid gap-4 md:grid-cols-2" itemClassName="h-full">
             {filteredCollections.map((collection) => (
               <Card
                 key={collection.id}
-                size="2"
-                variant="classic"
-                className="border-white/10 bg-black/40"
+                className="bg-background/45 h-full overflow-hidden border backdrop-blur"
               >
-                <Flex direction="column" gap="3">
-                  <Heading as="h3" size="4">
-                    {collection.name}
-                  </Heading>
-                  {collection.description ? (
-                    <Text size="2" color="gray">
-                      {collection.description}
-                    </Text>
-                  ) : null}
-                  <Separator className="border-white/10" />
-                  <Flex direction="column" gap="3">
-                    {collection.topLinks.length > 0 ? (
-                      collection.topLinks.map((link) => (
-                        <Card
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <CardTitle className="text-base leading-tight">
+                        {collection.name}
+                      </CardTitle>
+                      {collection.description ? (
+                        <CardDescription className="mt-1 line-clamp-2">
+                          {collection.description}
+                        </CardDescription>
+                      ) : null}
+                    </div>
+                    <Badge className="shrink-0" variant="secondary">
+                      Public
+                    </Badge>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <Separator />
+
+                  {collection.topLinks.length > 0 ? (
+                    <div className="grid gap-2">
+                      {collection.topLinks.map((link) => (
+                        <div
                           key={link.id}
-                          size="1"
-                          variant="surface"
-                          className="border-white/5 bg-transparent"
+                          className="bg-background/35 rounded-lg border p-3"
                         >
-                          <Flex direction="column" gap="1" align="start">
-                            <Text weight="medium">{link.name}</Text>
-                            {link.comment ? (
-                              <Text size="1" color="gray">
-                                {link.comment}
-                              </Text>
-                            ) : null}
-                            <RadixLink
-                              href={link.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              color="iris"
-                              underline="always"
-                              size="1"
-                              weight="medium"
-                            >
-                              {link.url}
-                            </RadixLink>
-                          </Flex>
-                        </Card>
-                      ))
-                    ) : (
-                      <Text size="2" color="gray">
-                        Links will be added to this collection soon.
-                      </Text>
-                    )}
-                  </Flex>
-                </Flex>
+                          <div className="text-sm font-medium">{link.name}</div>
+                          {link.comment ? (
+                            <div className="text-muted-foreground mt-1 line-clamp-2 text-xs">
+                              {link.comment}
+                            </div>
+                          ) : null}
+                          <a
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-muted-foreground hover:text-foreground mt-2 inline-flex items-center gap-1 text-xs"
+                          >
+                            <span className="truncate">{link.url}</span>
+                            <ExternalLinkIcon className="size-3" />
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="bg-background/35 text-muted-foreground rounded-lg border p-4 text-sm">
+                      Links will be added to this collection soon.
+                    </div>
+                  )}
+
+                  <div className="flex justify-end">
+                    <Button asChild variant="outline" size="sm">
+                      <Link href="/signin">Publish your own</Link>
+                    </Button>
+                  </div>
+                </CardContent>
               </Card>
             ))}
-          </div>
+          </Stagger>
         )}
 
         {showLoadMore ? (
-          <Flex justify="center">
-            <Button
-              variant="soft"
-              color="iris"
-              onClick={handleLoadMore}
-              disabled={isFetchingNextPage}
-            >
-              {isFetchingNextPage ? "Loading more..." : "Load more"}
-            </Button>
-          </Flex>
+          <div className="flex flex-col items-center gap-3">
+            <div ref={sentinelRef} className="h-1 w-full" />
+
+            {!autoLoadMore ? (
+              <Button
+                variant="secondary"
+                onClick={handleLoadMore}
+                disabled={isFetchingNextPage}
+              >
+                {isFetchingNextPage ? "Loading more..." : "Load more"}
+              </Button>
+            ) : null}
+
+            {autoLoadMore && isFetchingNextPage ? (
+              <div className="text-muted-foreground text-sm">
+                Loading more...
+              </div>
+            ) : null}
+          </div>
         ) : null}
-      </Flex>
+      </CardContent>
     </Card>
   );
 }

@@ -1,11 +1,23 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { api, HydrateClient } from "@/trpc/server";
-import { LinkCreateForm } from "@/app/_components/link-create-form";
-import { auth } from "@/server/auth";
+import { ArrowLeftIcon, LibraryBigIcon } from "lucide-react";
+
+import { StudioShell } from "@/app/_components/studio-shell";
 import { CollectionLinksManager } from "@/app/_components/collection-links-manager";
+import { LinkCreateForm } from "@/app/_components/link-create-form";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+import { auth } from "@/server/auth";
 import { createTypeGuard } from "@/lib/type-guards";
+import { api, HydrateClient } from "@/trpc/server";
 
 type CollectionLink = {
   id: string;
@@ -58,16 +70,25 @@ export default async function CollectionPage({ params }: PageProps) {
   const session = await auth();
   if (!session?.user) {
     return (
-      <main className="mx-auto max-w-3xl p-6">
-        <h1 className="mb-4 text-2xl font-bold">Collection</h1>
-        <p className="mb-4">Please sign in to view this collection.</p>
-        <Link
-          href="/api/auth/signin"
-          className="rounded bg-blue-600 px-4 py-2 text-white"
-        >
-          Sign in
-        </Link>
-      </main>
+      <div className="min-h-[calc(100vh-3.5rem)]">
+        <StudioShell>
+          <div className="mx-auto max-w-2xl">
+            <Card className="bg-background/55 border backdrop-blur">
+              <CardHeader>
+                <CardTitle>Collection</CardTitle>
+                <CardDescription>
+                  Sign in to view and edit this collection.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button asChild size="lg" className="w-full">
+                  <Link href="/api/auth/signin">Sign in</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </StudioShell>
+      </div>
     );
   }
 
@@ -84,27 +105,53 @@ export default async function CollectionPage({ params }: PageProps) {
 
   return (
     <HydrateClient>
-      <main className="mx-auto max-w-3xl p-6">
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{collection.name}</h1>
-            {collection.description ? (
-              <p className="text-slate-600">{collection.description}</p>
-            ) : null}
+      <div className="min-h-[calc(100vh-3.5rem)]">
+        <StudioShell>
+          <div className="mx-auto max-w-3xl">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-2">
+                <div className="bg-background/55 text-muted-foreground inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs backdrop-blur">
+                  <LibraryBigIcon className="size-4" />
+                  Collection
+                </div>
+                <h1 className="text-3xl font-semibold tracking-tight text-balance">
+                  {collection.name}
+                </h1>
+                {collection.description ? (
+                  <p className="text-muted-foreground text-sm">
+                    {collection.description}
+                  </p>
+                ) : null}
+              </div>
+
+              <Button asChild variant="ghost" className="-ml-2 w-fit">
+                <Link href="/dashboard">
+                  <ArrowLeftIcon className="size-4" />
+                  Back to dashboard
+                </Link>
+              </Button>
+            </div>
+
+            <LinkCreateForm collectionId={collection.id} />
+
+            <Card className="bg-background/55 border backdrop-blur">
+              <CardHeader>
+                <CardTitle className="text-base">Links</CardTitle>
+                <CardDescription>
+                  Drag to reorder. Use the visibility switch to publish.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CollectionLinksManager
+                  collectionId={collection.id}
+                  initialLinks={collection.links}
+                  initialIsPublic={collection.isPublic}
+                />
+              </CardContent>
+            </Card>
           </div>
-          <Link href="/dashboard" className="text-blue-600 hover:underline">
-            ← Back
-          </Link>
-        </div>
-
-        <LinkCreateForm collectionId={collection.id} />
-
-        <CollectionLinksManager
-          collectionId={collection.id}
-          initialLinks={collection.links}
-          initialIsPublic={collection.isPublic}
-        />
-      </main>
+        </StudioShell>
+      </div>
     </HydrateClient>
   );
 }
