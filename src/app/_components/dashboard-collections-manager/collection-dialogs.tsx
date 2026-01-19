@@ -1,13 +1,15 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import {
-  Button,
   Dialog,
-  Flex,
-  Text,
-  TextArea,
-  TextField,
-} from "@radix-ui/themes";
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 import type { DashboardCollectionModel } from "./types";
 
@@ -41,63 +43,58 @@ export function EditCollectionDialog({
   isSubmitting,
 }: EditCollectionDialogProps) {
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Content maxWidth="450px">
-        <Dialog.Title>Edit collection</Dialog.Title>
-        <Dialog.Description>
-          Update the collection name or description.
-        </Dialog.Description>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit collection</DialogTitle>
+          <DialogDescription>
+            Update the collection name or description.
+          </DialogDescription>
+        </DialogHeader>
+
         <form
           onSubmit={(event) => {
             event.preventDefault();
             const formData = new FormData(event.currentTarget);
             onSubmit(formData);
           }}
-          className="mt-4"
+          className="grid gap-3"
           key={collection?.id ?? "new"}
         >
-          <Flex direction="column" gap="3">
-            <TextField.Root
-              name="name"
-              defaultValue={collection?.name ?? ""}
-              required
+          <Input
+            name="name"
+            defaultValue={collection?.name ?? ""}
+            required
+            disabled={isSubmitting}
+            aria-label="Collection name"
+          />
+          <Textarea
+            name="description"
+            defaultValue={collection?.description ?? ""}
+            rows={3}
+            disabled={isSubmitting}
+            aria-label="Collection description"
+          />
+
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
-              aria-label="Collection name"
-            />
-            <TextArea
-              name="description"
-              defaultValue={collection?.description ?? ""}
-              rows={3}
-              disabled={isSubmitting}
-              aria-label="Collection description"
-            />
-            <Flex gap="3" justify="end">
-              <Button
-                type="button"
-                variant="soft"
-                color="gray"
-                onClick={() => onOpenChange(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : "Save changes"}
-              </Button>
-            </Flex>
-          </Flex>
+            >
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Save changes"}
+            </Button>
+          </div>
         </form>
-      </Dialog.Content>
-    </Dialog.Root>
+      </DialogContent>
+    </Dialog>
   );
 }
 
-/**
- * Dialog for confirming collection deletion.
- *
- * @param {DeleteCollectionDialogProps} props - Component properties.
- * @returns {JSX.Element} The dialog component.
- */
 export function DeleteCollectionDialog({
   open,
   onOpenChange,
@@ -106,38 +103,39 @@ export function DeleteCollectionDialog({
   isDeleting,
 }: DeleteCollectionDialogProps) {
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Content maxWidth="400px">
-        <Dialog.Title>Delete collection</Dialog.Title>
-        <Dialog.Description>
-          This action cannot be undone. All links in this collection will be
-          removed.
-        </Dialog.Description>
-        <Flex direction="column" gap="3" mt="4">
-          <Text>
-            Are you sure you want to delete <strong>{collection?.name}</strong>?
-          </Text>
-          <Flex gap="3" justify="end">
-            <Button
-              type="button"
-              variant="soft"
-              color="gray"
-              onClick={() => onOpenChange(false)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              color="red"
-              onClick={onConfirm}
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </Button>
-          </Flex>
-        </Flex>
-      </Dialog.Content>
-    </Dialog.Root>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Delete collection</DialogTitle>
+          <DialogDescription>
+            This action cannot be undone. All links in this collection will be
+            removed.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="text-sm">
+          Are you sure you want to delete <strong>{collection?.name}</strong>?
+        </div>
+
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => onOpenChange(false)}
+            disabled={isDeleting}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={onConfirm}
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

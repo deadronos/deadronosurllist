@@ -2,22 +2,20 @@
 
 import { type CSSProperties, memo } from "react";
 import Link from "next/link";
+
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { GripVerticalIcon, PencilIcon, Trash2Icon } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
-  Button,
-  Card,
-  Flex,
-  Heading,
-  IconButton,
-  Text,
   Tooltip,
-} from "@radix-ui/themes";
-import {
-  DotsVerticalIcon,
-  Pencil2Icon,
-  TrashIcon,
-} from "@radix-ui/react-icons";
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+import { cn } from "@/lib/utils";
 
 import type { DashboardCollectionModel } from "./dashboard-collections-manager/types";
 
@@ -62,79 +60,95 @@ export const SortableCollectionItem = memo(function SortableCollectionItem({
     <Card
       ref={setNodeRef}
       style={style}
-      variant="classic"
-      className="border-white/10 bg-black/40"
+      className={cn(
+        "bg-background/45 border backdrop-blur",
+        isDragging ? "ring-ring/30 ring-2" : null,
+      )}
     >
-      <Flex
-        direction={{ initial: "column", sm: "row" }}
-        align={{ initial: "start", sm: "center" }}
-        justify="between"
-        gap="3"
-      >
-        <Flex align="start" gap="3" className="flex-1 min-w-0">
-          <Tooltip
-            content={
-              dragDisabled
+      <div className="flex flex-col gap-3 px-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  "bg-background/40 text-muted-foreground hover:text-foreground mt-0.5 inline-flex size-9 items-center justify-center rounded-lg border",
+                  dragDisabled
+                    ? "cursor-not-allowed opacity-60"
+                    : "cursor-grab",
+                )}
+                {...dragProps}
+                aria-label="Drag to reorder"
+              >
+                <GripVerticalIcon className="size-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {dragDisabled
                 ? "Reordering disabled while saving"
-                : "Drag to reorder collections"
-            }
-          >
-            <IconButton
-              variant="soft"
-              color="gray"
-              {...dragProps}
-              disabled={dragDisabled}
-            >
-              <DotsVerticalIcon />
-            </IconButton>
+                : "Drag to reorder collections"}
+            </TooltipContent>
           </Tooltip>
-          <Flex direction="column" gap="2" className="flex-1 min-w-0 break-words">
-            <Heading as="h3" size="4">
+
+          <div className="min-w-0">
+            <div className="text-sm leading-tight font-semibold">
               <Link
                 href={`/collections/${collection.id}`}
-                className="text-white hover:underline"
+                className="hover:underline"
               >
                 {collection.name}
               </Link>
-            </Heading>
+            </div>
             {collection.description ? (
-              <Text size="2" color="gray">
+              <div className="text-muted-foreground mt-1 line-clamp-2 text-sm">
                 {collection.description}
-              </Text>
+              </div>
             ) : null}
-          </Flex>
-        </Flex>
-        <Flex
-          align={{ initial: "start", sm: "center" }}
-          gap="3"
-          direction={{ initial: "column", sm: "row" }}
-        >
-          <Text size="2" color="gray">
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+          <div className="text-muted-foreground text-sm">
             {collection.linkCount.toLocaleString()}{" "}
             {collection.linkCount === 1 ? "link" : "links"}
-          </Text>
-          <Button size="2" variant="soft" asChild>
+          </div>
+
+          <Button size="sm" variant="secondary" asChild>
             <Link href={`/collections/${collection.id}`}>Open</Link>
           </Button>
-          <Tooltip content="Edit collection">
-            <IconButton
-              variant="outline"
-              onClick={() => onEdit(collection.id)}
-            >
-              <Pencil2Icon />
-            </IconButton>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                size="icon-sm"
+                variant="outline"
+                onClick={() => onEdit(collection.id)}
+                aria-label="Edit collection"
+              >
+                <PencilIcon className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Edit collection</TooltipContent>
           </Tooltip>
-          <Tooltip content="Delete collection">
-            <IconButton
-              variant="outline"
-              color="red"
-              onClick={() => onDelete(collection.id)}
-            >
-              <TrashIcon />
-            </IconButton>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                size="icon-sm"
+                variant="outline"
+                onClick={() => onDelete(collection.id)}
+                aria-label="Delete collection"
+                className="text-destructive hover:bg-destructive/10"
+              >
+                <Trash2Icon className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Delete collection</TooltipContent>
           </Tooltip>
-        </Flex>
-      </Flex>
+        </div>
+      </div>
     </Card>
   );
 });

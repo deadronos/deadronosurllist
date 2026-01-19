@@ -1,20 +1,23 @@
 import Link from "next/link";
 
-import { api, HydrateClient } from "@/trpc/server";
-import { auth } from "@/server/auth";
+import { FolderIcon, SparklesIcon } from "lucide-react";
+
+import { StudioShell } from "@/app/_components/studio-shell";
 import { CollectionCreateForm } from "@/app/_components/collection-create-form";
 import { DashboardCollectionsManager } from "@/app/_components/dashboard-collections-manager";
-import { createTypeGuard } from "@/lib/type-guards";
+import { Button } from "@/components/ui/button";
 import {
-  Box,
-  Button,
   Card,
-  Container,
-  Flex,
-  Heading,
-  Separator,
-  Text,
-} from "@radix-ui/themes";
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+
+import { auth } from "@/server/auth";
+import { api, HydrateClient } from "@/trpc/server";
+import { createTypeGuard } from "@/lib/type-guards";
 
 type CollectionSummary = {
   id: string;
@@ -40,9 +43,6 @@ const isCollectionSummary = createTypeGuard<CollectionSummary>([
   },
 ]);
 
-const gradientBackground =
-  "min-h-screen bg-[radial-gradient(circle_at_top,_#101220,_#040406)] text-white";
-
 /**
  * The user dashboard page.
  * Displays the list of user collections and allows creating new ones.
@@ -52,43 +52,35 @@ const gradientBackground =
  */
 export default async function DashboardPage() {
   const session = await auth();
+
   if (!session?.user) {
     return (
-      <Box className={gradientBackground}>
-        <Container
-          size="3"
-          px={{ initial: "5", sm: "6" }}
-          py={{ initial: "8", sm: "9" }}
-        >
-          <Flex direction="column" gap="6">
-            <Heading size={{ initial: "7", sm: "8" }}>
-              Your collections await.
-            </Heading>
-            <Text size="4" color="gray">
-              Sign in to start curating links, manage private collections, and
-              share resources with your team.
-            </Text>
-            <Card
-              size="3"
-              variant="surface"
-              className="max-w-md border border-white/10 bg-white/5 backdrop-blur"
-            >
-              <Flex direction="column" gap="4">
-                <Text size="2" color="gray">
-                  Ready to begin?
-                </Text>
-                <Button size="3" asChild>
+      <div className="min-h-[calc(100vh-3.5rem)]">
+        <StudioShell>
+          <div className="mx-auto max-w-2xl">
+            <Card className="bg-background/55 border backdrop-blur">
+              <CardHeader>
+                <CardTitle className="text-2xl">
+                  Your collections await.
+                </CardTitle>
+                <CardDescription>
+                  Sign in to curate links, manage private collections, and share
+                  resources when you are ready.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button asChild size="lg" className="w-full">
                   <Link href="/api/auth/signin">Sign in</Link>
                 </Button>
-                <Text size="2" color="gray">
+                <div className="text-muted-foreground text-sm">
                   Authentication keeps your collections private until you make
                   them public.
-                </Text>
-              </Flex>
+                </div>
+              </CardContent>
             </Card>
-          </Flex>
-        </Container>
-      </Box>
+          </div>
+        </StudioShell>
+      </div>
     );
   }
 
@@ -105,68 +97,103 @@ export default async function DashboardPage() {
 
   return (
     <HydrateClient>
-      <Box className={gradientBackground}>
-        <Container
-          size="3"
-          px={{ initial: "5", sm: "6" }}
-          py={{ initial: "8", sm: "9" }}
-        >
-          <Flex direction="column" gap="6">
-            <Flex
-              direction={{ initial: "column", md: "row" }}
-              justify="between"
-              align={{ initial: "start", md: "center" }}
-              gap="4"
-            >
-              <Box>
-                <Heading size={{ initial: "7", md: "8" }}>
-                  Welcome back{", "}
-                  {name}
-                </Heading>
-                <Text as="p" mt="2" size="4" color="gray">
-                  Review your collections, create new lists, and keep your best
+      <div className="min-h-[calc(100vh-3.5rem)]">
+        <StudioShell>
+          <div className="grid gap-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div className="space-y-2">
+                <div className="bg-background/55 text-muted-foreground inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs backdrop-blur">
+                  <SparklesIcon className="size-4" />
+                  Studio dashboard
+                </div>
+                <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+                  Welcome back, {name}
+                </h1>
+                <p className="text-muted-foreground text-sm sm:text-base">
+                  Build new lists, rearrange the flow, and keep your best
                   resources a click away.
-                </Text>
-              </Box>
-              <Button variant="soft" color="gray" asChild>
-                <Link href="/">Browse public lists</Link>
-              </Button>
-            </Flex>
+                </p>
+              </div>
 
-            <CollectionCreateForm />
+              <div className="flex flex-wrap gap-2">
+                <Button asChild variant="outline">
+                  <Link href="/">Browse public</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/dashboard">New session</Link>
+                </Button>
+              </div>
+            </div>
 
-            <Card
-              variant="surface"
-              className="border border-white/10 bg-white/5 backdrop-blur"
-            >
-              <Flex direction="column" gap="4">
-                <Flex
-                  justify="between"
-                  align={{ initial: "start", sm: "center" }}
-                  direction={{ initial: "column", sm: "row" }}
-                  gap="3"
-                >
-                  <Heading size="6">Your Collections</Heading>
-                  <Text size="2" color="gray">
-                    {collections.length}{" "}
-                    {collections.length === 1 ? "collection" : "collections"}
-                  </Text>
-                </Flex>
-                <Separator className="border-white/10" />
-                <DashboardCollectionsManager
-                  initialCollections={collections.map((collection) => ({
-                    id: collection.id,
-                    name: collection.name,
-                    description: collection.description,
-                    order: collection.order,
-                    linkCount: collection._count?.links ?? 0,
-                  }))}
-                />
-              </Flex>
-            </Card>
-          </Flex>
-        </Container>
-      </Box>
+            <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
+              <div className="space-y-6">
+                <CollectionCreateForm />
+
+                <Card className="bg-background/55 border backdrop-blur">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-base">
+                      <FolderIcon className="size-4" />
+                      Quick stats
+                    </CardTitle>
+                    <CardDescription>
+                      Keep an eye on your library.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-muted-foreground grid gap-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span>Collections</span>
+                      <span className="text-foreground font-medium">
+                        {collections.length.toLocaleString()}
+                      </span>
+                    </div>
+                    <Separator />
+                    <div className="flex items-center justify-between">
+                      <span>Total links</span>
+                      <span className="text-foreground font-medium">
+                        {collections
+                          .reduce(
+                            (sum, collection) =>
+                              sum + (collection._count?.links ?? 0),
+                            0,
+                          )
+                          .toLocaleString()}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card className="bg-background/55 border backdrop-blur">
+                <CardHeader>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <CardTitle>Your collections</CardTitle>
+                      <CardDescription>
+                        Drag to reorder (unless you are filtering).
+                      </CardDescription>
+                    </div>
+                    <div className="text-muted-foreground text-sm">
+                      {collections.length}{" "}
+                      {collections.length === 1 ? "collection" : "collections"}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <DashboardCollectionsManager
+                    initialCollections={collections.map((collection) => ({
+                      id: collection.id,
+                      name: collection.name,
+                      description: collection.description,
+                      order: collection.order,
+                      linkCount: collection._count?.links ?? 0,
+                    }))}
+                  />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </StudioShell>
+      </div>
     </HydrateClient>
   );
 }

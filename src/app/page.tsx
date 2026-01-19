@@ -1,23 +1,20 @@
 import Link from "next/link";
 
-import {
-  Box,
-  Button,
-  Card,
-  Container,
-  Flex,
-  Heading,
-  Link as RadixLink,
-  Separator,
-  Text,
-} from "@radix-ui/themes";
+import { Analytics } from "@vercel/analytics/next";
+
+import { FeaturedCollectionCard } from "@/app/_components/featured-collection-card";
+import { HeroBadges } from "@/app/_components/hero-badges";
+import { StudioShell } from "@/app/_components/studio-shell";
+
+import { Reveal } from "@/components/motion/reveal";
+import { Stagger } from "@/components/motion/stagger";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { auth, authDiagnostics } from "@/server/auth";
 import { api } from "@/trpc/server";
 import type { RouterOutputs } from "@/trpc/react";
 import { LazyPublicCatalog } from "@/app/_components/lazy-public-catalog";
-
-import { Analytics } from "@vercel/analytics/next";
 
 type PublicCatalogPage = RouterOutputs["collection"]["getPublicCatalog"];
 type PublicCatalogCollection = PublicCatalogPage["items"][number];
@@ -26,12 +23,6 @@ type PublicLink = PublicCatalogCollection["topLinks"][number];
 const PUBLIC_CATALOG_PAGE_SIZE = 12;
 const PUBLIC_CATALOG_LINK_LIMIT = 10;
 
-/**
- * The landing page of the application.
- * Displays the hero section, featured public collection, and the public catalog.
- *
- * @returns {Promise<JSX.Element>} The home page component.
- */
 export default async function Home() {
   const sessionPromise = auth();
   const featuredCollectionPromise = api.collection.getPublic();
@@ -42,155 +33,144 @@ export default async function Home() {
   ]);
 
   const hasEnabledProvider = authDiagnostics.hasEnabledProvider;
+
   const primaryCtaHref = session ? "/dashboard" : "/signin";
   const primaryCtaLabel = session
-    ? "Go to your dashboard"
+    ? "Open your dashboard"
     : hasEnabledProvider
-      ? "Sign in to start collecting"
+      ? "Start collecting"
       : "Review sign-in setup";
-  const authHref = session ? "/api/auth/signout" : "/signin";
-  const authLabel = session
+
+  const secondaryCtaHref = session ? "/api/auth/signout" : "/signin";
+  const secondaryCtaLabel = session
     ? "Sign out"
     : hasEnabledProvider
       ? "Sign in"
       : "Sign-in disabled";
+
   const publicLinks: PublicLink[] = featuredCollection?.topLinks ?? [];
 
   return (
-    <Box className="min-h-screen bg-[radial-gradient(circle_at_top,_#101220,_#040406)] text-white">
+    <div className="min-h-[calc(100vh-3.5rem)]">
       <Analytics />
-      <Container
-        size="3"
-        px={{ initial: "5", sm: "6" }}
-        py={{ initial: "8", sm: "9" }}
-      >
-        <Flex direction="column" gap="7">
-          <Flex
-            align={{ initial: "start", md: "center" }}
-            direction={{ initial: "column", md: "row" }}
-            justify="between"
-            gap="6"
-          >
-            <Box maxWidth={{ initial: "100%", md: "480px" }}>
-              <Heading size={{ initial: "8", md: "9" }}>
-                Collect, share, and revisit the web.
-              </Heading>
-              <Text as="p" mt="3" size="4" color="gray">
-                Build living collections of links for your team or community.
-                Discover curated resources even before you sign in.
-              </Text>
-              <Flex mt="6" gap="3" wrap="wrap">
-                <Button size="3" asChild>
-                  <Link href={primaryCtaHref}>{primaryCtaLabel}</Link>
-                </Button>
-                <Button size="3" variant="soft" color="gray" asChild>
-                  <Link href={authHref}>{authLabel}</Link>
-                </Button>
-              </Flex>
-              {!hasEnabledProvider && (
-                <Text as="p" mt="3" size="2" color="gray">
-                  Sign-in is disabled while mock credentials are configured.
-                  Update your OAuth secrets to enable authentication.
-                </Text>
-              )}
-              {session?.user?.name && (
-                <Text as="p" mt="3" size="2" color="gray">
-                  Signed in as {session.user.name}.
-                </Text>
-              )}
-            </Box>
-            <Card
-              size="3"
-              variant="surface"
-              className="w-full max-w-md border border-white/10 bg-white/5 backdrop-blur"
-            >
-              <Flex direction="column" gap="3">
-                <Text size="2" color="gray">
-                  Featured collection
-                </Text>
-                <Heading size="5">
-                  {featuredCollection?.name ?? "No public collection yet"}
-                </Heading>
-                <Text size="3" color="gray">
-                  {featuredCollection?.description ??
-                    "Check back soon for curated resources from the Deadronos community."}
-                </Text>
-                <Separator className="border-white/10" />
-                <Flex direction="column" gap="3">
-                  {publicLinks.length > 0 ? (
-                    publicLinks.map((link) => (
-                      <Card
-                        key={link.id}
-                        size="2"
-                        variant="classic"
-                        className="border-white/10 bg-black/40"
-                      >
-                        <Flex
-                          direction="column"
-                          gap="2"
-                          align="start"
-                          justify="between"
-                        >
-                          <Heading as="h3" size="3">
-                            {link.name}
-                          </Heading>
-                          {link.comment && (
-                            <Text size="2" color="gray">
-                              {link.comment}
-                            </Text>
-                          )}
-                          <RadixLink
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            color="iris"
-                            underline="always"
-                            weight="medium"
-                          >
-                            {link.url}
-                          </RadixLink>
-                        </Flex>
-                      </Card>
-                    ))
-                  ) : (
-                    <Text size="2" color="gray">
-                      We are preparing hand-picked recommendations. Stay tuned!
-                    </Text>
-                  )}
-                </Flex>
-              </Flex>
-            </Card>
-          </Flex>
+      <StudioShell>
+        <div className="grid gap-10">
+          <section className="grid items-start gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="space-y-5">
+              <Reveal>
+                <HeroBadges />
+              </Reveal>
 
-          <Card
-            variant="surface"
-            className="border border-white/10 bg-white/5 backdrop-blur"
-          >
-            <Flex
-              align={{ initial: "stretch", md: "center" }}
-              direction={{ initial: "column", md: "row" }}
-              justify="between"
-              gap="4"
-            >
-              <Box>
-                <Heading size="6">Why Deadronos URL List?</Heading>
-                <Text as="p" mt="2" size="3" color="gray">
-                  Organize your research, share playlists of knowledge, and keep
-                  every link at your fingertips.
-                </Text>
-              </Box>
-              <Button size="3" variant="outline" asChild>
-                <Link href={primaryCtaHref}>Start your first collection</Link>
-              </Button>
-            </Flex>
-          </Card>
+              <Reveal delayMs={60}>
+                <div className="space-y-4">
+                  <h1 className="text-4xl font-semibold tracking-tight text-balance sm:text-5xl">
+                    A creative studio for your internet rabbit holes.
+                  </h1>
+                  <p className="text-muted-foreground max-w-xl text-base text-pretty sm:text-lg">
+                    Capture the best corners of the web, remix them into
+                    collections, and share your curated trails with anyone.
+                  </p>
+                </div>
+              </Reveal>
 
-          <LazyPublicCatalog
-            pageSize={PUBLIC_CATALOG_PAGE_SIZE}
-            linkLimit={PUBLIC_CATALOG_LINK_LIMIT}
-          />
-        </Flex>
-      </Container>
-    </Box>
+              <Reveal delayMs={120}>
+                <div className="flex flex-wrap gap-3">
+                  <Button asChild size="lg">
+                    <Link href={primaryCtaHref}>{primaryCtaLabel}</Link>
+                  </Button>
+                  <Button asChild size="lg" variant="outline">
+                    <Link href={secondaryCtaHref}>{secondaryCtaLabel}</Link>
+                  </Button>
+                </div>
+              </Reveal>
+
+              {!hasEnabledProvider ? (
+                <Reveal delayMs={160}>
+                  <p className="text-muted-foreground text-sm">
+                    Sign-in is disabled while mock credentials are configured.
+                  </p>
+                </Reveal>
+              ) : null}
+
+              {session?.user?.name ? (
+                <Reveal delayMs={160}>
+                  <p className="text-muted-foreground text-sm">
+                    Signed in as {session.user.name}.
+                  </p>
+                </Reveal>
+              ) : null}
+
+              <Stagger className="grid gap-3 sm:grid-cols-3" baseDelayMs={80}>
+                <Card className="bg-background/55 border backdrop-blur">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">Build</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-muted-foreground text-sm">
+                    One place for research, playlists, docs, and inspiration.
+                  </CardContent>
+                </Card>
+                <Card className="bg-background/55 border backdrop-blur">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">Arrange</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-muted-foreground text-sm">
+                    Drag to reorder. Keep the flow. No extra ceremony.
+                  </CardContent>
+                </Card>
+                <Card className="bg-background/55 border backdrop-blur">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">Share</CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-muted-foreground text-sm">
+                    Flip a switch and publish collections instantly.
+                  </CardContent>
+                </Card>
+              </Stagger>
+            </div>
+
+            <Reveal delayMs={80}>
+              <FeaturedCollectionCard
+                name={featuredCollection?.name ?? "No public collection yet"}
+                description={
+                  featuredCollection?.description ??
+                  "Check back soon for curated resources from the community."
+                }
+                topLinks={publicLinks}
+                ctaHref={primaryCtaHref}
+                ctaLabel={session ? "Continue" : "Create your first list"}
+              />
+            </Reveal>
+          </section>
+
+          <section className="grid gap-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-2xl font-semibold tracking-tight">
+                  Public collections
+                </h2>
+                <p className="text-muted-foreground text-sm">
+                  Explore what others are publishing right now.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button asChild variant="secondary">
+                  <Link href="/catalog">Open full catalog</Link>
+                </Button>
+                <Button asChild variant="outline">
+                  <Link href={primaryCtaHref}>Start a collection</Link>
+                </Button>
+              </div>
+            </div>
+
+            <Reveal delayMs={60}>
+              <LazyPublicCatalog
+                pageSize={PUBLIC_CATALOG_PAGE_SIZE}
+                linkLimit={PUBLIC_CATALOG_LINK_LIMIT}
+              />
+            </Reveal>
+          </section>
+        </div>
+      </StudioShell>
+    </div>
   );
 }

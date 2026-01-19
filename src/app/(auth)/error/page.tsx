@@ -1,17 +1,11 @@
 import Link from "next/link";
 
-import {
-  Box,
-  Button,
-  Card,
-  Container,
-  Flex,
-  Heading,
-  IconButton,
-  Separator,
-  Text,
-} from "@radix-ui/themes";
-import { ArrowLeftIcon, ReloadIcon } from "@radix-ui/react-icons";
+import { ArrowLeftIcon, RefreshCwIcon, ShieldAlertIcon } from "lucide-react";
+
+import { StudioShell } from "@/app/_components/studio-shell";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 const ERROR_DESCRIPTIONS: Record<
   string,
@@ -128,53 +122,45 @@ export default async function AuthErrorPage({
   const copy = resolveErrorCopy(resolvedParams?.error);
 
   return (
-    <Box className="min-h-screen bg-[radial-gradient(circle_at_top,_#101220,_#040406)] text-white">
-      <Container
-        size="2"
-        px={{ initial: "5", sm: "6" }}
-        py={{ initial: "7", sm: "9" }}
-      >
-        <Flex direction="column" gap="6">
-          <Flex align="center" gap="3">
-            <IconButton asChild variant="surface" color="gray">
-              <Link href="/">
-                <ArrowLeftIcon />
-              </Link>
-            </IconButton>
-            <Text size="2" color="gray">
-              Back to welcome page
-            </Text>
-          </Flex>
+    <div className="min-h-[calc(100vh-3.5rem)]">
+      <StudioShell>
+        <div className="mx-auto max-w-2xl space-y-4">
+          <Button asChild variant="ghost" className="-ml-2 w-fit">
+            <Link href="/">
+              <ArrowLeftIcon className="size-4" />
+              Back to home
+            </Link>
+          </Button>
 
-          <Card
-            size="4"
-            variant="surface"
-            className="w-full border border-white/10 bg-white/5 backdrop-blur"
-          >
-            <Flex direction="column" gap="5">
-              <Heading size="7">{copy.title}</Heading>
-              <Text color="gray" size="3">
+          <Card className="bg-background/55 border backdrop-blur">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShieldAlertIcon className="text-muted-foreground size-5" />
+                {copy.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground text-sm">
                 {copy.description}
-              </Text>
-              <Separator className="border-white/10" />
-              <Flex gap="4" wrap="wrap">
-                <Button asChild size="3" variant="solid">
+              </p>
+
+              <Separator />
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button asChild>
                   <Link href="/signin">
-                    <ReloadIcon className="mr-2" />
+                    <RefreshCwIcon className="size-4" />
                     Try signing in again
                   </Link>
                 </Button>
-                <Button asChild size="3" variant="surface" color="gray">
-                  <Link href="/">
-                    <ArrowLeftIcon className="mr-2" />
-                    Return home
-                  </Link>
+                <Button asChild variant="secondary">
+                  <Link href="/">Return home</Link>
                 </Button>
-              </Flex>
-            </Flex>
+              </div>
+            </CardContent>
           </Card>
-        </Flex>
-      </Container>
-    </Box>
+        </div>
+      </StudioShell>
+    </div>
   );
 }

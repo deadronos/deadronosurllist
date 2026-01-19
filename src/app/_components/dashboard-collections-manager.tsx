@@ -9,19 +9,11 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import {
-  Callout,
-  Card,
-  Flex,
-  Heading,
-  Text,
-  TextField,
-} from "@radix-ui/themes";
-import {
-  CheckIcon,
-  ExclamationTriangleIcon,
-  MagnifyingGlassIcon,
-} from "@radix-ui/react-icons";
+
+import { CheckCircle2Icon, SearchIcon, TriangleAlertIcon } from "lucide-react";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 
 import { SortableCollectionItem } from "./sortable-collection-item";
 import {
@@ -135,31 +127,28 @@ export function DashboardCollectionsManager({
   };
 
   return (
-    <Flex direction="column" gap="4">
-      <TextField.Root
-        placeholder="Filter collections..."
-        value={filterTerm}
-        onChange={(e) => setFilterTerm(e.target.value)}
-      >
-        <TextField.Slot>
-          <MagnifyingGlassIcon height="16" width="16" />
-        </TextField.Slot>
-      </TextField.Root>
+    <div className="space-y-4">
+      <div className="relative">
+        <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+        <Input
+          placeholder="Filter collections..."
+          value={filterTerm}
+          onChange={(event) => setFilterTerm(event.target.value)}
+          className="pl-9"
+        />
+      </div>
 
       {feedback ? (
-        <Callout.Root
-          color={feedback.type === "success" ? "green" : "red"}
-          role="status"
+        <Alert
+          variant={feedback.type === "success" ? "default" : "destructive"}
         >
-          <Callout.Icon>
-            {feedback.type === "success" ? (
-              <CheckIcon />
-            ) : (
-              <ExclamationTriangleIcon />
-            )}
-          </Callout.Icon>
-          <Callout.Text>{feedback.message}</Callout.Text>
-        </Callout.Root>
+          {feedback.type === "success" ? (
+            <CheckCircle2Icon className="size-4" />
+          ) : (
+            <TriangleAlertIcon className="size-4" />
+          )}
+          <AlertDescription>{feedback.message}</AlertDescription>
+        </Alert>
       ) : null}
 
       {displayCollections.length > 0 ? (
@@ -172,7 +161,7 @@ export function DashboardCollectionsManager({
             items={displayCollections.map((collection) => collection.id)}
             strategy={verticalListSortingStrategy}
           >
-            <Flex direction="column" gap="3">
+            <div className="space-y-3">
               {displayCollections.map((collection) => (
                 <SortableCollectionItem
                   key={collection.id}
@@ -182,25 +171,16 @@ export function DashboardCollectionsManager({
                   dragDisabled={isReordering || isFiltering}
                 />
               ))}
-            </Flex>
+            </div>
           </SortableContext>
         </DndContext>
       ) : (
-        <Card
-          size="2"
-          variant="surface"
-          className="border border-dashed border-white/20 bg-transparent"
-        >
-          <Flex direction="column" gap="2">
-            <Heading as="h3" size="4">
-              No collections yet
-            </Heading>
-            <Text size="2" color="gray">
-              Use the form above to create your first collection and start
-              saving links.
-            </Text>
-          </Flex>
-        </Card>
+        <div className="bg-background/35 rounded-xl border border-dashed p-6">
+          <div className="text-sm font-medium">No collections yet</div>
+          <div className="text-muted-foreground mt-1 text-sm">
+            Use the form to create your first collection and start saving links.
+          </div>
+        </div>
       )}
 
       <EditCollectionDialog
@@ -228,6 +208,6 @@ export function DashboardCollectionsManager({
         onConfirm={handleDelete}
         isDeleting={isDeleting}
       />
-    </Flex>
+    </div>
   );
 }
