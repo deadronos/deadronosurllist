@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 
 import Link from "next/link";
 
@@ -33,6 +33,7 @@ interface PublicCatalogProps {
   pageSize: number;
   linkLimit: number;
   showTabs?: boolean;
+  autoLoadMore?: boolean;
 }
 
 /**
@@ -50,6 +51,7 @@ export function PublicCatalog({
   pageSize,
   linkLimit,
   showTabs = false,
+  autoLoadMore = false,
 }: PublicCatalogProps) {
   const [query, setQuery] = useState("");
   const trimmedQuery = query.trim().toLowerCase();
@@ -112,6 +114,8 @@ export function PublicCatalog({
   const noMatches = filteredCollections.length === 0;
   const showLoadMore = Boolean(hasNextPage);
 
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
   const handleQueryChange = (event: ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
   };
@@ -120,6 +124,33 @@ export function PublicCatalog({
     if (!hasNextPage || isFetchingNextPage) return;
     await fetchNextPage();
   };
+
+  useEffect(() => {
+    if (!autoLoadMore) return;
+    if (!hasNextPage) return;
+
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting) return;
+        void handleLoadMore();
+      },
+      {
+        root: null,
+        rootMargin: "400px 0px",
+        threshold: 0.01,
+      },
+    );
+
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [autoLoadMore, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <Card className="bg-background/55 border backdrop-blur">
@@ -268,14 +299,24 @@ export function PublicCatalog({
         )}
 
         {showLoadMore ? (
-          <div className="flex justify-center">
-            <Button
-              variant="secondary"
-              onClick={handleLoadMore}
-              disabled={isFetchingNextPage}
-            >
-              {isFetchingNextPage ? "Loading more..." : "Load more"}
-            </Button>
+          <div className="flex flex-col items-center gap-3">
+            <div ref={sentinelRef} className="h-1 w-full" />
+
+            {!autoLoadMore ? (
+              <Button
+                variant="secondary"
+                onClick={handleLoadMore}
+                disabled={isFetchingNextPage}
+              >
+                {isFetchingNextPage ? "Loading more..." : "Load more"}
+              </Button>
+            ) : null}
+
+            {autoLoadMore && isFetchingNextPage ? (
+              <div className="text-muted-foreground text-sm">
+                Loading more...
+              </div>
+            ) : null}
           </div>
         ) : null}
       </CardContent>

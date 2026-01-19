@@ -23,6 +23,7 @@ export default function CatalogPage() {
             pageSize={PUBLIC_CATALOG_PAGE_SIZE}
             linkLimit={PUBLIC_CATALOG_LINK_LIMIT}
             showTabs
+            autoLoadMore
           />
         </div>
       </StudioShell>
