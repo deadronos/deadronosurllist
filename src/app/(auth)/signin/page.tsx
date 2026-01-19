@@ -1,29 +1,24 @@
 import { Suspense } from "react";
 import Link from "next/link";
 
+import { ArrowLeftIcon, SparklesIcon } from "lucide-react";
+
+import { StudioShell } from "@/app/_components/studio-shell";
+import { Button } from "@/components/ui/button";
 import {
-  Box,
   Card,
-  Container,
-  Flex,
-  Heading,
-  IconButton,
-  Separator,
-  Text,
-} from "@radix-ui/themes";
-import { ArrowLeftIcon } from "@radix-ui/react-icons";
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 import { authDiagnostics } from "@/server/auth";
 import type { AuthDiagnostics } from "@/server/auth/provider-helpers";
 
 import { SignInButtons } from "./sign-in-buttons";
 
-/**
- * The sign-in page.
- * Displays available authentication providers and diagnostics.
- *
- * @returns {JSX.Element} The sign-in page component.
- */
 export default function SignInPage() {
   const {
     enabledProviders,
@@ -32,42 +27,59 @@ export default function SignInPage() {
   }: AuthDiagnostics = authDiagnostics;
 
   return (
-    <Box className="min-h-screen bg-[radial-gradient(circle_at_top,_#101220,_#040406)] text-white">
-      <Container
-        size="2"
-        px={{ initial: "5", sm: "6" }}
-        py={{ initial: "7", sm: "9" }}
-      >
-        <Flex direction="column" gap="6">
-          <Flex align="center" gap="3">
-            <IconButton asChild variant="surface" color="gray">
+    <div className="min-h-[calc(100vh-3.5rem)]">
+      <StudioShell>
+        <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="space-y-6">
+            <Button asChild variant="ghost" className="-ml-2 w-fit">
               <Link href="/">
-                <ArrowLeftIcon />
+                <ArrowLeftIcon className="size-4" />
+                Back to home
               </Link>
-            </IconButton>
-            <Text size="2" color="gray">
-              Back to welcome page
-            </Text>
-          </Flex>
+            </Button>
 
-          <Card
-            size="4"
-            variant="surface"
-            className="w-full border border-white/10 bg-white/5 backdrop-blur"
-          >
-            <Flex direction="column" gap="5">
-              <Heading size="7">Sign in to Deadronos URL List</Heading>
-              <Text color="gray" size="3">
-                Use one of the available providers below. If nothing is listed,
-                configure OAuth credentials in your environment first.
-              </Text>
+            <div className="space-y-3">
+              <div className="bg-background/55 text-muted-foreground inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs backdrop-blur">
+                <SparklesIcon className="size-4" />
+                Studio mode: organize what you learn
+              </div>
+              <h1 className="text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
+                Sign in to start publishing collections.
+              </h1>
+              <p className="text-muted-foreground text-sm text-pretty sm:text-base">
+                Your private lists stay private until you flip them public.
+              </p>
+            </div>
 
+            <Card className="bg-background/55 border backdrop-blur">
+              <CardHeader>
+                <CardTitle className="text-base">What you get</CardTitle>
+                <CardDescription>
+                  A small set of powerful tools that stay out of your way.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-muted-foreground grid gap-3 text-sm">
+                <div>Drag & drop ordering for collections and links.</div>
+                <div>Bulk import to capture a whole research session fast.</div>
+                <div>One-click public sharing when you are ready.</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="bg-background/55 border backdrop-blur">
+            <CardHeader>
+              <CardTitle>Continue</CardTitle>
+              <CardDescription>
+                Use one of the available providers below.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-5">
               {hasEnabledProvider ? (
                 <Suspense
                   fallback={
-                    <Text color="gray" size="2">
-                      Preparing sign-in options…
-                    </Text>
+                    <div className="text-muted-foreground text-sm">
+                      Preparing sign-in options...
+                    </div>
                   }
                 >
                   <SignInButtons
@@ -78,27 +90,25 @@ export default function SignInPage() {
                   />
                 </Suspense>
               ) : (
-                <Card
-                  size="3"
-                  variant="classic"
-                  className="border-dashed border-white/20 bg-black/40 text-left"
-                >
-                  <Heading size="4">Authentication is disabled</Heading>
-                  <Text color="gray" size="3" mt="2">
-                    We detected placeholder credentials in this environment.
-                    Update your `.env.local` with real OAuth client IDs and
-                    secrets to enable sign-in. In the meantime, you can continue
-                    exploring the public experience.
-                  </Text>
-                </Card>
+                <div className="bg-background/35 rounded-xl border border-dashed p-5">
+                  <div className="text-sm font-medium">
+                    Authentication is disabled
+                  </div>
+                  <div className="text-muted-foreground mt-2 text-sm">
+                    We detected placeholder credentials. Update `.env.local`
+                    with real OAuth client IDs and secrets to enable sign-in.
+                  </div>
+                </div>
               )}
 
-              {disabledProviders.length > 0 && (
+              {disabledProviders.length > 0 ? (
                 <>
-                  <Separator className="border-white/10" />
-                  <Box>
-                    <Heading size="4">Provider diagnostics</Heading>
-                    <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-gray-400">
+                  <Separator />
+                  <div>
+                    <div className="text-sm font-medium">
+                      Provider diagnostics
+                    </div>
+                    <ul className="text-muted-foreground mt-2 list-disc space-y-1 pl-5 text-sm">
                       {disabledProviders.map((provider) => (
                         <li key={`disabled-${provider.id}`}>
                           {provider.label}:{" "}
@@ -106,13 +116,13 @@ export default function SignInPage() {
                         </li>
                       ))}
                     </ul>
-                  </Box>
+                  </div>
                 </>
-              )}
-            </Flex>
+              ) : null}
+            </CardContent>
           </Card>
-        </Flex>
-      </Container>
-    </Box>
+        </div>
+      </StudioShell>
+    </div>
   );
 }

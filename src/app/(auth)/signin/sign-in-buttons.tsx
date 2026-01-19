@@ -2,7 +2,10 @@
 
 import { useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { Button, Flex, Text } from "@radix-ui/themes";
+
+import { ArrowRightIcon } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 import { signIn } from "next-auth/react";
 
 type ProviderInfo = { id: string; label: string };
@@ -31,25 +34,25 @@ export function SignInButtons({ providers }: SignInButtonsProps) {
   );
 
   return (
-    <Flex direction="column" gap="3">
+    <div className="space-y-3">
       {errorCode ? (
-        <Text color="red" size="2">
+        <div className="border-destructive/30 bg-destructive/5 text-destructive rounded-lg border px-4 py-3 text-sm">
           Sign-in failed ({errorCode}). Try again or contact support if the
           problem persists.
-        </Text>
+        </div>
       ) : null}
 
       {providers.map((provider) => (
         <Button
           key={provider.id}
-          size="3"
-          className="justify-start"
-          variant="solid"
+          size="lg"
+          className="w-full justify-between"
           onClick={() => handleClick(provider.id)}
         >
           {providerButtonLabel(provider.label)}
+          <ArrowRightIcon className="size-4" />
         </Button>
       ))}
-    </Flex>
+    </div>
   );
 }

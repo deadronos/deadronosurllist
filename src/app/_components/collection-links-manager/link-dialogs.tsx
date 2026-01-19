@@ -1,6 +1,14 @@
 "use client";
 
-import { Button, Dialog, Flex, TextField } from "@radix-ui/themes";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 import type { CollectionLinkModel } from "./types";
 
@@ -34,14 +42,17 @@ export function EditLinkDialog({
   isSubmitting,
 }: EditLinkDialogProps) {
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Content maxWidth="400px">
-        <Dialog.Title>Edit Link</Dialog.Title>
-        <Dialog.Description>
-          Update the URL, title, or description for this link.
-        </Dialog.Description>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit link</DialogTitle>
+          <DialogDescription>
+            Update the URL, title, or description for this link.
+          </DialogDescription>
+        </DialogHeader>
+
         <form
-          className="mt-4 flex flex-col gap-3"
+          className="grid gap-3"
           onSubmit={(event) => {
             event.preventDefault();
             const formData = new FormData(event.currentTarget);
@@ -49,45 +60,46 @@ export function EditLinkDialog({
           }}
           key={link?.id ?? "new"}
         >
-          <TextField.Root
+          <Input
             name="url"
             defaultValue={link?.url ?? ""}
             placeholder="https://example.com"
             required
+            disabled={isSubmitting}
           />
-          <TextField.Root
+          <Input
             name="name"
             defaultValue={link?.name ?? ""}
             placeholder="Display name"
             required
+            disabled={isSubmitting}
           />
-          <TextField.Root
+          <Input
             name="comment"
             defaultValue={link?.comment ?? ""}
             placeholder="Comment (optional)"
+            disabled={isSubmitting}
           />
-          <Flex gap="3" justify="end">
-            <Dialog.Close>
-              <Button variant="soft" color="gray" disabled={isSubmitting}>
-                Cancel
-              </Button>
-            </Dialog.Close>
-            <Button type="submit" loading={isSubmitting}>
-              Save changes
+
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
             </Button>
-          </Flex>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Saving..." : "Save changes"}
+            </Button>
+          </div>
         </form>
-      </Dialog.Content>
-    </Dialog.Root>
+      </DialogContent>
+    </Dialog>
   );
 }
 
-/**
- * Dialog for confirming link deletion.
- *
- * @param {DeleteLinkDialogProps} props - Component properties.
- * @returns {JSX.Element} The dialog component.
- */
 export function DeleteLinkDialog({
   open,
   onOpenChange,
@@ -96,24 +108,35 @@ export function DeleteLinkDialog({
   isDeleting,
 }: DeleteLinkDialogProps) {
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Content maxWidth="360px">
-        <Dialog.Title>Delete link</Dialog.Title>
-        <Dialog.Description>
-          This removes <strong>{link?.name ?? "this link"}</strong> from the
-          collection. This action cannot be undone.
-        </Dialog.Description>
-        <Flex mt="4" gap="3" justify="end">
-          <Dialog.Close>
-            <Button variant="soft" color="gray" disabled={isDeleting}>
-              Cancel
-            </Button>
-          </Dialog.Close>
-          <Button color="red" onClick={onConfirm} loading={isDeleting}>
-            Delete
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Delete link</DialogTitle>
+          <DialogDescription>
+            This removes <strong>{link?.name ?? "this link"}</strong> from the
+            collection. This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => onOpenChange(false)}
+            disabled={isDeleting}
+          >
+            Cancel
           </Button>
-        </Flex>
-      </Dialog.Content>
-    </Dialog.Root>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={onConfirm}
+            disabled={isDeleting}
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

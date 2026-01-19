@@ -2,16 +2,12 @@
 
 import Link from "next/link";
 
-import {
-  Box,
-  Button,
-  Card,
-  Container,
-  Flex,
-  Heading,
-  Separator,
-  Text,
-} from "@radix-ui/themes";
+import { BugIcon } from "lucide-react";
+
+import { StudioShell } from "@/app/_components/studio-shell";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 type ErrorPageProps = {
   error: Error & { digest?: string };
@@ -29,42 +25,41 @@ type ErrorPageProps = {
  */
 export default function GlobalError({ error, reset }: ErrorPageProps) {
   return (
-    <Box className="min-h-[60vh] bg-[radial-gradient(circle_at_top,_#1a1c2c,_#050508)] text-white">
-      <Container
-        size="2"
-        px={{ initial: "5", sm: "6" }}
-        py={{ initial: "8", sm: "10" }}
-      >
-        <Card
-          variant="surface"
-          size="4"
-          className="mx-auto w-full max-w-xl border border-white/10 bg-white/5 backdrop-blur"
-        >
-          <Flex direction="column" gap="5" align="start">
-            <Heading size="7">Something went wrong</Heading>
-            <Text size="3" color="gray">
-              {error.message ||
-                "An unexpected error occurred. Try again or head back home."}
-            </Text>
-            <Flex gap="3" wrap="wrap">
-              <Button size="3" onClick={reset} variant="solid">
-                Try again
-              </Button>
-              <Button size="3" variant="soft" color="gray" asChild>
-                <Link href="/">Back to Home</Link>
-              </Button>
-            </Flex>
-            {error.digest && (
-              <>
-                <Separator className="border-white/10" />
-                <Text size="2" color="gray">
-                  Error reference: {error.digest}
-                </Text>
-              </>
-            )}
-          </Flex>
-        </Card>
-      </Container>
-    </Box>
+    <div className="min-h-[calc(100vh-3.5rem)]">
+      <StudioShell>
+        <div className="mx-auto max-w-2xl">
+          <Card className="bg-background/55 border backdrop-blur">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BugIcon className="text-muted-foreground size-5" />
+                Something went wrong
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-muted-foreground text-sm">
+                {error.message ||
+                  "An unexpected error occurred. Try again or head back home."}
+              </p>
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button onClick={reset}>Try again</Button>
+                <Button asChild variant="secondary">
+                  <Link href="/">Back to Home</Link>
+                </Button>
+              </div>
+
+              {error.digest ? (
+                <>
+                  <Separator />
+                  <div className="text-muted-foreground text-xs">
+                    Error reference: {error.digest}
+                  </div>
+                </>
+              ) : null}
+            </CardContent>
+          </Card>
+        </div>
+      </StudioShell>
+    </div>
   );
 }

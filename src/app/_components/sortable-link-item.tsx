@@ -1,21 +1,25 @@
 "use client";
 
 import { memo } from "react";
+
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
-  Card,
-  Flex,
-  IconButton,
-  Link as RadixLink,
-  Text,
-  Tooltip,
-} from "@radix-ui/themes";
+  ExternalLinkIcon,
+  GripVerticalIcon,
+  PencilIcon,
+  Trash2Icon,
+} from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
-  DotsVerticalIcon,
-  Pencil2Icon,
-  TrashIcon,
-} from "@radix-ui/react-icons";
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+import { cn } from "@/lib/utils";
 
 import type { CollectionLinkModel } from "./collection-links-manager/types";
 
@@ -60,63 +64,87 @@ export const SortableLinkItem = memo(function SortableLinkItem({
     <Card
       ref={setNodeRef}
       style={style}
-      variant="surface"
-      className="border border-white/10 bg-white/5 backdrop-blur"
+      className={cn(
+        "bg-background/45 border backdrop-blur",
+        isDragging ? "ring-ring/30 ring-2" : null,
+      )}
     >
-      <Flex align="center" justify="between" gap="3">
-        <Flex align="center" gap="3" className="flex-1 min-w-0">
-          <Tooltip
-            content={
-              dragDisabled
+      <div className="flex items-center justify-between gap-3 px-6">
+        <div className="flex min-w-0 items-center gap-3">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  "bg-background/40 text-muted-foreground hover:text-foreground inline-flex size-9 items-center justify-center rounded-lg border",
+                  dragDisabled
+                    ? "cursor-not-allowed opacity-60"
+                    : "cursor-grab",
+                )}
+                {...dragProps}
+                aria-label="Drag to reorder"
+              >
+                <GripVerticalIcon className="size-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {dragDisabled
                 ? "Reordering disabled while filtering"
-                : "Drag to reorder"
-            }
-          >
-            <IconButton
-              variant="soft"
-              color="gray"
-              {...dragProps}
-              disabled={dragDisabled}
-            >
-              <DotsVerticalIcon />
-            </IconButton>
+                : "Drag to reorder"}
+            </TooltipContent>
           </Tooltip>
-          <Flex direction="column" gap="1" className="overflow-hidden min-w-0">
-            <RadixLink
+
+          <div className="min-w-0">
+            <a
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              color="blue"
-              underline="always"
-              weight="medium"
-              className="truncate"
+              className="inline-flex items-center gap-1 truncate text-sm font-medium hover:underline"
             >
-              {link.name}
-            </RadixLink>
+              <span className="truncate">{link.name}</span>
+              <ExternalLinkIcon className="text-muted-foreground size-3" />
+            </a>
             {link.comment ? (
-              <Text size="2" color="gray" className="truncate">
+              <div className="text-muted-foreground mt-1 truncate text-sm">
                 {link.comment}
-              </Text>
+              </div>
             ) : null}
-          </Flex>
-        </Flex>
-        <Flex gap="2">
-          <Tooltip content="Edit link">
-            <IconButton variant="outline" onClick={() => onEdit(link.id)}>
-              <Pencil2Icon />
-            </IconButton>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                size="icon-sm"
+                variant="outline"
+                onClick={() => onEdit(link.id)}
+                aria-label="Edit link"
+              >
+                <PencilIcon className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Edit link</TooltipContent>
           </Tooltip>
-          <Tooltip content="Delete link">
-            <IconButton
-              variant="outline"
-              color="red"
-              onClick={() => onDelete(link.id)}
-            >
-              <TrashIcon />
-            </IconButton>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                size="icon-sm"
+                variant="outline"
+                onClick={() => onDelete(link.id)}
+                aria-label="Delete link"
+                className="text-destructive hover:bg-destructive/10"
+              >
+                <Trash2Icon className="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Delete link</TooltipContent>
           </Tooltip>
-        </Flex>
-      </Flex>
+        </div>
+      </div>
     </Card>
   );
 });

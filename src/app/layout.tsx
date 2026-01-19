@@ -1,13 +1,11 @@
 import "@/styles/globals.css";
-import "@radix-ui/themes/styles.css";
-
-import Link from "next/link";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 
-import { Button, Container, Flex, Theme } from "@radix-ui/themes";
-
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
+import { SiteHeader } from "@/app/_components/site-header";
 import { TRPCReactProvider } from "@/trpc/react";
 
 export const metadata: Metadata = {
@@ -21,41 +19,21 @@ const geist = Geist({
   variable: "--font-geist-sans",
 });
 
-/**
- * Root layout component.
- * Wraps the application with providers, theme, and global structure.
- *
- * @param {object} props - Component props.
- * @param {React.ReactNode} props.children - The content to render.
- * @returns {JSX.Element} The root HTML structure.
- */
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable}`}>
-      <body className="antialiased">
-        <Theme
-          appearance="dark"
-          accentColor="iris"
-          radius="large"
-          scaling="100%"
-        >
+    <html lang="en" className={geist.variable} suppressHydrationWarning>
+      <body className="bg-background text-foreground min-h-screen font-sans antialiased">
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <TRPCReactProvider>
-            <div className="flex min-h-screen flex-col">
-              <header className="sticky top-0 z-50 border-b border-white/10 bg-black/30 backdrop-blur">
-                <Container size="3" px={{ initial: "4", sm: "6" }} py="3">
-                  <Flex align="center" justify="between">
-                    <Button variant="soft" color="gray" asChild size="2">
-                      <Link href="/">← Back to Home</Link>
-                    </Button>
-                  </Flex>
-                </Container>
-              </header>
+            <div className="relative flex min-h-screen flex-col">
+              <SiteHeader />
               <main className="flex-1">{children}</main>
+              <Toaster richColors />
             </div>
           </TRPCReactProvider>
-        </Theme>
+        </ThemeProvider>
       </body>
     </html>
   );

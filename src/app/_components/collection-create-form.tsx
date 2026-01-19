@@ -3,17 +3,21 @@
 import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { SparklesIcon } from "lucide-react";
+
 import { api } from "@/trpc/react";
+
+import { Button } from "@/components/ui/button";
 import {
-  Button,
   Card,
-  Checkbox,
-  Flex,
-  Heading,
-  Text,
-  TextArea,
-  TextField,
-} from "@radix-ui/themes";
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 
 /**
  * Form component for creating a new collection.
@@ -48,53 +52,72 @@ export function CollectionCreateForm() {
   };
 
   return (
-    <Card
-      asChild
-      variant="surface"
-      className="border border-white/10 bg-white/5 backdrop-blur"
-    >
-      <form onSubmit={handleSubmit}>
-        <Flex direction="column" gap="4">
-          <Heading as="h2" size="6">
-            Create New Collection
-          </Heading>
-          <Flex direction="column" gap="3">
-            <TextField.Root
-              size="3"
-              placeholder="Collection name"
+    <Card className="bg-background/55 border backdrop-blur">
+      <CardHeader>
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <CardTitle className="text-base">Create a collection</CardTitle>
+            <CardDescription>
+              A new space for a trail of links. Make it public whenever.
+            </CardDescription>
+          </div>
+          <div className="bg-background/40 inline-flex size-9 items-center justify-center rounded-lg border">
+            <SparklesIcon className="text-muted-foreground size-4" />
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Name</label>
+            <Input
+              placeholder="e.g. Design inspiration"
               value={name}
               onChange={(event) => setName(event.target.value)}
               disabled={isSubmitting}
               required
               aria-label="Collection name"
             />
-            <TextArea
-              size="3"
-              placeholder="Description (optional)"
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Description</label>
+            <Textarea
+              placeholder="What lives in here?"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               disabled={isSubmitting}
               aria-label="Collection description"
               rows={3}
             />
-            <Flex align="center" gap="2">
-              <Checkbox
-                size="2"
-                checked={isPublic}
-                onCheckedChange={(checked) => setIsPublic(checked === true)}
-                disabled={isSubmitting}
-                aria-label="Make collection public"
-              />
-              <Text size="2" color="gray">
-                Public
-              </Text>
-            </Flex>
-          </Flex>
-          <Button type="submit" size="3" disabled={isSubmitting}>
-            {isSubmitting ? "Creating..." : "Create"}
+          </div>
+
+          <div className="bg-background/35 flex items-center justify-between gap-4 rounded-lg border px-4 py-3">
+            <div>
+              <div className="text-sm font-medium">Public</div>
+              <div className="text-muted-foreground text-xs">
+                Anyone with the link can browse.
+              </div>
+            </div>
+            <Switch
+              checked={isPublic}
+              onCheckedChange={(checked) => setIsPublic(checked)}
+              disabled={isSubmitting}
+              aria-label="Make collection public"
+            />
+          </div>
+
+          <Button
+            type="submit"
+            size="lg"
+            disabled={isSubmitting}
+            className="w-full"
+          >
+            {isSubmitting ? "Creating..." : "Create collection"}
           </Button>
-        </Flex>
-      </form>
+        </form>
+      </CardContent>
     </Card>
   );
 }

@@ -7,14 +7,22 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { Callout, Flex, Switch, Text, TextField } from "@radix-ui/themes";
+
+import {
+  CheckCircle2Icon,
+  EyeIcon,
+  EyeOffIcon,
+  SearchIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 
 import { useTextFilter } from "@/hooks/use-text-filter";
-import {
-  CheckIcon,
-  DotsHorizontalIcon,
-  ExclamationTriangleIcon,
-} from "@radix-ui/react-icons";
+
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 
 import { SortableLinkItem } from "./sortable-link-item";
 import {
@@ -145,65 +153,93 @@ export function CollectionLinksManager({
 
   return (
     <>
-      <Flex
-        align="center"
-        justify="between"
-        gap="3"
-        className="mt-6 flex-col gap-4 sm:flex-row"
-      >
-        <Flex align="center" gap="2">
-          <Switch
-            checked={isPublic}
-            onCheckedChange={toggleVisibility}
-            disabled={isDeleting || isUpdating || isVisibilityUpdating}
+      <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="bg-background/35 flex items-center justify-between gap-4 rounded-xl border px-4 py-3 sm:w-[360px]">
+          <div className="flex items-center gap-2">
+            {isPublic ? (
+              <EyeIcon className="text-muted-foreground size-4" />
+            ) : (
+              <EyeOffIcon className="text-muted-foreground size-4" />
+            )}
+            <div>
+              <div className="text-sm font-medium">
+                {isPublic ? "Visible to anyone" : "Only you can see this"}
+              </div>
+              <div className="text-muted-foreground text-xs">
+                Toggle to publish or hide this collection.
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Badge variant={isPublic ? "default" : "secondary"}>
+              {isPublic ? "Public" : "Private"}
+            </Badge>
+            <Switch
+              checked={isPublic}
+              onCheckedChange={toggleVisibility}
+              disabled={isDeleting || isUpdating || isVisibilityUpdating}
+              aria-label="Toggle collection visibility"
+            />
+          </div>
+        </div>
+
+        <div className="relative w-full sm:w-72">
+          <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+          <Input
+            placeholder="Filter links..."
+            value={filterTerm}
+            onChange={(event) => setFilterTerm(event.target.value)}
+            className="pl-9"
           />
-          <Text size="2" color="gray">
-            {isPublic ? "Visible to anyone" : "Only you can see this"}
-          </Text>
-        </Flex>
-        <TextField.Root
-          placeholder="Filter links..."
-          value={filterTerm}
-          onChange={(event) => setFilterTerm(event.target.value)}
-          className="w-full sm:w-64"
-        />
-      </Flex>
+        </div>
+      </div>
 
       {feedback ? (
-        <Callout.Root
-          color={feedback.type === "success" ? "green" : "red"}
-          className="mt-4"
-        >
-          <Callout.Icon>
+        <div className="mt-4">
+          <Alert
+            variant={feedback.type === "success" ? "default" : "destructive"}
+          >
             {feedback.type === "success" ? (
-              <CheckIcon />
+              <CheckCircle2Icon className="size-4" />
             ) : (
-              <ExclamationTriangleIcon />
+              <TriangleAlertIcon className="size-4" />
             )}
-          </Callout.Icon>
-          <Callout.Text>{feedback.message}</Callout.Text>
-        </Callout.Root>
+            <AlertDescription>{feedback.message}</AlertDescription>
+          </Alert>
+        </div>
       ) : null}
 
       {hasFilter ? (
-        <Text size="2" color="gray" className="mt-4">
+        <div className="text-muted-foreground mt-4 text-sm">
           Showing {filteredLinks.length} of {links.length} links
-        </Text>
+        </div>
       ) : null}
 
       {!hasLinks ? (
-        <Callout.Root color="gray" className="mt-6">
-          <Callout.Icon>
-            <DotsHorizontalIcon />
-          </Callout.Icon>
-          <Callout.Text>
+        <div className="bg-background/35 mt-6 rounded-xl border p-6">
+          <div className="text-sm font-medium">
+            {hasFilter ? "No matches" : "No links yet"}
+          </div>
+          <div className="text-muted-foreground mt-1 text-sm">
             {hasFilter
               ? "No links match the current filter."
-              : "No links yet. Add your first resource using the form above."}
-          </Callout.Text>
-        </Callout.Root>
+              : "Add your first resource using the form above."}
+          </div>
+          {hasFilter ? (
+            <div className="mt-4">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => setFilterTerm("")}
+              >
+                Clear filter
+              </Button>
+            </div>
+          ) : null}
+        </div>
       ) : hasFilter ? (
-        <Flex direction="column" gap="2" className="mt-6">
+        <div className="mt-6 space-y-2">
           {filteredLinks.map((link) => (
             <SortableLinkItem
               key={link.id}
@@ -213,7 +249,7 @@ export function CollectionLinksManager({
               onDelete={openDeleteDialog}
             />
           ))}
-        </Flex>
+        </div>
       ) : (
         <DndContext
           sensors={sensors}
@@ -224,7 +260,7 @@ export function CollectionLinksManager({
             items={links.map((link) => link.id)}
             strategy={verticalListSortingStrategy}
           >
-            <Flex direction="column" gap="2" className="mt-6">
+            <div className="mt-6 space-y-2">
               {links.map((link) => (
                 <SortableLinkItem
                   key={link.id}
@@ -234,7 +270,7 @@ export function CollectionLinksManager({
                   onDelete={openDeleteDialog}
                 />
               ))}
-            </Flex>
+            </div>
           </SortableContext>
         </DndContext>
       )}
