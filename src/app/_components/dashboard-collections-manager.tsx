@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useCallback, useState } from "react";
+
+import { useTextFilter } from "@/hooks/use-text-filter";
 import { DndContext } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -58,7 +60,15 @@ export function DashboardCollectionsManager({
     isDeleting,
   } = useDashboardCollectionsManager({ initialCollections });
 
-  const [filterText, setFilterText] = useState("");
+  const {
+    filteredItems: filteredCollections,
+    filterTerm,
+    setFilterTerm,
+    hasFilter: isFiltering,
+  } = useTextFilter({
+    items: collections,
+    searchFields: ["name", "description"],
+  });
   const [activeCollectionId, setActiveCollectionId] = useState<string | null>(
     null,
   );
@@ -66,15 +76,6 @@ export function DashboardCollectionsManager({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const activeCollection = getCollectionById(activeCollectionId);
-
-  const filteredCollections = collections.filter(
-    (c) =>
-      c.name.toLowerCase().includes(filterText.toLowerCase()) ||
-      (c.description &&
-        c.description.toLowerCase().includes(filterText.toLowerCase())),
-  );
-
-  const isFiltering = filterText.trim().length > 0;
   const displayCollections = isFiltering ? filteredCollections : collections;
 
   const openEditDialog = useCallback((collectionId: string) => {
@@ -137,8 +138,8 @@ export function DashboardCollectionsManager({
     <Flex direction="column" gap="4">
       <TextField.Root
         placeholder="Filter collections..."
-        value={filterText}
-        onChange={(e) => setFilterText(e.target.value)}
+        value={filterTerm}
+        onChange={(e) => setFilterTerm(e.target.value)}
       >
         <TextField.Slot>
           <MagnifyingGlassIcon height="16" width="16" />

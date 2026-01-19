@@ -5,6 +5,7 @@ import { api, HydrateClient } from "@/trpc/server";
 import { LinkCreateForm } from "@/app/_components/link-create-form";
 import { auth } from "@/server/auth";
 import { CollectionLinksManager } from "@/app/_components/collection-links-manager";
+import { createTypeGuard } from "@/lib/type-guards";
 
 type CollectionLink = {
   id: string;
@@ -21,6 +22,24 @@ type CollectionWithLinks = {
   isPublic: boolean;
   links: CollectionLink[];
 };
+
+const isCollectionWithLinks = createTypeGuard<CollectionWithLinks>([
+  { name: "id", type: "string" },
+  { name: "name", type: "string" },
+  { name: "description", type: "string", optional: true, nullable: true },
+  { name: "isPublic", type: "boolean" },
+  {
+    name: "links",
+    type: "array",
+    nestedFields: [
+      { name: "id", type: "string" },
+      { name: "name", type: "string" },
+      { name: "url", type: "string" },
+      { name: "comment", type: "string", optional: true, nullable: true },
+      { name: "order", type: "number" },
+    ],
+  },
+]);
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -88,53 +107,4 @@ export default async function CollectionPage({ params }: PageProps) {
       </main>
     </HydrateClient>
   );
-}
-
-function isCollectionWithLinks(value: unknown): value is CollectionWithLinks {
-  if (!value || typeof value !== "object") return false;
-
-  const candidate = value as {
-    id?: unknown;
-    name?: unknown;
-    description?: unknown;
-    isPublic?: unknown;
-    links?: unknown;
-  };
-
-  if (typeof candidate.id !== "string") return false;
-  if (candidate.name !== undefined && typeof candidate.name !== "string") {
-    return false;
-  }
-  if (
-    candidate.description !== undefined &&
-    candidate.description !== null &&
-    typeof candidate.description !== "string"
-  ) {
-    return false;
-  }
-  if (typeof candidate.isPublic !== "boolean") {
-    return false;
-  }
-  if (!Array.isArray(candidate.links)) return false;
-  return candidate.links.every((link) => {
-    if (!link || typeof link !== "object") return false;
-    const linkCandidate = link as {
-      id?: unknown;
-      name?: unknown;
-      url?: unknown;
-      order?: unknown;
-      comment?: unknown;
-    };
-    const hasComment =
-      linkCandidate.comment === null ||
-      linkCandidate.comment === undefined ||
-      typeof linkCandidate.comment === "string";
-    return (
-      typeof linkCandidate.id === "string" &&
-      typeof linkCandidate.name === "string" &&
-      typeof linkCandidate.url === "string" &&
-      typeof linkCandidate.order === "number" &&
-      hasComment
-    );
-  });
 }
