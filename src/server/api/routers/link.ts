@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { urlSchema } from "@/server/api/validation";
+import { reorderItems } from "./reorder-helpers";
 import {
   verifyCollectionOwnership,
   verifyLinkOwnership,
@@ -198,34 +199,12 @@ export const linkRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await verifyCollectionOwnership(ctx, input.collectionId);
 
-      // 1. Fetch current links to determine which orders actually changed
-      const currentLinks = await ctx.db.link.findMany({
-        where: { collectionId: input.collectionId },
-        select: { id: true, order: true },
+      return reorderItems({
+        ctx,
+        itemIds: input.linkIds,
+        tableName: "link",
+        whereClause: { collectionId: input.collectionId },
+        selectId: "id",
       });
-
-      const currentOrderMap = new Map(
-        currentLinks.map((l) => [l.id, l.order]),
-      );
-
-      // 2. Filter updates: only update if the order is different
-      const updates = input.linkIds
-        .map((linkId, index) => {
-          const currentOrder = currentOrderMap.get(linkId);
-          if (currentOrder === index) {
-            return null; // No change needed
-          }
-          return ctx.db.link.updateMany({
-            where: { id: linkId, collectionId: input.collectionId },
-            data: { order: index },
-          });
-        })
-        .filter((update): update is NonNullable<typeof update> => update !== null);
-
-      if (updates.length === 0) {
-        return [];
-      }
-
-      return ctx.db.$transaction(updates);
     }),
 });

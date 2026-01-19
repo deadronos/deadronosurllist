@@ -1,10 +1,15 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { DndContext } from "@dnd-kit/core";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 import { Callout, Flex, Switch, Text, TextField } from "@radix-ui/themes";
+
+import { useTextFilter } from "@/hooks/use-text-filter";
 import {
   CheckIcon,
   DotsHorizontalIcon,
@@ -43,10 +48,6 @@ export function CollectionLinksManager({
   const {
     sensors,
     links,
-    filteredLinks,
-    hasFilter,
-    filterTerm,
-    setFilterTerm,
     feedback,
     isPublic,
     toggleVisibility,
@@ -61,6 +62,16 @@ export function CollectionLinksManager({
     collectionId,
     initialLinks,
     initialIsPublic,
+  });
+
+  const {
+    filteredItems: filteredLinks,
+    filterTerm,
+    setFilterTerm,
+    hasFilter,
+  } = useTextFilter({
+    items: links,
+    searchFields: ["name", "url", "comment"],
   });
 
   const [selectedLinkId, setSelectedLinkId] = useState<string | null>(null);

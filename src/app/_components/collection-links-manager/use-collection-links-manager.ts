@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { type DragEndEvent } from "@dnd-kit/core";
 
@@ -48,7 +48,6 @@ export function useCollectionLinksManager({
     optimisticDelete,
   } = useOptimisticList(initialLinks);
 
-  const [filterTerm, setFilterTerm] = useState("");
   const [isPublic, setIsPublic] = useState(initialIsPublic);
   const utils = api.useUtils();
   const router = useRouter();
@@ -85,20 +84,6 @@ export function useCollectionLinksManager({
       router.refresh();
     },
   });
-
-  const filteredLinks = useMemo(() => {
-    if (!filterTerm.trim()) return links;
-    const query = filterTerm.trim().toLowerCase();
-    return links.filter((link) => {
-      return (
-        link.name.toLowerCase().includes(query) ||
-        link.url.toLowerCase().includes(query) ||
-        (link.comment?.toLowerCase().includes(query) ?? false)
-      );
-    });
-  }, [links, filterTerm]);
-
-  const hasFilter = filterTerm.trim().length > 0;
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
@@ -183,10 +168,6 @@ export function useCollectionLinksManager({
   return {
     sensors,
     links,
-    filteredLinks,
-    hasFilter,
-    filterTerm,
-    setFilterTerm,
     feedback,
     isPublic,
     toggleVisibility,

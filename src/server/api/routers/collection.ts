@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import {
@@ -17,6 +16,7 @@ import {
   normalizeDescriptionForCreate,
   normalizeDescriptionForUpdate,
 } from "./collection/normalizers";
+import { reorderItems } from "./reorder-helpers";
 import { verifyCollectionOwnership } from "./router-helpers";
 
 export const collectionRouter = createTRPCRouter({
@@ -194,29 +194,12 @@ export const collectionRouter = createTRPCRouter({
   reorder: protectedProcedure
     .input(z.object({ collectionIds: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
-      const userCollections = await ctx.db.collection.findMany({
-        where: { createdById: ctx.session.user.id },
-        select: { id: true },
+      return reorderItems({
+        ctx,
+        itemIds: input.collectionIds,
+        tableName: "collection",
+        whereClause: { createdById: ctx.session.user.id },
+        selectId: "id",
       });
-
-      const ownedIds = new Set(
-        userCollections.map((collection) => collection.id),
-      );
-      const hasUnauthorized = input.collectionIds.some(
-        (collectionId) => !ownedIds.has(collectionId),
-      );
-
-      if (hasUnauthorized) {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
-
-      const updates = input.collectionIds.map((collectionId, index) =>
-        ctx.db.collection.updateMany({
-          where: { id: collectionId, createdById: ctx.session.user.id },
-          data: { order: index },
-        }),
-      );
-
-      return ctx.db.$transaction(updates);
     }),
 });

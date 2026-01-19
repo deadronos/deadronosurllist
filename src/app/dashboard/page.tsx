@@ -4,6 +4,7 @@ import { api, HydrateClient } from "@/trpc/server";
 import { auth } from "@/server/auth";
 import { CollectionCreateForm } from "@/app/_components/collection-create-form";
 import { DashboardCollectionsManager } from "@/app/_components/dashboard-collections-manager";
+import { createTypeGuard } from "@/lib/type-guards";
 import {
   Box,
   Button,
@@ -22,6 +23,22 @@ type CollectionSummary = {
   order: number;
   _count?: { links?: number | null } | null;
 };
+
+const isCollectionSummary = createTypeGuard<CollectionSummary>([
+  { name: "id", type: "string" },
+  { name: "name", type: "string" },
+  { name: "description", type: "string", optional: true, nullable: true },
+  { name: "order", type: "number" },
+  {
+    name: "_count",
+    type: "object",
+    optional: true,
+    nullable: true,
+    nestedFields: [
+      { name: "links", type: "number", optional: true, nullable: true },
+    ],
+  },
+]);
 
 const gradientBackground =
   "min-h-screen bg-[radial-gradient(circle_at_top,_#101220,_#040406)] text-white";
@@ -152,43 +169,4 @@ export default async function DashboardPage() {
       </Box>
     </HydrateClient>
   );
-}
-
-function isCollectionSummary(value: unknown): value is CollectionSummary {
-  if (!value || typeof value !== "object") return false;
-  const candidate = value as {
-    id?: unknown;
-    name?: unknown;
-    description?: unknown;
-    order?: unknown;
-    _count?: unknown;
-  };
-  if (typeof candidate.id !== "string") return false;
-  if (candidate.name !== undefined && typeof candidate.name !== "string") {
-    return false;
-  }
-  if (typeof candidate.order !== "number") {
-    return false;
-  }
-  if (
-    candidate.description !== undefined &&
-    candidate.description !== null &&
-    typeof candidate.description !== "string"
-  ) {
-    return false;
-  }
-  if (
-    candidate._count !== undefined &&
-    candidate._count !== null &&
-    typeof candidate._count !== "object"
-  ) {
-    return false;
-  }
-  if (candidate._count && typeof candidate._count === "object") {
-    const links = (candidate._count as { links?: unknown }).links;
-    if (links !== undefined && links !== null && typeof links !== "number") {
-      return false;
-    }
-  }
-  return true;
 }
