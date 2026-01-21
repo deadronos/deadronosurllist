@@ -16,6 +16,7 @@ import {
   normalizeDescriptionForCreate,
   normalizeDescriptionForUpdate,
 } from "./collection/normalizers";
+import { getNextCollectionOrderIndex } from "./order-helpers";
 import { reorderItems } from "./reorder-helpers";
 import { verifyCollectionOwnership } from "./router-helpers";
 
@@ -103,17 +104,14 @@ export const collectionRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const maxOrder = await ctx.db.collection.findFirst({
-        where: { createdById: ctx.session.user.id },
-        orderBy: { order: "desc" },
-      });
+      const nextOrder = await getNextCollectionOrderIndex(ctx);
 
       return ctx.db.collection.create({
         data: {
           name: input.name,
           description: normalizeDescriptionForCreate(input.description),
           isPublic: input.isPublic,
-          order: (maxOrder?.order ?? -1) + 1,
+          order: nextOrder,
           createdBy: { connect: { id: ctx.session.user.id } },
         },
       });

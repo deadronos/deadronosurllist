@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 import { Link2Icon, Wand2Icon } from "lucide-react";
 
 import { api } from "@/trpc/react";
+
+import { isHttpUrl } from "@/lib/url";
+import { useInvalidateAndRefresh } from "@/hooks/use-invalidate-and-refresh";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,15 +27,16 @@ export function LinkCreateForm({ collectionId }: { collectionId: string }) {
   const [url, setUrl] = useState("");
   const [name, setName] = useState("");
   const [comment, setComment] = useState("");
-  const router = useRouter();
   const utils = api.useUtils();
+  const invalidateAndRefresh = useInvalidateAndRefresh();
   const createMutation = api.link.create.useMutation({
     onSuccess: async () => {
       setUrl("");
       setName("");
       setComment("");
-      await utils.collection.getById.invalidate({ id: collectionId });
-      router.refresh();
+      await invalidateAndRefresh(() =>
+        utils.collection.getById.invalidate({ id: collectionId }),
+      );
     },
   });
 
@@ -50,14 +53,8 @@ export function LinkCreateForm({ collectionId }: { collectionId: string }) {
 
   const handleUrlBlur = () => {
     if (!url) return;
-    try {
-      const u = new URL(url);
-      if (["http:", "https:"].includes(u.protocol)) {
-        previewMutation.mutate({ url });
-      }
-    } catch {
-      // ignore invalid urls
-    }
+    if (!isHttpUrl(url)) return;
+    previewMutation.mutate({ url });
   };
 
   const handleSubmit = (e: React.FormEvent) => {

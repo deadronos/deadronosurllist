@@ -1,11 +1,12 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 
 import { SparklesIcon } from "lucide-react";
 
 import { api } from "@/trpc/react";
+
+import { useInvalidateAndRefresh } from "@/hooks/use-invalidate-and-refresh";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,15 +30,14 @@ export function CollectionCreateForm() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(false);
-  const router = useRouter();
   const utils = api.useUtils();
+  const invalidateAndRefresh = useInvalidateAndRefresh();
   const createMutation = api.collection.create.useMutation({
     onSuccess: async () => {
       setName("");
       setDescription("");
       setIsPublic(false);
-      await utils.collection.invalidate();
-      router.refresh();
+      await invalidateAndRefresh(() => utils.collection.invalidate());
     },
   });
 

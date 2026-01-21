@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { type DragEndEvent } from "@dnd-kit/core";
 
 import { useOptimisticList } from "@/hooks/use-optimistic-list";
+import { useInvalidateAndRefresh } from "@/hooks/use-invalidate-and-refresh";
 import { api } from "@/trpc/react";
 
 import type { DashboardCollectionModel } from "./types";
@@ -43,27 +43,21 @@ export function useDashboardCollectionsManager({
   } = useOptimisticList(initialCollections);
 
   const utils = api.useUtils();
-  const router = useRouter();
+  const invalidateAndRefresh = useInvalidateAndRefresh();
 
   const reorderMutation = api.collection.reorder.useMutation({
-    onSettled: async () => {
-      await utils.collection.getAll.invalidate();
-      router.refresh();
-    },
+    onSettled: () =>
+      invalidateAndRefresh(() => utils.collection.getAll.invalidate()),
   });
 
   const updateMutation = api.collection.update.useMutation({
-    onSettled: async () => {
-      await utils.collection.getAll.invalidate();
-      router.refresh();
-    },
+    onSettled: () =>
+      invalidateAndRefresh(() => utils.collection.getAll.invalidate()),
   });
 
   const deleteMutation = api.collection.delete.useMutation({
-    onSettled: async () => {
-      await utils.collection.getAll.invalidate();
-      router.refresh();
-    },
+    onSettled: () =>
+      invalidateAndRefresh(() => utils.collection.getAll.invalidate()),
   });
 
   const handleDragEnd = useCallback(
