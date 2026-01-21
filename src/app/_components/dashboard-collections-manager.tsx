@@ -1,25 +1,24 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useMemo } from "react";
 
 import { useTextFilter } from "@/hooks/use-text-filter";
-import { DndContext } from "@dnd-kit/core";
+
+import { FeedbackAlert } from "./feedback-alert";
+
 import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
+  getRequiredTrimmedFormString,
+  getTrimmedFormString,
+} from "@/lib/form-data";
 
-import { CheckCircle2Icon, SearchIcon, TriangleAlertIcon } from "lucide-react";
-
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Input } from "@/components/ui/input";
-
-import { SortableCollectionItem } from "./sortable-collection-item";
+import { CollectionsEmptyState } from "./dashboard-collections-manager/collections-empty-state";
+import { CollectionsList } from "./dashboard-collections-manager/collections-list";
+import { CollectionsToolbar } from "./dashboard-collections-manager/collections-toolbar";
 import {
   DeleteCollectionDialog,
   EditCollectionDialog,
 } from "./dashboard-collections-manager/collection-dialogs";
+import { useCollectionSelectionDialogs } from "./dashboard-collections-manager/use-collection-selection";
 import { useDashboardCollectionsManager } from "./dashboard-collections-manager/use-dashboard-collections-manager";
 import type { DashboardCollectionModel } from "./dashboard-collections-manager/types";
 
@@ -61,52 +60,41 @@ export function DashboardCollectionsManager({
     items: collections,
     searchFields: ["name", "description"],
   });
-  const [activeCollectionId, setActiveCollectionId] = useState<string | null>(
-    null,
+
+  const {
+    activeCollectionId,
+    isEditDialogOpen,
+    isDeleteDialogOpen,
+    openEdit,
+    openDelete,
+    onEditOpenChange,
+    onDeleteOpenChange,
+    closeEdit,
+    closeDelete,
+  } = useCollectionSelectionDialogs();
+
+  const activeCollection = useMemo(
+    () => getCollectionById(activeCollectionId),
+    [getCollectionById, activeCollectionId],
   );
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
-  const activeCollection = getCollectionById(activeCollectionId);
   const displayCollections = isFiltering ? filteredCollections : collections;
-
-  const openEditDialog = useCallback((collectionId: string) => {
-    setActiveCollectionId(collectionId);
-    setIsEditDialogOpen(true);
-  }, []);
-
-  const openDeleteDialog = useCallback((collectionId: string) => {
-    setActiveCollectionId(collectionId);
-    setIsDeleteDialogOpen(true);
-  }, []);
 
   const handleEditSubmit = (formData: FormData) => {
     if (!activeCollection) return;
 
-    const nameValue = formData.get("name");
-    const descriptionValue = formData.get("description");
-
-    if (typeof nameValue !== "string" || typeof descriptionValue !== "string") {
-      return;
-    }
-
-    const name = nameValue.trim();
-    const description = descriptionValue.trim();
-
-    if (!name) {
-      return;
-    }
+    const name = getRequiredTrimmedFormString(formData, "name");
+    if (!name) return;
+    const description = getTrimmedFormString(formData, "description") ?? "";
 
     updateCollection(
       activeCollection.id,
       { name, description: description.length > 0 ? description : null },
       {
         onSuccess: () => {
-          setIsEditDialogOpen(false);
-          setActiveCollectionId(null);
+          closeEdit();
         },
         onError: () => {
-          setIsEditDialogOpen(false);
+          closeEdit();
         },
       },
     );
@@ -117,80 +105,36 @@ export function DashboardCollectionsManager({
 
     deleteCollection(activeCollection.id, {
       onSuccess: () => {
-        setIsDeleteDialogOpen(false);
-        setActiveCollectionId(null);
+        closeDelete();
       },
       onError: () => {
-        setIsDeleteDialogOpen(false);
+        closeDelete();
       },
     });
   };
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <SearchIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
-        <Input
-          placeholder="Filter collections..."
-          value={filterTerm}
-          onChange={(event) => setFilterTerm(event.target.value)}
-          className="pl-9"
-        />
-      </div>
+      <CollectionsToolbar filterTerm={filterTerm} onFilterChange={setFilterTerm} />
 
-      {feedback ? (
-        <Alert
-          variant={feedback.type === "success" ? "default" : "destructive"}
-        >
-          {feedback.type === "success" ? (
-            <CheckCircle2Icon className="size-4" />
-          ) : (
-            <TriangleAlertIcon className="size-4" />
-          )}
-          <AlertDescription>{feedback.message}</AlertDescription>
-        </Alert>
-      ) : null}
+      <FeedbackAlert feedback={feedback} />
 
       {displayCollections.length > 0 ? (
-        <DndContext
+        <CollectionsList
+          collections={displayCollections}
           sensors={sensors}
           onDragEnd={handleDragEnd}
-          modifiers={[restrictToVerticalAxis]}
-        >
-          <SortableContext
-            items={displayCollections.map((collection) => collection.id)}
-            strategy={verticalListSortingStrategy}
-          >
-            <div className="space-y-3">
-              {displayCollections.map((collection) => (
-                <SortableCollectionItem
-                  key={collection.id}
-                  collection={collection}
-                  onEdit={openEditDialog}
-                  onDelete={openDeleteDialog}
-                  dragDisabled={isReordering || isFiltering}
-                />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
+          isDragDisabled={isReordering || isFiltering}
+          onEdit={openEdit}
+          onDelete={openDelete}
+        />
       ) : (
-        <div className="bg-background/35 rounded-xl border border-dashed p-6">
-          <div className="text-sm font-medium">No collections yet</div>
-          <div className="text-muted-foreground mt-1 text-sm">
-            Use the form to create your first collection and start saving links.
-          </div>
-        </div>
+        <CollectionsEmptyState />
       )}
 
       <EditCollectionDialog
         open={isEditDialogOpen && !!activeCollection}
-        onOpenChange={(open) => {
-          setIsEditDialogOpen(open);
-          if (!open) {
-            setActiveCollectionId(null);
-          }
-        }}
+        onOpenChange={onEditOpenChange}
         collection={activeCollection}
         onSubmit={handleEditSubmit}
         isSubmitting={isUpdating}
@@ -198,12 +142,7 @@ export function DashboardCollectionsManager({
 
       <DeleteCollectionDialog
         open={isDeleteDialogOpen && !!activeCollection}
-        onOpenChange={(open) => {
-          setIsDeleteDialogOpen(open);
-          if (!open) {
-            setActiveCollectionId(null);
-          }
-        }}
+        onOpenChange={onDeleteOpenChange}
         collection={activeCollection}
         onConfirm={handleDelete}
         isDeleting={isDeleting}

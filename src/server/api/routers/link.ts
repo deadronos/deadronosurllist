@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { urlSchema } from "@/server/api/validation";
+import { getNextLinkOrderIndex } from "./order-helpers";
 import { reorderItems } from "./reorder-helpers";
 import {
   verifyCollectionOwnership,
@@ -75,16 +76,12 @@ export const linkRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await verifyCollectionOwnership(ctx, input.collectionId);
 
-      // Get max order for new link
-      const maxOrder = await ctx.db.link.findFirst({
-        where: { collectionId: input.collectionId },
-        orderBy: { order: "desc" },
-      });
+      const nextOrder = await getNextLinkOrderIndex(ctx, input.collectionId);
 
       return ctx.db.link.create({
         data: {
           ...input,
-          order: (maxOrder?.order ?? 0) + 1,
+          order: nextOrder,
         },
       });
     }),
@@ -116,12 +113,7 @@ export const linkRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await verifyCollectionOwnership(ctx, input.collectionId);
 
-      const maxOrder = await ctx.db.link.findFirst({
-        where: { collectionId: input.collectionId },
-        orderBy: { order: "desc" },
-      });
-
-      const startOrder = (maxOrder?.order ?? 0) + 1;
+      const startOrder = await getNextLinkOrderIndex(ctx, input.collectionId);
 
       return ctx.db.link.createMany({
         data: input.links.map((link, index) => ({

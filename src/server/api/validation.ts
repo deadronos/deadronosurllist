@@ -1,16 +1,13 @@
 import { z } from "zod";
 
+import { isHttpUrl } from "@/lib/url";
+
 /**
  * Validates that the URL uses a safe protocol (http or https).
  * Prevents Stored XSS via javascript: or data: URLs.
  */
 export const isSafeUrl = (val: string) => {
-  try {
-    const protocol = new URL(val).protocol;
-    return ["http:", "https:"].includes(protocol);
-  } catch {
-    return false;
-  }
+  return isHttpUrl(val);
 };
 
 export const urlSchema = z.string().url().refine(isSafeUrl, {
