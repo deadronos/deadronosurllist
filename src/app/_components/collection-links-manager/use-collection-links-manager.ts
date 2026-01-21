@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { type DragEndEvent } from "@dnd-kit/core";
 
 import { useOptimisticList } from "@/hooks/use-optimistic-list";
+import { useInvalidateAndRefresh } from "@/hooks/use-invalidate-and-refresh";
 import { api } from "@/trpc/react";
 
 import type { CollectionLinkModel } from "./types";
@@ -50,39 +50,39 @@ export function useCollectionLinksManager({
 
   const [isPublic, setIsPublic] = useState(initialIsPublic);
   const utils = api.useUtils();
-  const router = useRouter();
+  const invalidateAndRefresh = useInvalidateAndRefresh();
 
   useEffect(() => {
     setIsPublic(initialIsPublic);
   }, [initialIsPublic]);
 
   const reorderMutation = api.link.reorder.useMutation({
-    onSettled: async () => {
-      await utils.collection.getById.invalidate({ id: collectionId });
-      router.refresh();
-    },
+    onSettled: () =>
+      invalidateAndRefresh(() =>
+        utils.collection.getById.invalidate({ id: collectionId }),
+      ),
   });
 
   const updateMutation = api.link.update.useMutation({
-    onSettled: async () => {
-      await utils.collection.getById.invalidate({ id: collectionId });
-      router.refresh();
-    },
+    onSettled: () =>
+      invalidateAndRefresh(() =>
+        utils.collection.getById.invalidate({ id: collectionId }),
+      ),
   });
 
   const deleteMutation = api.link.delete.useMutation({
-    onSettled: async () => {
-      await utils.collection.getById.invalidate({ id: collectionId });
-      router.refresh();
-    },
+    onSettled: () =>
+      invalidateAndRefresh(() =>
+        utils.collection.getById.invalidate({ id: collectionId }),
+      ),
   });
 
   const visibilityMutation = api.collection.update.useMutation({
-    onSettled: async () => {
-      await utils.collection.getAll.invalidate();
-      await utils.collection.getById.invalidate({ id: collectionId });
-      router.refresh();
-    },
+    onSettled: () =>
+      invalidateAndRefresh(async () => {
+        await utils.collection.getAll.invalidate();
+        await utils.collection.getById.invalidate({ id: collectionId });
+      }),
   });
 
   const handleDragEnd = useCallback(
