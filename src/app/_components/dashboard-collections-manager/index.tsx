@@ -4,36 +4,28 @@ import { useMemo } from "react";
 
 import { useTextFilter } from "@/hooks/use-text-filter";
 
-import { FeedbackAlert } from "./feedback-alert";
-
 import {
   getRequiredTrimmedFormString,
   getTrimmedFormString,
 } from "@/lib/form-data";
 
-import { CollectionsEmptyState } from "./dashboard-collections-manager/collections-empty-state";
-import { CollectionsList } from "./dashboard-collections-manager/collections-list";
-import { CollectionsToolbar } from "./dashboard-collections-manager/collections-toolbar";
-import {
-  DeleteCollectionDialog,
-  EditCollectionDialog,
-} from "./dashboard-collections-manager/collection-dialogs";
-import { useCollectionSelectionDialogs } from "./dashboard-collections-manager/use-collection-selection";
-import { useDashboardCollectionsManager } from "./dashboard-collections-manager/use-dashboard-collections-manager";
-import type { DashboardCollectionModel } from "./dashboard-collections-manager/types";
+import { useCollectionSelectionDialogs } from "./use-collection-selection";
+import { useDashboardCollectionsManager } from "./use-dashboard-collections-manager";
+import type { DashboardCollectionModel } from "./types";
+import { DashboardCollectionsManagerView } from "./view";
 
-export type { DashboardCollectionModel } from "./dashboard-collections-manager/types";
+export type { DashboardCollectionModel } from "./types";
 
 type DashboardCollectionsManagerProps = {
   initialCollections: DashboardCollectionModel[];
 };
 
 /**
- * Manages the user's collections on the dashboard.
- * Provides functionality for reordering, editing, and deleting collections.
+ * Container component for managing the user's collections on the dashboard.
+ * Handles logic for filtering, selection, and mutations.
  *
  * @param {DashboardCollectionsManagerProps} props - Component properties.
- * @returns {JSX.Element} The manager component.
+ * @returns {JSX.Element} The manager container.
  */
 export function DashboardCollectionsManager({
   initialCollections,
@@ -114,39 +106,26 @@ export function DashboardCollectionsManager({
   };
 
   return (
-    <div className="space-y-4">
-      <CollectionsToolbar filterTerm={filterTerm} onFilterChange={setFilterTerm} />
-
-      <FeedbackAlert feedback={feedback} />
-
-      {displayCollections.length > 0 ? (
-        <CollectionsList
-          collections={displayCollections}
-          sensors={sensors}
-          onDragEnd={handleDragEnd}
-          isDragDisabled={isReordering || isFiltering}
-          onEdit={openEdit}
-          onDelete={openDelete}
-        />
-      ) : (
-        <CollectionsEmptyState />
-      )}
-
-      <EditCollectionDialog
-        open={isEditDialogOpen && !!activeCollection}
-        onOpenChange={onEditOpenChange}
-        collection={activeCollection}
-        onSubmit={handleEditSubmit}
-        isSubmitting={isUpdating}
-      />
-
-      <DeleteCollectionDialog
-        open={isDeleteDialogOpen && !!activeCollection}
-        onOpenChange={onDeleteOpenChange}
-        collection={activeCollection}
-        onConfirm={handleDelete}
-        isDeleting={isDeleting}
-      />
-    </div>
+    <DashboardCollectionsManagerView
+      filterTerm={filterTerm}
+      onFilterChange={setFilterTerm}
+      isFiltering={isFiltering}
+      displayCollections={displayCollections}
+      activeCollection={activeCollection}
+      feedback={feedback}
+      sensors={sensors}
+      handleDragEnd={handleDragEnd}
+      isReordering={isReordering}
+      isEditDialogOpen={isEditDialogOpen}
+      onEditOpenChange={onEditOpenChange}
+      onEdit={openEdit}
+      onEditSubmit={handleEditSubmit}
+      isUpdating={isUpdating}
+      isDeleteDialogOpen={isDeleteDialogOpen}
+      onDeleteOpenChange={onDeleteOpenChange}
+      onDelete={openDelete}
+      onDeleteConfirm={handleDelete}
+      isDeleting={isDeleting}
+    />
   );
 }
