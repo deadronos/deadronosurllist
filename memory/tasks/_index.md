@@ -10,6 +10,8 @@ None
 
 ## Completed
 
+- [TASK016] Container/Presentational Component Refactoring - Refactored all React files to C/P pattern (2026-01-27).
+
 - [TASK015] Dashboard visual refresh & catalog link expansion – Align dashboard theming with landing page and raise catalog link trim limit (2025-10-12).
 - [TASK001] Rework public welcome experience – Delivered Radix landing page and public collection seeding (2025-10-09).
 - [TASK002] Graceful auth configuration – Disabled mock OAuth credentials and added diagnostics-driven sign-in UX (2025-10-09).
