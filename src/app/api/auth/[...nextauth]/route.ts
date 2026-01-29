@@ -84,7 +84,9 @@ const withAvailabilityGuard =
         message.includes("UnknownAction")
       ) {
         console.warn(
-          `[auth][warn] Suppressed unsupported auth action (${request.method} ${request.url}):`,
+          "[auth][warn] Suppressed unsupported auth action (%s %s):",
+          request.method,
+          request.url,
           message,
         );
         return redirectWithError(request, "AuthUnavailable");
