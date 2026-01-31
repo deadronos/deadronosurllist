@@ -171,6 +171,67 @@ describe("collectionRouter (mocked)", () => {
     expect(filtered.items[0]?.name).toBe("Game Night Picks");
   });
 
+  it("getPublicCatalog sorts by name ascending", async () => {
+    await caller.collection.create({
+      name: "Zoo List",
+      description: "Last alphabetically",
+      isPublic: true,
+    });
+
+    await caller.collection.create({
+      name: "Alpha List",
+      description: "First alphabetically",
+      isPublic: true,
+    });
+
+    const response = await caller.collection.getPublicCatalog({
+      limit: 10,
+      sortBy: "name",
+      sortOrder: "asc",
+    });
+
+    const names = response.items.map((item) => item.name);
+    const sorted = [...names].sort((a, b) => a.localeCompare(b));
+    expect(names).toEqual(sorted);
+  });
+
+  it("getPublicCatalog sorts by link count descending", async () => {
+    const small = await caller.collection.create({
+      name: "Small",
+      description: "Few links",
+      isPublic: true,
+    });
+
+    const large = await caller.collection.create({
+      name: "Large",
+      description: "More links",
+      isPublic: true,
+    });
+
+    await caller.link.createBatch({
+      collectionId: small.id,
+      links: [{ name: "One", url: "https://example.com/one" }],
+    });
+
+    await caller.link.createBatch({
+      collectionId: large.id,
+      links: [
+        { name: "One", url: "https://example.com/one" },
+        { name: "Two", url: "https://example.com/two" },
+        { name: "Three", url: "https://example.com/three" },
+      ],
+    });
+
+    const response = await caller.collection.getPublicCatalog({
+      limit: 10,
+      sortBy: "linkCount",
+      sortOrder: "desc",
+    });
+
+    const [first] = response.items;
+    expect(first?.id).toBe(large.id);
+  });
+
   it("getPublicCatalog trims link summaries to requested limit", async () => {
     const collection = await caller.collection.create({
       name: "Mega List",
@@ -205,6 +266,28 @@ describe("collectionRouter (mocked)", () => {
     expect(first?.topLinks[0]?.order).toBeLessThanOrEqual(
       first?.topLinks[1]?.order ?? 0,
     );
+  });
+
+  it("getByUser returns only public collections", async () => {
+    const publicCollection = await caller.collection.create({
+      name: "Public One",
+      description: "Visible",
+      isPublic: true,
+    });
+
+    await caller.collection.create({
+      name: "Private One",
+      description: "Hidden",
+      isPublic: false,
+    });
+
+    const result = await caller.collection.getByUser({
+      userId: "user1",
+    });
+
+    const names = result.map((collection) => collection.name);
+    expect(names).toContain(publicCollection.name);
+    expect(names).not.toContain("Private One");
   });
 
   it("create returns created collection", async () => {

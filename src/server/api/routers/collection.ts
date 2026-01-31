@@ -12,6 +12,7 @@ import {
   publicCatalogInputSchema,
   publicCatalogResponseSchema,
 } from "./collection/catalog";
+import { invalidatePublicCatalogCache } from "@/server/cache/public-catalog";
 import {
   normalizeDescriptionForCreate,
   normalizeDescriptionForUpdate,
@@ -31,6 +32,8 @@ export const collectionRouter = createTRPCRouter({
     const catalog = await fetchPublicCatalog(ctx, {
       limit: 1,
       linkLimit: PUBLIC_CATALOG_DEFAULT_LINK_LIMIT,
+      sortBy: "updatedAt",
+      sortOrder: "desc",
     });
     return catalog.items.at(0) ?? null;
   }),
@@ -47,6 +50,20 @@ export const collectionRouter = createTRPCRouter({
     .output(publicCatalogResponseSchema)
     .query(async ({ ctx, input }) => {
       return fetchPublicCatalog(ctx, input);
+    }),
+
+  /**
+   * Get public collections for a specific user.
+   * Returns only collections marked public, ordered by last update.
+   */
+  getByUser: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(({ ctx, input }) => {
+      return ctx.db.collection.findMany({
+        where: { createdById: input.userId, isPublic: true },
+        include: { _count: { select: { links: true } } },
+        orderBy: { updatedAt: "desc" },
+      });
     }),
 
   /**
@@ -106,7 +123,7 @@ export const collectionRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const nextOrder = await getNextCollectionOrderIndex(ctx);
 
-      return ctx.db.collection.create({
+      const created = await ctx.db.collection.create({
         data: {
           name: input.name,
           description: normalizeDescriptionForCreate(input.description),
@@ -115,6 +132,9 @@ export const collectionRouter = createTRPCRouter({
           createdBy: { connect: { id: ctx.session.user.id } },
         },
       });
+
+      invalidatePublicCatalogCache();
+      return created;
     }),
 
   /**
@@ -152,13 +172,16 @@ export const collectionRouter = createTRPCRouter({
         dataToUpdate.isPublic = input.isPublic;
       }
 
-      return ctx.db.collection.updateMany({
+      const result = await ctx.db.collection.updateMany({
         where: {
           id: input.id,
           createdById: ctx.session.user.id,
         },
         data: dataToUpdate,
       });
+
+      invalidatePublicCatalogCache();
+      return result;
     }),
 
   /**
@@ -173,12 +196,15 @@ export const collectionRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await verifyCollectionOwnership(ctx, input.id);
 
-      return ctx.db.collection.deleteMany({
+      const result = await ctx.db.collection.deleteMany({
         where: {
           id: input.id,
           createdById: ctx.session.user.id,
         },
       });
+
+      invalidatePublicCatalogCache();
+      return result;
     }),
 
   /**
@@ -192,12 +218,15 @@ export const collectionRouter = createTRPCRouter({
   reorder: protectedProcedure
     .input(z.object({ collectionIds: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
-      return reorderItems({
+      const result = await reorderItems({
         ctx,
         itemIds: input.collectionIds,
         tableName: "collection",
         whereClause: { createdById: ctx.session.user.id },
         selectId: "id",
       });
+
+      invalidatePublicCatalogCache();
+      return result;
     }),
 });

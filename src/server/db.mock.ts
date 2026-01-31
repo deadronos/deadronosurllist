@@ -6,6 +6,7 @@ import type { LinkListDatabase } from "./db.types";
 
 import { collectionDelegate } from "./mock-db/collection-delegate";
 import { linkDelegate } from "./mock-db/link-delegate";
+import { userDelegate } from "./mock-db/user-delegate";
 import { runTransaction } from "./mock-db/transactions";
 import { ensureUser } from "./mock-db/users";
 import { resetStore } from "./mock-db/seed";
@@ -19,6 +20,7 @@ export const db = {
   $transaction: runTransaction,
   collection: collectionDelegate,
   link: linkDelegate,
+  user: userDelegate,
 } as LinkListDatabase;
 
 /**

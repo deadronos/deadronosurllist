@@ -2,10 +2,12 @@ import "@/styles/globals.css";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { SiteHeader } from "@/app/_components/site-header";
+import { SentryClientInit } from "@/app/_components/sentry-client-init";
 import { TRPCReactProvider } from "@/trpc/react";
 
 export const metadata: Metadata = {
@@ -27,11 +29,13 @@ export default function RootLayout({
       <body className="bg-background text-foreground min-h-screen font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <TRPCReactProvider>
+            <SentryClientInit />
             <div className="relative flex min-h-screen flex-col">
               <SiteHeader />
               <main className="flex-1">{children}</main>
               <Toaster richColors />
             </div>
+            {process.env.NODE_ENV === "production" ? <SpeedInsights /> : null}
           </TRPCReactProvider>
         </ThemeProvider>
       </body>

@@ -36,11 +36,15 @@ export const collectionDelegate = {
       | {
           createdAt?: SortOrder;
           updatedAt?: SortOrder;
+          name?: SortOrder;
+          links?: { _count?: SortOrder };
           order?: SortOrder;
         }
       | Array<{
           createdAt?: SortOrder;
           updatedAt?: SortOrder;
+          name?: SortOrder;
+          links?: { _count?: SortOrder };
           id?: SortOrder;
         }>;
     take?: number;
@@ -65,8 +69,27 @@ export const collectionDelegate = {
               (dateA - dateB) * (sort.updatedAt === "desc" ? -1 : 1);
             if (diff !== 0) return diff;
           }
+          if (sort.createdAt) {
+            const dateA = a.createdAt.getTime();
+            const dateB = b.createdAt.getTime();
+            const diff =
+              (dateA - dateB) * (sort.createdAt === "desc" ? -1 : 1);
+            if (diff !== 0) return diff;
+          }
+          if (sort.name) {
+            const diff =
+              a.name.localeCompare(b.name) * (sort.name === "desc" ? -1 : 1);
+            if (diff !== 0) return diff;
+          }
+          if (sort.links && sort.links._count) {
+            const diff =
+              (a.linkIds.length - b.linkIds.length) *
+              (sort.links._count === "desc" ? -1 : 1);
+            if (diff !== 0) return diff;
+          }
           if (sort.id) {
-            const diff = a.id.localeCompare(b.id) * (sort.id === "desc" ? -1 : 1);
+            const diff =
+              a.id.localeCompare(b.id) * (sort.id === "desc" ? -1 : 1);
             if (diff !== 0) return diff;
           }
         }

@@ -14,8 +14,12 @@ export interface PublicCatalogViewProps {
   // State
   query: string;
   onQueryChange: (query: string) => void;
-  tab: "new" | "updated";
-  onTabChange: (tab: "new" | "updated") => void;
+  sortKey: "updated" | "newest" | "name-asc" | "name-desc" | "links-desc";
+  sortLabel: string;
+  sortOptions: Array<{ key: string; label: string }>;
+  onSortKeyChange: (
+    key: "updated" | "newest" | "name-asc" | "name-desc" | "links-desc",
+  ) => void;
 
   // Data
   filteredCollections: PublicCatalogCollection[];
@@ -25,7 +29,7 @@ export interface PublicCatalogViewProps {
   isFetchingNextPage: boolean;
 
   // Config
-  showTabs: boolean;
+  showSort: boolean;
   autoLoadMore: boolean;
   showLoadMore: boolean;
 
@@ -42,14 +46,16 @@ export interface PublicCatalogViewProps {
 export function PublicCatalogView({
   query,
   onQueryChange,
-  tab,
-  onTabChange,
+  sortKey,
+  sortLabel,
+  sortOptions,
+  onSortKeyChange,
   filteredCollections,
   totalCount,
   isLoading,
   isError,
   isFetchingNextPage,
-  showTabs,
+  showSort,
   autoLoadMore,
   showLoadMore,
   onLoadMore,
@@ -64,9 +70,11 @@ export function PublicCatalogView({
         onQueryChange={onQueryChange}
         filteredCount={filteredCollections.length}
         totalCount={totalCount}
-        showTabs={showTabs}
-        tab={tab}
-        onTabChange={onTabChange}
+        showSort={showSort}
+        sortKey={sortKey}
+        sortLabel={sortLabel}
+        sortOptions={sortOptions}
+        onSortKeyChange={onSortKeyChange}
       />
 
       <CardContent className="space-y-5">

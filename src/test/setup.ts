@@ -36,6 +36,10 @@ vi.mock("@/server/db", async () => {
     ...mod,
     isMockDb: true,
     prisma: null,
+    withUserDb: async <T>(
+      _userId: string,
+      operation: (scopedDb: typeof mod.db) => Promise<T>,
+    ) => operation(mod.db),
   };
 });
 

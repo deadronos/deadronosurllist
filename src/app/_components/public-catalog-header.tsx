@@ -1,24 +1,37 @@
 import { type ChangeEvent } from "react";
 
-import { SearchIcon } from "lucide-react";
+import { ChevronDownIcon, SearchIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type PublicCatalogHeaderProps = {
   query: string;
   onQueryChange: (value: string) => void;
   filteredCount: number;
   totalCount: number;
-  showTabs: boolean;
-  tab: "new" | "updated";
-  onTabChange: (tab: "new" | "updated") => void;
+  showSort: boolean;
+  sortKey: "updated" | "newest" | "name-asc" | "name-desc" | "links-desc";
+  sortLabel: string;
+  sortOptions: Array<{ key: string; label: string }>;
+  onSortKeyChange: (
+    key: "updated" | "newest" | "name-asc" | "name-desc" | "links-desc",
+  ) => void;
 };
 
 export function PublicCatalogHeader({
@@ -26,9 +39,11 @@ export function PublicCatalogHeader({
   onQueryChange,
   filteredCount,
   totalCount,
-  showTabs,
-  tab,
-  onTabChange,
+  showSort,
+  sortKey,
+  sortLabel,
+  sortOptions,
+  onSortKeyChange,
 }: PublicCatalogHeaderProps) {
   const trimmedQuery = query.trim();
   const hasQuery = trimmedQuery.length > 0;
@@ -52,6 +67,7 @@ export function PublicCatalogHeader({
             onChange={handleQueryChange}
             placeholder="Search by name or description"
             className="pl-9"
+            aria-label="Search catalog"
           />
         </div>
       </div>
@@ -63,13 +79,41 @@ export function PublicCatalogHeader({
         </p>
 
         <div className="flex flex-wrap items-center gap-2">
-          {showTabs ? (
-            <Tabs value={tab} onValueChange={(v) => onTabChange(v as typeof tab)}>
-              <TabsList>
-                <TabsTrigger value="updated">Recently updated</TabsTrigger>
-                <TabsTrigger value="new">New</TabsTrigger>
-              </TabsList>
-            </Tabs>
+          {showSort ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="secondary" className="gap-2">
+                  Sort: {sortLabel}
+                  <ChevronDownIcon className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup
+                  value={sortKey}
+                  onValueChange={(value) =>
+                    onSortKeyChange(
+                      value as
+                        | "updated"
+                        | "newest"
+                        | "name-asc"
+                        | "name-desc"
+                        | "links-desc",
+                    )
+                  }
+                >
+                  {sortOptions.map((option) => (
+                    <DropdownMenuRadioItem
+                      key={option.key}
+                      value={option.key}
+                    >
+                      {option.label}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : null}
 
           {hasQuery ? (

@@ -22,7 +22,14 @@ const tsTypeChecked = compat
 
 export default [
   {
-    ignores: [".next", "node_modules", "coverage", ".github/**"],
+    ignores: [
+      ".next",
+      "node_modules",
+      "coverage",
+      ".github/**",
+      "tests/**",
+      "playwright.config.ts",
+    ],
   },
 
   // NOTE: Skipping `next/core-web-vitals` here due to a config-time circular
@@ -56,7 +63,10 @@ export default [
         "warn",
         { prefer: "type-imports", fixStyle: "inline-type-imports" },
       ],
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_" },
+      ],
       "@typescript-eslint/require-await": "off",
       "@typescript-eslint/no-misused-promises": [
         "error",

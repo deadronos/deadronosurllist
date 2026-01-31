@@ -16,6 +16,7 @@ Quick links
 
 - Code: `src/` (application and server)
 - API: `src/server/api/routers/` (tRPC procedures)
+- API documentation: `docs/api.md`
 - Database schema: `prisma/schema.prisma`
 - Tests: `src/test/`
 - Development notes & tasks: `memory/`
@@ -126,7 +127,8 @@ This application implements multiple layers of security:
 
 ### Security Headers
 
-All responses include security headers via Next.js middleware (`src/middleware.ts`):
+All responses include security headers via Next.js proxy (`src/proxy.ts`):
+
 - **Content Security Policy (CSP)**: Restricts resource loading to prevent XSS attacks
 - **HTTP Strict Transport Security (HSTS)**: Forces HTTPS connections in production
 - **X-Frame-Options**: Prevents clickjacking attacks
@@ -146,6 +148,7 @@ All responses include security headers via Next.js middleware (`src/middleware.t
 ### Automated Security Scanning
 
 GitHub Actions workflow (`.github/workflows/security.yml`) runs:
+
 - **Gitleaks**: Scans for exposed secrets in code and history
 - **npm audit**: Checks dependencies for known vulnerabilities
 - **ESLint & TypeScript**: Enforces type safety and code quality

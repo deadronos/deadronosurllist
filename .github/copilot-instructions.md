@@ -47,7 +47,7 @@ npm run check        # Lint + TypeScript check combined
 
 # Database Operations  
 npm run db:push      # Push schema changes (development)
-npm run db:migrate   # Run migrations (production)
+npm run db:migrate:deploy   # Run migrations (production)
 npm run db:studio    # Open Prisma Studio GUI
 npm run db:generate  # Generate Prisma client (auto on postinstall)
 

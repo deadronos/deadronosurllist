@@ -1,4 +1,4 @@
-import type { Collection, Link, Prisma } from "@prisma/client";
+import type { Collection, Link, Prisma, User } from "@prisma/client";
 
 /**
  * Represents a Collection record, optionally including related Links and counts.
@@ -14,6 +14,8 @@ export type CollectionRecord = Collection & {
 export type LinkRecord = Link & {
   collection?: CollectionRecord;
 };
+
+export type PublicUserRecord = Pick<User, "id" | "name" | "image">;
 
 /**
  * Abstract interface for the database, compatible with both Prisma and the mock DB.
@@ -50,5 +52,8 @@ export type LinkListDatabase = {
     update(args: Prisma.LinkUpdateArgs): Promise<LinkRecord>;
     updateMany(args: Prisma.LinkUpdateManyArgs): Promise<Prisma.BatchPayload>;
     delete(args: Prisma.LinkDeleteArgs): Promise<LinkRecord>;
+  };
+  user: {
+    findFirst(args?: Prisma.UserFindFirstArgs): Promise<PublicUserRecord | null>;
   };
 };

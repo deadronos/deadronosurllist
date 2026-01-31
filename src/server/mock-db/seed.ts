@@ -56,4 +56,35 @@ export function resetStore() {
       updatedAt: now,
     });
   });
+
+  const extraCollectionCount = 18;
+
+  Array.from({ length: extraCollectionCount }).forEach((_, index) => {
+    const extraId = `col_public_extra_${index + 1}`;
+    const timestamp = new Date(now.getTime() - (index + 1) * 60_000);
+    const linkId = `link_extra_${index + 1}`;
+
+    store.collections.set(extraId, {
+      id: extraId,
+      name: `Resource Roundup ${index + 1}`,
+      description: "Seeded public collection for catalog paging.",
+      isPublic: true,
+      createdById: userId,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      order: index + 1,
+      linkIds: [linkId],
+    });
+
+    store.links.set(linkId, {
+      id: linkId,
+      collectionId: extraId,
+      url: `https://example.com/seed/${index + 1}`,
+      name: `Seed Link ${index + 1}`,
+      comment: null,
+      order: 0,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    });
+  });
 }

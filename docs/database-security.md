@@ -138,7 +138,7 @@ MIGRATION_DATABASE_URL="postgresql://linklistmigrate:your-migration-password-her
 
 ```bash
 # Run migrations with migration role
-DATABASE_URL="$MIGRATION_DATABASE_URL" npm run db:migrate
+DATABASE_URL="$MIGRATION_DATABASE_URL" npm run db:migrate:deploy
 
 # Start application with application role
 DATABASE_URL="$DATABASE_URL" npm start
