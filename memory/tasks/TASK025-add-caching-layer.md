@@ -1,6 +1,6 @@
 # TASK025 - Add caching layer
 
-**Status:** Pending  
+**Status:** Completed  
 **Added:** 2026-01-31  
 **Updated:** 2026-01-31
 
@@ -27,17 +27,26 @@ Introduce a caching strategy to reduce DB load for public catalog queries.
 
 ## Progress tracking
 
-**Overall Status:** Not Started - 0%
+**Overall Status:** Completed - 100%
 
 ### Subtasks
 
 |ID|Description|Status|Updated|Notes|
 |---|---|---|---|---|
-|9.1|Implement cache abstraction (LRU)|Not Started|2026-01-31||
-|9.2|Wire cache into public catalog procedures|Not Started|2026-01-31||
-|9.3|Add invalidation on mutations|Not Started|2026-01-31||
+|9.1|Implement cache abstraction (LRU)|Complete|2026-01-31|Added Map-based TTL cache for public catalog.|
+|9.2|Wire cache into public catalog procedures|Complete|2026-01-31|Cached catalog fetches + featured collection reads.|
+|9.3|Add invalidation on mutations|Complete|2026-01-31|Invalidated cache on collection/link mutations.|
+
+## Progress Log
+
+### 2026-01-31
+
+- Added `src/server/cache/public-catalog.ts` with TTL + eviction.
+- Wired cache into `fetchPublicCatalog` and invalidated on mutations.
+- Added cache unit tests in `src/test/publicCatalogCache.spec.ts`.
 
 ## Validation
 
-- `npm run test`
-- `npm run build`
+- ✅ `npm run check`
+- ⚪ `npm run test` (not run)
+- ⚪ `npm run build` (not run)

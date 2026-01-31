@@ -1,0 +1,71 @@
+name: Visual & Load Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      baseUrl:
+        description: "Base URL to test (e.g., preview or production)"
+        required: true
+        default: "https://your-deployment-url"
+      runVisual:
+        description: "Run Playwright visual regression"
+        required: true
+        default: "true"
+      runLoad:
+        description: "Run k6 load tests"
+        required: true
+        default: "true"
+
+jobs:
+  visual:
+    name: Visual Regression
+    if: ${{ inputs.runVisual == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run visual regression
+        run: npx playwright test tests/visual.spec.ts
+        env:
+          VISUAL_TESTS: true
+          PLAYWRIGHT_TEST_BASE_URL: ${{ inputs.baseUrl }}
+
+      - name: Upload visual report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-visual-report
+          path: playwright-report/
+          retention-days: 30
+
+  load:
+    name: Load Tests
+    if: ${{ inputs.runLoad == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run health load test
+        uses: grafana/k6-action@v0.3.0
+        env:
+          BASE_URL: ${{ inputs.baseUrl }}
+        with:
+          filename: scripts/load/health.js
+
+      - name: Run catalog load test
+        uses: grafana/k6-action@v0.3.0
+        env:
+          BASE_URL: ${{ inputs.baseUrl }}
+        with:
+          filename: scripts/load/catalog.js

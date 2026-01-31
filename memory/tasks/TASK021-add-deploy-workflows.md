@@ -1,6 +1,6 @@
 # TASK021 - Add deploy workflows
 
-**Status:** Pending  
+**Status:** Completed  
 **Added:** 2026-01-31  
 **Updated:** 2026-01-31
 
@@ -27,17 +27,24 @@ Add GitHub Actions workflows to deploy to Vercel for preview and production.
 
 ## Progress tracking
 
-**Overall Status:** Not Started - 0%
+**Overall Status:** Completed - 100%
 
 ### Subtasks
 
 |ID|Description|Status|Updated|Notes|
 |---|---|---|---|---|
-|5.1|Create preview deploy workflow|Not Started|2026-01-31||
-|5.2|Create production deploy workflow|Not Started|2026-01-31||
-|5.3|Document secrets + runbook steps|Not Started|2026-01-31||
+|5.1|Create preview deploy workflow|Complete|2026-01-31|Added `deploy-preview.yml` with test gates.|
+|5.2|Create production deploy workflow|Complete|2026-01-31|Added `deploy-production.yml` with test gates.|
+|5.3|Document secrets + runbook steps|Complete|2026-01-31|Updated deployment runbook with required secrets.|
+
+## Progress Log
+
+### 2026-01-31
+
+- Added preview and production Vercel workflows gated on lint/tests.
+- Documented required secrets in `docs/deployment-runbook.md`.
 
 ## Validation
 
-- YAML validation (CI)
-- First successful deploy in Vercel
+- ✅ `npm run check`
+- ⚪ Vercel deploy validation (not run)

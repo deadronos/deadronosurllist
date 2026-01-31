@@ -43,6 +43,16 @@ Configure these in your Vercel project settings under **Settings > Environment V
 - **Recommended:** Use direct `next build` (configured in `vercel.json`)
 - **Alternative:** If using `dotenvx run` in Vercel, ensure `dotenvx` is installed and `.env` is not checked in
 
+## GitHub Actions Secrets
+
+The deployment workflows require these repository secrets to be configured:
+
+| Secret | Description |
+| --- | --- |
+| `VERCEL_TOKEN` | Vercel access token with deploy permissions |
+| `VERCEL_ORG_ID` | Vercel organization/team ID |
+| `VERCEL_PROJECT_ID` | Vercel project ID |
+
 ## Deployment Workflow
 
 ### Initial Setup
@@ -122,13 +132,14 @@ If using an external PostgreSQL provider:
 
    ```bash
    # Add to Vercel build command in project settings
-   prisma migrate deploy && next build
+   npm run db:migrate:deploy && npm run build
    ```
 
 2. **Post-Deployment:**
+
    ```bash
    # If migrations failed during build, run manually
-   npx prisma migrate deploy
+   npm run db:migrate:deploy
    ```
 
 ### Rollback Procedure

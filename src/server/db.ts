@@ -1,10 +1,11 @@
-import type { PrismaClient } from "@prisma/client";
+import type { Prisma, PrismaClient } from "@prisma/client";
 
 import { env } from "@/env";
 import type {
   CollectionRecord,
   LinkListDatabase,
   LinkRecord,
+  PublicUserRecord,
 } from "./db.types";
 
 const POSTGRES_PROTOCOL_REGEX = /^postgres(?:ql)?:\/\//i;
@@ -58,6 +59,61 @@ let prismaSingleton: PrismaClient | null = null;
 
 let dbInternal: LinkListDatabase;
 
+const createDelegates = (
+  client: PrismaClient | Prisma.TransactionClient,
+): Pick<LinkListDatabase, "collection" | "link" | "user"> => ({
+  collection: {
+    findMany: async (args) =>
+      (await client.collection.findMany(args)) as CollectionRecord[],
+    findFirst: async (args) =>
+      (await client.collection.findFirst(args)) as CollectionRecord | null,
+    create: (args) => client.collection.create(args),
+    update: (args) => client.collection.update(args),
+    updateMany: (args) => client.collection.updateMany(args),
+    count: (args) => client.collection.count(args),
+    delete: (args) => client.collection.delete(args),
+    deleteMany: (args) => client.collection.deleteMany(args),
+  },
+  link: {
+    findFirst: async (args) =>
+      (await client.link.findFirst(args)) as LinkRecord | null,
+    findMany: async (args) =>
+      (await client.link.findMany(args)) as LinkRecord[],
+    create: (args) => client.link.create(args),
+    createMany: (args) => client.link.createMany(args),
+    update: async (args) => (await client.link.update(args)) as LinkRecord,
+    updateMany: (args) => client.link.updateMany(args),
+    delete: async (args) => (await client.link.delete(args)) as LinkRecord,
+  },
+  user: {
+    findFirst: async (args) =>
+      (await client.user.findFirst(args)) as PublicUserRecord | null,
+  },
+});
+
+const createPrismaDatabase = (client: PrismaClient): LinkListDatabase => ({
+  $transaction: (operations) =>
+    client.$transaction(
+      operations.map((operation) =>
+        typeof operation === "function" ? operation() : operation,
+      ) as unknown as Parameters<typeof client.$transaction>[0],
+    ) as Promise<unknown[]>,
+  ...createDelegates(client),
+});
+
+const createTransactionDatabase = (
+  client: Prisma.TransactionClient,
+): LinkListDatabase => ({
+  $transaction: async (operations) => {
+    const results: unknown[] = [];
+    for (const operation of operations) {
+      results.push(await (typeof operation === "function" ? operation() : operation));
+    }
+    return results;
+  },
+  ...createDelegates(client),
+});
+
 if (useMock) {
   const mod = await import("./db.mock");
   dbInternal = mod.db;
@@ -74,12 +130,40 @@ if (useMock) {
   // PrismaClient constructor via the `adapter` option.
   const { PrismaPg } = await import("@prisma/adapter-pg");
 
-  const createPrismaClient = () =>
-    new PrismaClient({
-      log:
-        env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+  const enableSlowQueryLogging = process.env.LOG_SLOW_QUERIES === "true";
+  const slowQueryThresholdMs = Number(
+    process.env.SLOW_QUERY_THRESHOLD_MS ?? 200,
+  );
+  const baseLogLevels: Prisma.LogLevel[] =
+    env.NODE_ENV === "development" ? ["error", "warn"] : ["error"];
+  const logConfig: Prisma.PrismaClientOptions["log"] =
+    enableSlowQueryLogging
+      ? [{ emit: "event", level: "query" }, ...baseLogLevels]
+      : env.NODE_ENV === "development"
+        ? ["query", "error", "warn"]
+        : ["error"];
+
+  const createPrismaClient = () => {
+    const client = new PrismaClient({
+      log: logConfig,
       adapter: new PrismaPg({ connectionString: datasourceUrl }),
     });
+
+    if (enableSlowQueryLogging) {
+      const threshold = Number.isFinite(slowQueryThresholdMs)
+        ? slowQueryThresholdMs
+        : 200;
+      client.$on("query", (event) => {
+        if (event.duration >= threshold) {
+          console.warn(
+            `[Prisma] Slow query (${event.duration}ms) on ${event.target}`,
+          );
+        }
+      });
+    }
+
+    return client;
+  };
 
   const globalForPrisma = globalThis as unknown as {
     prisma: ReturnType<typeof createPrismaClient> | undefined;
@@ -88,43 +172,7 @@ if (useMock) {
 
   if (env.NODE_ENV !== "production") globalForPrisma.prisma = prismaClient;
 
-  const prismaDb: LinkListDatabase = {
-    $transaction: (operations) =>
-      prismaClient.$transaction(
-        operations.map((operation) =>
-          typeof operation === "function" ? operation() : operation,
-        ) as unknown as Parameters<typeof prismaClient.$transaction>[0],
-      ) as Promise<unknown[]>,
-    collection: {
-      findMany: async (args) =>
-        (await prismaClient.collection.findMany(args)) as CollectionRecord[],
-      findFirst: async (args) =>
-        (await prismaClient.collection.findFirst(
-          args,
-        )) as CollectionRecord | null,
-      create: (args) => prismaClient.collection.create(args),
-      update: (args) => prismaClient.collection.update(args),
-      updateMany: (args) => prismaClient.collection.updateMany(args),
-      count: (args) => prismaClient.collection.count(args),
-      delete: (args) => prismaClient.collection.delete(args),
-      deleteMany: (args) => prismaClient.collection.deleteMany(args),
-    },
-    link: {
-      findFirst: async (args) =>
-        (await prismaClient.link.findFirst(args)) as LinkRecord | null,
-      findMany: async (args) =>
-        (await prismaClient.link.findMany(args)) as LinkRecord[],
-      create: (args) => prismaClient.link.create(args),
-      createMany: (args) => prismaClient.link.createMany(args),
-      update: async (args) =>
-        (await prismaClient.link.update(args)) as LinkRecord,
-      updateMany: (args) => prismaClient.link.updateMany(args),
-      delete: async (args) =>
-        (await prismaClient.link.delete(args)) as LinkRecord,
-    },
-  };
-
-  dbInternal = prismaDb;
+  dbInternal = createPrismaDatabase(prismaClient);
   prismaSingleton = prismaClient;
 }
 
@@ -137,6 +185,21 @@ export const db: LinkListDatabase = dbInternal;
  * Indicates whether the application is running with the in-memory mock database.
  */
 export const isMockDb = useMock;
+
+export const withUserDb = async <T>(
+  userId: string,
+  operation: (scopedDb: LinkListDatabase) => Promise<T>,
+): Promise<T> => {
+  if (useMock || !prismaSingleton) {
+    return operation(dbInternal);
+  }
+
+  return prismaSingleton.$transaction(async (tx) => {
+    await tx.$executeRaw`SET LOCAL app.current_user_id = ${userId}`;
+    const scopedDb = createTransactionDatabase(tx);
+    return operation(scopedDb);
+  });
+};
 
 /**
  * The underlying Prisma client instance, or null if using the mock database.

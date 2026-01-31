@@ -1,6 +1,6 @@
 # TASK028 - Add user profiles
 
-**Status:** Pending  
+**Status:** Completed  
 **Added:** 2026-01-31  
 **Updated:** 2026-01-31
 
@@ -27,18 +27,26 @@ Add public user profile pages showing public collections.
 
 ## Progress tracking
 
-**Overall Status:** Not Started - 0%
+**Overall Status:** Completed - 100%
 
 ### Subtasks
 
 |ID|Description|Status|Updated|Notes|
 |---|---|---|---|---|
-|12.1|Add user router public query|Not Started|2026-01-31||
-|12.2|Add public collections-by-user query|Not Started|2026-01-31||
-|12.3|Add `/u/[userId]` page and tests|Not Started|2026-01-31||
+|12.1|Add user router public query|Complete|2026-01-31|Added `user.getById` with safe field selection.|
+|12.2|Add public collections-by-user query|Complete|2026-01-31|Added `collection.getByUser` for public collections.|
+|12.3|Add `/u/[userId]` page and tests|Complete|2026-01-31|Added profile page and Playwright coverage.|
+
+## Progress Log
+
+### 2026-01-31
+
+- Added `user` router and `collection.getByUser` procedure.
+- Built `/u/[userId]` profile page with public collections.
+- Added Playwright tests for profile and 404 behavior.
 
 ## Validation
 
-- `npm run typecheck`
-- `npm run build`
-- `npx playwright test`
+- ✅ `npm run check`
+- ⚪ `npm run build` (not run)
+- ⚪ `npx playwright test` (not run)

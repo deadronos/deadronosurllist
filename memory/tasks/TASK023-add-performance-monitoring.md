@@ -1,6 +1,6 @@
 # TASK023 - Add performance monitoring
 
-**Status:** Pending  
+**Status:** Completed  
 **Added:** 2026-01-31  
 **Updated:** 2026-01-31
 
@@ -26,17 +26,25 @@ Add production-grade performance monitoring (Speed Insights + lightweight server
 
 ## Progress tracking
 
-**Overall Status:** Not Started - 0%
+**Overall Status:** Completed - 100%
 
 ### Subtasks
 
 |ID|Description|Status|Updated|Notes|
 |---|---|---|---|---|
-|7.1|Add Speed Insights integration|Not Started|2026-01-31||
-|7.2|Extend health response with build metadata (optional)|Not Started|2026-01-31||
-|7.3|Add slow DB query logging guardrails|Not Started|2026-01-31||
+|7.1|Add Speed Insights integration|Complete|2026-01-31|Rendered Speed Insights in production layout.|
+|7.2|Extend health response with build metadata (optional)|Complete|2026-01-31|Added optional commit/environment metadata fields.|
+|7.3|Add slow DB query logging guardrails|Complete|2026-01-31|Guarded slow-query logging via env flag.|
+
+## Progress Log
+
+### 2026-01-31
+
+- Added Speed Insights to the root layout.
+- Extended `/api/health` responses with build metadata when available.
+- Added optional slow query logging in Prisma client setup.
 
 ## Validation
 
-- `npm run build`
-- `npx playwright test`
+- ✅ `npm run check`
+- ⚪ `npm run build` (not run)

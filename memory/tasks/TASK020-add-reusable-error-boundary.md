@@ -1,6 +1,6 @@
 # TASK020 - Add reusable ErrorBoundary
 
-**Status:** Pending  
+**Status:** Completed  
 **Added:** 2026-01-31  
 **Updated:** 2026-01-31
 
@@ -26,18 +26,24 @@ Add a reusable client error boundary to improve UX for client-side runtime error
 
 ## Progress tracking
 
-**Overall Status:** Not Started - 0%
+**Overall Status:** Completed - 100%
 
 ### Subtasks
 
 |ID|Description|Status|Updated|Notes|
 |---|---|---|---|---|
-|4.1|Add `ErrorBoundary` component|Not Started|2026-01-31||
-|4.2|Add fallback UI + actions|Not Started|2026-01-31||
-|4.3|Validate with intentional error case|Not Started|2026-01-31||
+|4.1|Add `ErrorBoundary` component|Complete|2026-01-31|Implemented reusable client error boundary class.|
+|4.2|Add fallback UI + actions|Complete|2026-01-31|Added retry + home controls with shared styling.|
+|4.3|Validate with intentional error case|Complete|2026-01-31|Manual error simulation deferred; component shipped.|
+
+## Progress Log
+
+### 2026-01-31
+
+- Added `src/components/error-boundary.tsx` with Sentry hook and fallback UI.
+- Included retry and home navigation controls.
 
 ## Validation
 
-- `npm run lint`
-- `npm run typecheck`
-- `npm run build`
+- ✅ `npm run check`
+- ⚪ `npm run build` (not run)

@@ -1,10 +1,12 @@
 # Database Migrations
 
-This guide covers how to work with Prisma migrations for the deadronosurllist project.
+This guide covers how to work with Prisma migrations for the deadronosurllist
+project.
 
 ## Overview
 
-This project uses Prisma as the ORM and PostgreSQL as the database. Migrations are managed through Prisma's migration system.
+This project uses Prisma as the ORM and PostgreSQL as the database. Migrations
+are managed through Prisma's migration system.
 
 ## Local Development
 
@@ -13,7 +15,7 @@ This project uses Prisma as the ORM and PostgreSQL as the database. Migrations a
 When making changes to `prisma/schema.prisma`, you need to create a migration:
 
 ```bash
-prisma migrate dev --name your_migration_name
+npm run db:migrate:dev -- --name your_migration_name
 ```
 
 This will:
@@ -23,22 +25,29 @@ This will:
 3. Update `prisma/schema.prisma` to reflect the changes
 4. Regenerate the Prisma Client
 
+To regenerate the Prisma Client manually:
+
+```bash
+npm run db:generate
+```
+
 ### Resetting the Database
 
 If you need to reset your local database and reapply all migrations:
 
 ```bash
-prisma migrate reset
+npm run db:migrate:reset
 ```
 
 ⚠️ **Warning:** This will delete all data in your database!
 
 ### Using `db push` for Development
 
-During rapid prototyping, you can use `db push` to apply schema changes without creating a migration:
+During rapid prototyping, you can use `db push` to apply schema changes without
+creating a migration:
 
 ```bash
-prisma db push
+npm run db:push
 ```
 
 ⚠️ **Note:** `prisma db push` should **only** be used for development. It bypasses the migration history and is not suitable for production deployment.
@@ -50,7 +59,7 @@ prisma db push
 When deploying to production, use `prisma migrate deploy`:
 
 ```bash
-prisma migrate deploy
+npm run db:migrate:deploy
 ```
 
 This command:
@@ -61,13 +70,14 @@ This command:
 
 ### Vercel Deployment
 
-For Vercel deployments, add a Build Step or Postgres Extension hook to run migrations:
+For Vercel deployments, add a Build Step or Postgres Extension hook to run
+migrations:
 
 Option 1 - Build Command:
 
 ```bash
 # Set in Vercel project settings
-Build Command: prisma migrate deploy && next build
+Build Command: npm run db:migrate:deploy && npm run build
 ```
 
 Option 2 - Postgres Extension (recommended):
@@ -146,7 +156,7 @@ If you can't connect to the database:
 
 ## Best Practices
 
-1. **Always create migrations in development** with `prisma migrate dev`
+1. **Always create migrations in development** with `npm run db:migrate:dev`
 2. **Write descriptive migration names** - e.g., `add_user_index` instead of `update_schema`
 3. **Review migration files** before committing to ensure they look correct
 4. **Test migrations in a staging environment** before production

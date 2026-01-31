@@ -2,20 +2,25 @@
 
 import { useCallback, useMemo, useState } from "react";
 
-import { api, type RouterOutputs } from "@/trpc/react";
+import { api, type RouterInputs, type RouterOutputs } from "@/trpc/react";
 
 import { useIntersectionLoadMore } from "@/hooks/use-intersection-load-more";
 
-import {
-  dedupeById,
-  filterCollectionsByQuery,
-  sortCollectionsByTab,
-} from "../public-catalog-utils";
+import { dedupeById } from "../public-catalog-utils";
 import { PublicCatalogView } from "./view";
 
 type PublicCatalogPage = RouterOutputs["collection"]["getPublicCatalog"];
+type PublicCatalogInput = RouterInputs["collection"]["getPublicCatalog"];
+type PublicCatalogSortBy = NonNullable<PublicCatalogInput["sortBy"]>;
+type PublicCatalogSortOrder = NonNullable<PublicCatalogInput["sortOrder"]>;
 export type PublicCatalogCollection = PublicCatalogPage["items"][number];
 export type PublicCatalogLink = PublicCatalogCollection["topLinks"][number];
+export type PublicCatalogSortKey =
+  | "updated"
+  | "newest"
+  | "name-asc"
+  | "name-desc"
+  | "links-desc";
 
 interface PublicCatalogProps {
   initialPage?: PublicCatalogPage;
@@ -25,13 +30,55 @@ interface PublicCatalogProps {
   autoLoadMore?: boolean;
 }
 
-/**
- * Container component for the public catalog of collections.
- * Handles data fetching, searching, and pagination logic.
- *
- * @param {PublicCatalogProps} props - Component properties.
- * @returns {JSX.Element} The public catalog container.
- */
+const sortOptions: Array<{
+  key: PublicCatalogSortKey;
+  label: string;
+  sortBy: PublicCatalogSortBy;
+  sortOrder: PublicCatalogSortOrder;
+}> = [
+  {
+    key: "updated",
+    label: "Recently updated",
+    sortBy: "updatedAt",
+    sortOrder: "desc",
+  },
+  {
+    key: "newest",
+    label: "Newest",
+    sortBy: "createdAt",
+    sortOrder: "desc",
+  },
+  {
+    key: "name-asc",
+    label: "Name (A → Z)",
+    sortBy: "name",
+    sortOrder: "asc",
+  },
+  {
+    key: "name-desc",
+    label: "Name (Z → A)",
+    sortBy: "name",
+    sortOrder: "desc",
+  },
+  {
+    key: "links-desc",
+    label: "Most links",
+    sortBy: "linkCount",
+    sortOrder: "desc",
+  },
+];
+
+const sortConfig = sortOptions.reduce(
+  (acc, option) => {
+    acc[option.key] = option;
+    return acc;
+  },
+  {} as Record<
+    PublicCatalogSortKey,
+    { label: string; sortBy: PublicCatalogSortBy; sortOrder: PublicCatalogSortOrder }
+  >,
+);
+
 export function PublicCatalog({
   initialPage,
   pageSize,
@@ -40,7 +87,30 @@ export function PublicCatalog({
   autoLoadMore = false,
 }: PublicCatalogProps) {
   const [query, setQuery] = useState("");
-  const [tab, setTab] = useState<"new" | "updated">("updated");
+  const [sortKey, setSortKey] = useState<PublicCatalogSortKey>("updated");
+
+  const trimmedQuery = query.trim();
+  const sortSelection = sortConfig[sortKey];
+  const queryInput = useMemo(
+    () => ({
+      limit: pageSize,
+      linkLimit,
+      q: trimmedQuery.length > 0 ? trimmedQuery : undefined,
+      sortBy: sortSelection.sortBy,
+      sortOrder: sortSelection.sortOrder,
+    }),
+    [pageSize, linkLimit, trimmedQuery, sortSelection],
+  );
+
+  const canUseInitialData =
+    Boolean(initialPage) && trimmedQuery.length === 0 && sortKey === "updated";
+  const initialData =
+    canUseInitialData && initialPage
+      ? {
+          pageParams: [undefined],
+          pages: [initialPage],
+        }
+      : undefined;
 
   const {
     data,
@@ -49,23 +119,14 @@ export function PublicCatalog({
     isFetchingNextPage,
     isLoading,
     isError,
-  } = api.collection.getPublicCatalog.useInfiniteQuery(
-    { limit: pageSize, linkLimit },
-    {
-      initialData: initialPage
-        ? {
-            pageParams: [undefined],
-            pages: [initialPage],
-          }
-        : undefined,
-      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      refetchOnMount: false,
-    },
-  );
+  } = api.collection.getPublicCatalog.useInfiniteQuery(queryInput, {
+    initialData,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
 
-  const pages = data?.pages ?? (initialPage ? [initialPage] : []);
+  const pages = data?.pages ?? (initialData ? initialData.pages : []);
   const totalCount = pages[0]?.totalCount ?? 0;
 
   const collections = useMemo(() => {
@@ -73,13 +134,7 @@ export function PublicCatalog({
     return dedupeById(merged);
   }, [pages]);
 
-  const sortedCollections = useMemo(() => {
-    return sortCollectionsByTab(collections, tab);
-  }, [collections, tab]);
-
-  const filteredCollections = useMemo(() => {
-    return filterCollectionsByQuery(sortedCollections, query);
-  }, [sortedCollections, query]);
+  const filteredCollections = collections;
 
   const showLoadMore = Boolean(hasNextPage);
 
@@ -99,14 +154,16 @@ export function PublicCatalog({
     <PublicCatalogView
       query={query}
       onQueryChange={setQuery}
-      tab={tab}
-      onTabChange={setTab}
+      sortKey={sortKey}
+      onSortKeyChange={setSortKey}
+      sortLabel={sortSelection.label}
+      sortOptions={sortOptions.map(({ key, label }) => ({ key, label }))}
       filteredCollections={filteredCollections}
       totalCount={totalCount}
       isLoading={isLoading}
       isError={isError}
       isFetchingNextPage={isFetchingNextPage}
-      showTabs={showTabs}
+      showSort={showTabs}
       autoLoadMore={autoLoadMore}
       showLoadMore={showLoadMore}
       onLoadMore={() => void handleLoadMore()}

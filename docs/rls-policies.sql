@@ -230,7 +230,7 @@ USING (true);
 --    isPublic = true (from migration 20251226164724_enable_rls)
 --
 -- 4. To apply these policies, create a new migration:
---    npm run db:migrate
+--    npm run db:migrate:dev
 --
 -- 5. Test policies thoroughly before deploying to production
 --

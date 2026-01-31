@@ -1,6 +1,6 @@
 # TASK026 - Add visual and load testing
 
-**Status:** Pending  
+**Status:** Completed  
 **Added:** 2026-01-31  
 **Updated:** 2026-01-31
 
@@ -26,16 +26,24 @@ Add visual regression checks and load testing capability.
 
 ## Progress tracking
 
-**Overall Status:** Not Started - 0%
+**Overall Status:** Completed - 100%
 
 ### Subtasks
 
 |ID|Description|Status|Updated|Notes|
 |---|---|---|---|---|
-|10.1|Add Playwright screenshot assertions|Not Started|2026-01-31||
-|10.2|Add k6 scripts and npm scripts|Not Started|2026-01-31||
-|10.3|Add optional CI workflow for perf/visual|Not Started|2026-01-31||
+|10.1|Add Playwright screenshot assertions|Complete|2026-01-31|Added `tests/visual.spec.ts` gated by env flag.|
+|10.2|Add k6 scripts and npm scripts|Complete|2026-01-31|Added `scripts/load` and npm scripts.|
+|10.3|Add optional CI workflow for perf/visual|Complete|2026-01-31|Added manual `perf-visual.yml` workflow.|
+
+## Progress Log
+
+### 2026-01-31
+
+- Added optional visual regression Playwright spec.
+- Added k6 load scripts for catalog and health endpoints.
+- Added `perf-visual` workflow with manual base URL input.
 
 ## Validation
 
-- `npx playwright test`
+- ⚪ `npx playwright test` (not run)

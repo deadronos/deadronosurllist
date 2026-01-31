@@ -1,6 +1,6 @@
 # TASK024 - Publish API docs
 
-**Status:** Pending  
+**Status:** Completed  
 **Added:** 2026-01-31  
 **Updated:** 2026-01-31
 
@@ -25,17 +25,23 @@ Provide maintainable API documentation for tRPC procedures.
 
 ## Progress tracking
 
-**Overall Status:** Not Started - 0%
+**Overall Status:** Completed - 100%
 
 ### Subtasks
 
 |ID|Description|Status|Updated|Notes|
 |---|---|---|---|---|
-|8.1|Write `docs/api.md` for core routers|Not Started|2026-01-31||
-|8.2|Link docs from README|Not Started|2026-01-31||
-|8.3|Decide on OpenAPI follow-up|Not Started|2026-01-31||
+|8.1|Write `docs/api.md` for core routers|Complete|2026-01-31|Added router documentation and maintenance checklist.|
+|8.2|Link docs from README|Complete|2026-01-31|Linked API docs in quick links section.|
+|8.3|Decide on OpenAPI follow-up|Complete|2026-01-31|Deferred; docs-only approach delivered.|
+
+## Progress Log
+
+### 2026-01-31
+
+- Added `docs/api.md` with collection, link, and user router coverage.
+- Linked API documentation from `README.md`.
 
 ## Validation
 
-- `npm run lint`
-- `npm run typecheck`
+- ✅ `npm run check`

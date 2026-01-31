@@ -3,8 +3,24 @@ import { prisma, isMockDb } from "@/server/db";
 
 export const dynamic = "force-dynamic";
 
+const getBuildMetadata = () => {
+  const metadata = {
+    commitSha: process.env.VERCEL_GIT_COMMIT_SHA,
+    commitRef: process.env.VERCEL_GIT_COMMIT_REF,
+    deploymentId: process.env.VERCEL_DEPLOYMENT_ID,
+    environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV,
+  };
+
+  const entries = Object.entries(metadata).filter(
+    ([, value]) => typeof value === "string" && value.length > 0,
+  );
+
+  return entries.length > 0 ? Object.fromEntries(entries) : null;
+};
+
 export async function GET() {
   const startTime = Date.now();
+  const build = getBuildMetadata();
 
   try {
     if (isMockDb) {
@@ -13,6 +29,7 @@ export async function GET() {
         {
           status: "ok",
           timestamp: new Date().toISOString(),
+          ...(build ? { build } : {}),
           checks: {
             database: {
               status: "ok",
@@ -44,6 +61,7 @@ export async function GET() {
       {
         status: "ok",
         timestamp: new Date().toISOString(),
+        ...(build ? { build } : {}),
         checks: {
           database: {
             status: "ok",
@@ -68,6 +86,7 @@ export async function GET() {
       {
         status: "error",
         timestamp: new Date().toISOString(),
+        ...(build ? { build } : {}),
         checks: {
           database: {
             status: "failed",

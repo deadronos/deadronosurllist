@@ -9,6 +9,7 @@ export function ensureUser(userId: string) {
       id: userId,
       name: "Mock User",
       email: `${userId}@example.com`,
+      image: null,
       createdAt: now,
       updatedAt: now,
     });

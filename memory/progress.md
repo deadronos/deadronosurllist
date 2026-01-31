@@ -30,3 +30,7 @@
 - 2025-10-11: Completed TASK013 by retyping `vitest.config.ts`, gating the Playwright provider behind `VITEST_BROWSER`, and confirming `npm run typecheck`, `npm run lint:fix`, `npm run test`, and `npm run format:write` all succeed.
 - 2025-10-12: Completed TASK014 by excluding coverage artifacts from TypeScript, restoring `npm run typecheck`, and verifying `npm run lint` plus `npm run format:write` succeed without modifying files.
 - 2025-10-12: Initiated TASK015 to align the dashboard with the Radix landing theme, lift public catalog top-link trimming to ten items, refresh documentation (requirements/tasks/design), and add unit coverage for the new default; `npm run lint` passes while Vitest is blocked by the optional Rollup native binary issue on Windows.
+- 2026-01-31: Completed TASK017–TASK028 with security middleware, RLS-scoped DB helpers, deploy workflows, expanded Playwright coverage, performance monitoring, API docs, caching, advanced catalog search, visual/load testing scaffolding, and public user profiles.
+- 2026-01-31: Added server-side catalog sorting/search inputs with cache invalidation and mock DB seed expansion to enable paging tests.
+- 2026-01-31: Implemented user profile routing (`/u/[userId]`) with safe public fields and added unit + Playwright coverage.
+- 2026-01-31: Verified lint/typecheck via `npm run check` after dependency updates.

@@ -3,6 +3,10 @@ import { z } from "zod";
 
 import type { TRPCContext } from "@/server/api/trpc";
 import { isSafeUrl } from "@/server/api/validation";
+import {
+  getCachedPublicCatalog,
+  setCachedPublicCatalog,
+} from "@/server/cache/public-catalog";
 
 import { normalizeDescription } from "./normalizers";
 
@@ -44,6 +48,10 @@ export const publicCatalogInputSchema = z.object({
     .min(1)
     .max(10)
     .default(PUBLIC_CATALOG_DEFAULT_LINK_LIMIT),
+  sortBy: z
+    .enum(["updatedAt", "createdAt", "name", "linkCount"])
+    .default("updatedAt"),
+  sortOrder: z.enum(["asc", "desc"]).default("desc"),
 });
 
 /**
@@ -59,6 +67,8 @@ export const publicCatalogResponseSchema = z.object({
 export type PublicCatalogInput = z.infer<typeof publicCatalogInputSchema>;
 export type PublicCatalogItem = z.infer<typeof publicCollectionSchema>;
 export type PublicCatalogResponse = z.infer<typeof publicCatalogResponseSchema>;
+export type PublicCatalogSortBy = PublicCatalogInput["sortBy"];
+export type PublicCatalogSortOrder = PublicCatalogInput["sortOrder"];
 
 type CollectionRecord = {
   id: string;
@@ -130,10 +140,17 @@ export async function fetchPublicCatalog(
   ctx: TRPCContext,
   input: PublicCatalogInput,
 ): Promise<PublicCatalogResponse> {
+  const cached = getCachedPublicCatalog(input);
+  if (cached) {
+    return cached;
+  }
+
   const query = input.q?.trim();
   const linkLimit = input.linkLimit ?? PUBLIC_CATALOG_DEFAULT_LINK_LIMIT;
   const limit = input.limit ?? PUBLIC_CATALOG_DEFAULT_LIMIT;
   const cursorId = input.cursor;
+  const sortBy = input.sortBy ?? "updatedAt";
+  const sortOrder = input.sortOrder ?? "desc";
 
   const whereClause: Prisma.CollectionWhereInput = {
     isPublic: true,
@@ -147,11 +164,25 @@ export async function fetchPublicCatalog(
       : {}),
   };
 
+  const orderBy: Prisma.CollectionOrderByWithRelationInput[] = (() => {
+    switch (sortBy) {
+      case "createdAt":
+        return [{ createdAt: sortOrder }, { id: "desc" }];
+      case "name":
+        return [{ name: sortOrder }, { id: "desc" }];
+      case "linkCount":
+        return [{ links: { _count: sortOrder } }, { id: "desc" }];
+      case "updatedAt":
+      default:
+        return [{ updatedAt: sortOrder }, { id: "desc" }];
+    }
+  })();
+
   const [totalCount, collections] = await Promise.all([
     ctx.db.collection.count({ where: whereClause }),
     ctx.db.collection.findMany({
       where: whereClause,
-      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
+      orderBy,
       take: limit + 1,
       cursor: cursorId ? { id: cursorId } : undefined,
       skip: cursorId ? 1 : 0,
@@ -174,9 +205,13 @@ export async function fetchPublicCatalog(
     mapCollectionRecordToCatalogItem(collection, linkLimit),
   );
 
-  return {
+  const response = {
     items,
     nextCursor,
     totalCount,
   } satisfies PublicCatalogResponse;
+
+  setCachedPublicCatalog(input, response);
+
+  return response;
 }

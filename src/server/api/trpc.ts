@@ -13,7 +13,7 @@ import { ZodError } from "zod";
 import type { Session } from "next-auth";
 
 import { auth } from "@/server/auth";
-import { db } from "@/server/db";
+import { db, withUserDb } from "@/server/db";
 import type { LinkListDatabase } from "@/server/db.types";
 
 /**
@@ -142,4 +142,14 @@ export const protectedProcedure = t.procedure
         session: { ...ctx.session, user: ctx.session.user },
       },
     });
+  })
+  .use(async ({ ctx, next }) => {
+    return withUserDb(ctx.session.user.id, (scopedDb) =>
+      next({
+        ctx: {
+          ...ctx,
+          db: scopedDb,
+        },
+      }),
+    );
   });

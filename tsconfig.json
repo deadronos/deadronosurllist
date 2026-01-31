@@ -50,6 +50,7 @@
     "coverage/**/*",
     "playwright-report",
     "test-results",
+    "scripts/load",
     "tests",
     "playwright.config.ts"
   ]

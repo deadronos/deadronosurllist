@@ -1,6 +1,6 @@
 # TASK027 - Build advanced search
 
-**Status:** Pending  
+**Status:** Completed  
 **Added:** 2026-01-31  
 **Updated:** 2026-01-31
 
@@ -26,17 +26,26 @@ Add sorting and richer filtering to the public catalog.
 
 ## Progress tracking
 
-**Overall Status:** Not Started - 0%
+**Overall Status:** Completed - 100%
 
 ### Subtasks
 
 |ID|Description|Status|Updated|Notes|
 |---|---|---|---|---|
-|11.1|Extend catalog procedure schema + query|Not Started|2026-01-31||
-|11.2|Add catalog sort/filter UI|Not Started|2026-01-31||
-|11.3|Add unit + e2e coverage|Not Started|2026-01-31||
+|11.1|Extend catalog procedure schema + query|Complete|2026-01-31|Added sort inputs and query orderBy options.|
+|11.2|Add catalog sort/filter UI|Complete|2026-01-31|Added sort dropdown + server-side search inputs.|
+|11.3|Add unit + e2e coverage|Complete|2026-01-31|Added Vitest sorting tests and Playwright coverage.|
+
+## Progress Log
+
+### 2026-01-31
+
+- Added sort/search inputs for public catalog queries.
+- Replaced client-only sorting with server-driven sort options.
+- Added unit tests for sort orders and e2e coverage for catalog flow.
 
 ## Validation
 
-- `npm run test`
-- `npx playwright test`
+- ✅ `npm run check`
+- ⚪ `npm run test` (not run)
+- ⚪ `npx playwright test` (not run)

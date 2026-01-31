@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { urlSchema } from "@/server/api/validation";
+import { invalidatePublicCatalogCache } from "@/server/cache/public-catalog";
 import { getNextLinkOrderIndex } from "./order-helpers";
 import { reorderItems } from "./reorder-helpers";
 import {
@@ -78,12 +79,15 @@ export const linkRouter = createTRPCRouter({
 
       const nextOrder = await getNextLinkOrderIndex(ctx, input.collectionId);
 
-      return ctx.db.link.create({
+      const created = await ctx.db.link.create({
         data: {
           ...input,
           order: nextOrder,
         },
       });
+
+      invalidatePublicCatalogCache();
+      return created;
     }),
 
   /**
@@ -115,13 +119,16 @@ export const linkRouter = createTRPCRouter({
 
       const startOrder = await getNextLinkOrderIndex(ctx, input.collectionId);
 
-      return ctx.db.link.createMany({
+      const result = await ctx.db.link.createMany({
         data: input.links.map((link, index) => ({
           ...link,
           collectionId: input.collectionId,
           order: startOrder + index,
         })),
       });
+
+      invalidatePublicCatalogCache();
+      return result;
     }),
 
   /**
@@ -146,7 +153,7 @@ export const linkRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await verifyLinkOwnership(ctx, input.id);
 
-      return ctx.db.link.update({
+      const result = await ctx.db.link.update({
         where: { id: input.id },
         data: {
           url: input.url,
@@ -154,6 +161,9 @@ export const linkRouter = createTRPCRouter({
           comment: input.comment,
         },
       });
+
+      invalidatePublicCatalogCache();
+      return result;
     }),
 
   /**
@@ -168,9 +178,12 @@ export const linkRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await verifyLinkOwnership(ctx, input.id);
 
-      return ctx.db.link.delete({
+      const result = await ctx.db.link.delete({
         where: { id: input.id },
       });
+
+      invalidatePublicCatalogCache();
+      return result;
     }),
 
   /**
@@ -191,12 +204,15 @@ export const linkRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       await verifyCollectionOwnership(ctx, input.collectionId);
 
-      return reorderItems({
+      const result = await reorderItems({
         ctx,
         itemIds: input.linkIds,
         tableName: "link",
         whereClause: { collectionId: input.collectionId },
         selectId: "id",
       });
+
+      invalidatePublicCatalogCache();
+      return result;
     }),
 });
