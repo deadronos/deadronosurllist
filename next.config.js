@@ -4,6 +4,10 @@
  */
 import "./src/env.js";
 
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env.ANALYZE === "true",
+});
+
 const cspHeader = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live;
@@ -23,7 +27,8 @@ const config = /** @type {import("next").NextConfig} */ ({
   async headers() {
     return [
       {
-        source: "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+        source:
+          "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
         headers: [
           {
             key: "Content-Security-Policy",
@@ -43,7 +48,8 @@ const config = /** @type {import("next").NextConfig} */ ({
           },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+            value:
+              "camera=(), microphone=(), geolocation=(), interest-cohort=()",
           },
           {
             key: "X-DNS-Prefetch-Control",
@@ -67,4 +73,4 @@ const config = /** @type {import("next").NextConfig} */ ({
   },
 });
 
-export default config;
+module.exports = withBundleAnalyzer(config);

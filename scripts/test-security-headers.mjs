@@ -1,24 +1,33 @@
 #!/usr/bin/env node
 /**
- * Test script to verify security headers middleware configuration
- * This script validates the middleware without running the full Next.js server
+ * Test script to verify security headers are properly configured
+ * This script starts the Next.js dev server and validates actual HTTP responses
  */
 
-// Security headers that should be set
+import { spawn } from "child_process";
+import http from "http";
+
+const isProduction = process.env.NODE_ENV === "production";
+const port = 3000;
+const baseURL = `http://localhost:${port}`;
+
 const expectedHeaders = {
   "Content-Security-Policy": {
     required: true,
-    directives: [
-      "default-src",
-      "script-src",
-      "style-src",
-      "img-src",
-      "font-src",
-      "object-src",
-      "base-uri",
-      "form-action",
-      "frame-ancestors",
-    ],
+    checkDirectives: (value) => {
+      const requiredDirectives = [
+        "default-src 'self'",
+        "script-src 'self'",
+        "style-src 'self'",
+        "img-src 'self'",
+        "font-src 'self'",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+        "frame-ancestors 'none'",
+      ];
+      return requiredDirectives.every((directive) => value.includes(directive));
+    },
   },
   "X-Frame-Options": {
     required: true,
@@ -45,118 +54,214 @@ const expectedHeaders = {
     expectedValue: "noopen",
   },
   "Strict-Transport-Security": {
-    required: false, // Only in production
+    required: isProduction,
     expectedValue: "max-age=31536000; includeSubDomains; preload",
   },
 };
 
-console.log("Security Headers Middleware Test");
-console.log("=================================\n");
+console.log("Security Headers Test");
+console.log("====================\n");
+console.log(`Environment: ${isProduction ? "production" : "development"}`);
+console.log(`Testing URL: ${baseURL}\n`);
 
-// Read the middleware file
-import { readFileSync } from "fs";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+let serverProcess = null;
+let serverReady = false;
+let serverReadyResolve = null;
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const middlewarePath = join(__dirname, "..", "src", "middleware.ts");
+async function waitForServer() {
+  return new Promise((resolve, reject) => {
+    serverReadyResolve = resolve;
+    const maxAttempts = 30;
+    let attempts = 0;
 
-try {
-  const middlewareContent = readFileSync(middlewarePath, "utf-8");
+    const checkServer = () => {
+      if (serverReady) {
+        resolve();
+        return;
+      }
 
-  console.log("✓ Middleware file found at src/middleware.ts\n");
+      attempts++;
+      if (attempts >= maxAttempts) {
+        reject(new Error("Server failed to start within 30 seconds"));
+        return;
+      }
 
+      setTimeout(checkServer, 1000);
+    };
+
+    checkServer();
+  });
+}
+
+function startServer() {
+  return new Promise((resolve, reject) => {
+    console.log("Starting Next.js dev server...");
+    serverProcess = spawn("npm", ["run", "dev"], {
+      cwd: process.cwd(),
+      stdio: ["ignore", "pipe", "pipe"],
+      shell: true,
+    });
+
+    serverProcess.stdout.on("data", (data) => {
+      const output = data.toString();
+      if (output.includes("Ready in") || output.includes("Local:")) {
+        console.log("✓ Server is ready");
+        serverReady = true;
+        if (serverReadyResolve) serverReadyResolve();
+      }
+    });
+
+    serverProcess.stderr.on("data", (data) => {
+      const output = data.toString();
+      if (output.includes("Ready in") || output.includes("Local:")) {
+        console.log("✓ Server is ready");
+        serverReady = true;
+        if (serverReadyResolve) serverReadyResolve();
+      }
+    });
+
+    serverProcess.on("error", (err) => {
+      reject(err);
+    });
+
+    setTimeout(() => {
+      if (!serverReady) {
+        reject(new Error("Server failed to start"));
+      }
+    }, 30000);
+  });
+}
+
+async function fetchHeaders() {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: "localhost",
+      port: port,
+      path: "/",
+      method: "GET",
+      timeout: 5000,
+    };
+
+    const req = http.request(options, (res) => {
+      resolve(res.headers);
+    });
+
+    req.on("error", reject);
+    req.on("timeout", () => {
+      req.destroy();
+      reject(new Error("Request timeout"));
+    });
+    req.end();
+  });
+}
+
+function validateHeaders(headers) {
+  console.log("Validating security headers...\n");
   let allTestsPassed = true;
 
-  // Check for each expected header
   for (const [headerName, config] of Object.entries(expectedHeaders)) {
-    const headerSearch = `"${headerName}"`;
-    const headerPresent = middlewareContent.includes(headerSearch);
+    const headerValue = headers[headerName.toLowerCase()];
 
-    if (config.required && !headerPresent) {
+    if (config.required && !headerValue) {
       console.log(`✗ FAIL: Required header "${headerName}" not found`);
       allTestsPassed = false;
-    } else if (headerPresent) {
-      console.log(`✓ PASS: Header "${headerName}" is configured`);
+    } else if (headerValue) {
+      console.log(`✓ PASS: Header "${headerName}" is present`);
 
-      // Check expected value if specified
       if (config.expectedValue) {
-        const valuePresent = middlewareContent.includes(config.expectedValue);
-        if (valuePresent) {
-          console.log(`  ✓ Value: "${config.expectedValue}"`);
+        if (headerValue.includes(config.expectedValue)) {
+          console.log(`  ✓ Expected value: "${config.expectedValue}"`);
         } else {
-          console.log(`  ✗ Expected value not found: "${config.expectedValue}"`);
+          console.log(`  ✗ Expected value not found`);
+          console.log(`    Got: "${headerValue}"`);
+          console.log(`    Expected: "${config.expectedValue}"`);
           allTestsPassed = false;
         }
       }
 
-      // Check directives for CSP
-      if (config.directives) {
-        console.log(`  CSP Directives:`);
-        for (const directive of config.directives) {
-          const directivePresent = middlewareContent.includes(directive);
-          console.log(
-            `    ${directivePresent ? "✓" : "✗"} ${directive}${directivePresent ? "" : " (MISSING)"}`
-          );
-          if (!directivePresent) {
-            allTestsPassed = false;
-          }
+      if (config.pattern) {
+        if (config.pattern.test(headerValue)) {
+          console.log(`  ✓ Pattern match successful`);
+        } else {
+          console.log(`  ✗ Pattern match failed`);
+          console.log(`    Got: "${headerValue}"`);
+          allTestsPassed = false;
         }
       }
+
+      if (config.checkDirectives) {
+        if (config.checkDirectives(headerValue)) {
+          console.log(`  ✓ All required CSP directives present`);
+        } else {
+          console.log(`  ✗ Missing required CSP directives`);
+          console.log(`    Got: "${headerValue}"`);
+          allTestsPassed = false;
+        }
+      }
+    } else if (!config.required) {
+      console.log(
+        `○ SKIP: Header "${headerName}" (only required in production)`,
+      );
     }
     console.log();
   }
 
-  // Check for middleware export
-  const hasMiddlewareExport = middlewareContent.includes(
-    "export function middleware"
-  );
-  const hasConfig = middlewareContent.includes("export const config");
+  return allTestsPassed;
+}
 
-  if (hasMiddlewareExport) {
-    console.log("✓ PASS: Middleware function is exported");
-  } else {
-    console.log("✗ FAIL: Middleware function export not found");
-    allTestsPassed = false;
+function stopServer() {
+  if (serverProcess) {
+    console.log("\nStopping server...");
+    serverProcess.kill("SIGTERM");
   }
+}
 
-  if (hasConfig) {
-    console.log("✓ PASS: Middleware config is exported");
-  } else {
-    console.log("✗ FAIL: Middleware config export not found");
-    allTestsPassed = false;
-  }
+async function main() {
+  try {
+    await startServer();
+    await waitForServer();
 
-  // Check for matcher configuration
-  const hasMatcher = middlewareContent.includes("matcher");
-  if (hasMatcher) {
-    console.log("✓ PASS: Route matcher is configured");
-  } else {
-    console.log("✗ FAIL: Route matcher not found");
-    allTestsPassed = false;
-  }
+    console.log("Fetching headers from home page...\n");
+    const headers = await fetchHeaders();
 
-  console.log("\n" + "=".repeat(50));
+    const allTestsPassed = validateHeaders(headers);
 
-  if (allTestsPassed) {
-    console.log("\n✓ ALL TESTS PASSED");
-    console.log("\nSecurity headers middleware is properly configured!");
-    console.log("\nHeaders include:");
-    console.log("  • Content Security Policy (CSP)");
-    console.log("  • HTTP Strict Transport Security (HSTS)");
-    console.log("  • X-Frame-Options (clickjacking protection)");
-    console.log("  • X-Content-Type-Options (MIME sniffing protection)");
-    console.log("  • Referrer-Policy");
-    console.log("  • Permissions-Policy");
-    console.log("  • X-DNS-Prefetch-Control");
-    console.log("  • X-Download-Options");
-    process.exit(0);
-  } else {
-    console.log("\n✗ SOME TESTS FAILED");
-    console.log("\nPlease review the middleware configuration.");
+    console.log("=".repeat(50));
+
+    if (allTestsPassed) {
+      console.log("\n✓ ALL TESTS PASSED");
+      console.log("\nSecurity headers are properly configured!");
+      console.log("\nHeaders include:");
+      console.log("  • Content Security Policy (CSP)");
+      console.log("  • X-Frame-Options (clickjacking protection)");
+      console.log("  • X-Content-Type-Options (MIME sniffing protection)");
+      console.log("  • Referrer-Policy");
+      console.log("  • Permissions-Policy");
+      console.log("  • X-DNS-Prefetch-Control");
+      console.log("  • X-Download-Options");
+      if (isProduction) {
+        console.log("  • HTTP Strict Transport Security (HSTS)");
+      }
+      stopServer();
+      process.exit(0);
+    } else {
+      console.log("\n✗ SOME TESTS FAILED");
+      console.log(
+        "\nPlease review the security headers configuration in next.config.js",
+      );
+      stopServer();
+      process.exit(1);
+    }
+  } catch (error) {
+    console.error("\n✗ ERROR:", error.message);
+    stopServer();
     process.exit(1);
   }
-} catch (error) {
-  console.error("\n✗ ERROR:", error.message);
-  process.exit(1);
 }
+
+process.on("SIGINT", () => {
+  stopServer();
+  process.exit(1);
+});
+
+main();

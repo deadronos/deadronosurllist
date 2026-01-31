@@ -4,6 +4,8 @@ import { StudioShell } from "@/app/_components/studio-shell";
 const PUBLIC_CATALOG_PAGE_SIZE = 16;
 const PUBLIC_CATALOG_LINK_LIMIT = 10;
 
+export const revalidate = 60;
+
 export default function CatalogPage() {
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">

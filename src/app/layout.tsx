@@ -1,4 +1,5 @@
 import "@/styles/globals.css";
+import "@/sentry.client.config";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
