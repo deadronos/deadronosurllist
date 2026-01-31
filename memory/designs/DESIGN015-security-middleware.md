@@ -2,7 +2,7 @@
 
 ## Context
 
-The repository currently sets several security headers via `next.config.js` (runtime) and `vercel.json` (edge/platform). The review recommendation calls for `src/middleware.ts` as the consistent application-level mechanism.
+The repository currently sets several security headers via `next.config.js` (runtime) and `vercel.json` (edge/platform). The review recommendation calls for `src/proxy.ts` as the consistent application-level mechanism.
 
 ## Requirements (EARS)
 
@@ -13,7 +13,7 @@ The repository currently sets several security headers via `next.config.js` (run
 
 ## Proposed approach
 
-- Add `src/middleware.ts` and make it the primary “source of truth” for request-time security headers.
+- Add `src/proxy.ts` and make it the primary “source of truth” for request-time security headers.
 - Keep `next.config.js` headers as a fallback/safety net only if needed, but prefer single-source header definitions.
 - Keep `vercel.json` headers minimal (or aligned) to avoid conflicting values.
 
@@ -30,10 +30,10 @@ The repository currently sets several security headers via `next.config.js` (run
 
 ## Implementation sketch
 
-- New file: `src/middleware.ts`
+- New file: `src/proxy.ts`
   - Create a `NextResponse.next()` response and set headers.
   - Reuse the same matcher pattern already used in `next.config.js` to avoid `_next/*` and assets.
-  - Keep CSP string construction inside middleware (Edge safe).
+  - Keep CSP string construction inside proxy (Edge safe).
 
 ## Validation
 
@@ -44,4 +44,4 @@ The repository currently sets several security headers via `next.config.js` (run
 ## Risks / notes
 
 - CSP is easy to break; treat tightening as an iterative effort.
-- Avoid header duplication conflicts between `vercel.json`, `next.config.js`, and middleware.
+- Avoid header duplication conflicts between `vercel.json`, `next.config.js`, and proxy.

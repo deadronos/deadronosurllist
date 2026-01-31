@@ -26,7 +26,7 @@ test coverage.
 ## Current repo snapshot (facts, not guesses)
 
 - Next.js is `^16.1.6`.
-- Security headers are configured in `next.config.js` via `async headers()`.
+- Security headers are configured in `src/proxy.ts` via the Proxy file convention.
 - App Router error UX exists:
   - `src/app/error.tsx`
   - `src/app/not-found.tsx`
@@ -57,9 +57,9 @@ test coverage.
 **Effort:** 1–2 hours  \
 **Impact:** High (prevents confusion and security drift)
 
-- Update any documentation that claims headers are set by middleware.
+- Update any documentation that claims headers are set by middleware (now proxy).
 - Update `scripts/test-security-headers.mjs`:
-  - today it expects `src/middleware.ts` (which does not exist)
+  - today it expects `src/proxy.ts`
   - it should validate `next.config.js` (or validate live HTTP responses)
 - Optional (later): tighten CSP by reducing `'unsafe-inline'`/`'unsafe-eval'`.
   This is usually non-trivial; plan it as a deliberate hardening task.
@@ -214,9 +214,8 @@ Examples:
 
 ---
 
-## Appendix: middleware guidance
+## Appendix: proxy guidance
 
-Next.js middleware is not deprecated. It’s just not required for static
-security headers in this repo because `next.config.js` already sets them.
-Middleware is appropriate when you need per-request logic (rewrites,
-geo-based routing, auth gating, etc.).
+Next.js Proxy replaces the middleware file convention for per-request logic.
+Proxy is appropriate when you need per-request logic (rewrites, geo-based
+routing, auth gating, etc.).

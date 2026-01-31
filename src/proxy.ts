@@ -27,7 +27,7 @@ const securityHeaders = {
   "X-Download-Options": "noopen",
 } as const;
 
-export function middleware(_: NextRequest) {
+export function proxy(_: NextRequest) {
   const response = NextResponse.next();
 
   for (const [key, value] of Object.entries(securityHeaders)) {

@@ -127,7 +127,7 @@ This application implements multiple layers of security:
 
 ### Security Headers
 
-All responses include security headers via Next.js middleware (`src/middleware.ts`):
+All responses include security headers via Next.js proxy (`src/proxy.ts`):
 
 - **Content Security Policy (CSP)**: Restricts resource loading to prevent XSS attacks
 - **HTTP Strict Transport Security (HSTS)**: Forces HTTPS connections in production

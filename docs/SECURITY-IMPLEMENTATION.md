@@ -3,6 +3,7 @@
 ## Overview
 
 This document summarizes the security improvements implemented to address the requirements:
+
 1. ✅ Row-Level Security (RLS) with migration path options
 2. ✅ Security headers (CSP, HSTS, and more)
 3. ✅ Automated secret checks in CI
@@ -10,8 +11,10 @@ This document summarizes the security improvements implemented to address the re
 ## 1. Row-Level Security (RLS)
 
 ### Current Status
+
 - **RLS Enabled**: All database tables have RLS enabled via migration `20251226164724_enable_rls`
 - **Public Access Policies**: Active policies allow public read access to:
+
   - Collections where `isPublic = true`
   - Links in public collections
 
@@ -20,18 +23,23 @@ This document summarizes the security improvements implemented to address the re
 Three implementation paths are documented in `docs/database-security.md`:
 
 #### Option 1: Full RLS (Database-Level Authorization)
+
 - Requires setting transaction-level user context
 - Complete policies provided in `docs/rls-policies.sql`
 - Best for: High-security requirements, compliance needs
 
 #### Option 2: Least-Privilege Credentials (Recommended)
+
 - Create separate database roles:
+
   - `linklistapp` - Runtime role with limited permissions
   - `linklistmigrate` - Migration role with schema modification rights
+
 - Simpler to implement and maintain
 - Best for: Production deployment, practical security
 
 #### Option 3: Hybrid Approach
+
 - Combine least-privilege credentials with RLS
 - Provides defense-in-depth security
 - Application-level checks remain primary authorization
@@ -40,6 +48,7 @@ Three implementation paths are documented in `docs/database-security.md`:
 ### Current Security Model
 
 The application currently uses **application-level authorization**:
+
 - tRPC procedures check `ctx.session.user.id`
 - `protectedProcedure` enforces authentication
 - Database queries include `createdById` filters
@@ -47,12 +56,12 @@ The application currently uses **application-level authorization**:
 
 ## 2. Security Headers
 
-Implemented via Next.js middleware in `src/middleware.ts`:
+Implemented via Next.js proxy in `src/proxy.ts`:
 
 ### Headers Applied
 
 | Header | Value | Purpose |
-|--------|-------|---------|
+| --- | --- | --- |
 | Content-Security-Policy | Multi-directive policy | Prevents XSS, restricts resource loading |
 | Strict-Transport-Security | max-age=31536000; includeSubDomains; preload | Forces HTTPS in production |
 | X-Frame-Options | DENY | Prevents clickjacking |
@@ -64,7 +73,7 @@ Implemented via Next.js middleware in `src/middleware.ts`:
 
 ### Content Security Policy Details
 
-```
+```text
 default-src 'self';
 script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live;
 style-src 'self' 'unsafe-inline';
@@ -79,7 +88,7 @@ upgrade-insecure-requests;
 
 **Note**: `unsafe-inline` for scripts/styles is required for Next.js. Consider migrating to nonces in future iterations for stricter CSP.
 
-### Middleware Configuration
+### Proxy Configuration
 
 - **Applied to**: All routes except API, static files, images
 - **Matcher**: Excludes `_next/static`, `_next/image`, favicon, and static assets
@@ -88,6 +97,7 @@ upgrade-insecure-requests;
 ### Verification
 
 Test script: `scripts/test-security-headers.mjs`
+
 ```bash
 node scripts/test-security-headers.mjs
 ```
@@ -99,32 +109,34 @@ Implemented via GitHub Actions workflow: `.github/workflows/security.yml`
 ### CI Jobs
 
 #### 1. Secret Scanning (Gitleaks)
+
 - **Tool**: Gitleaks v2
 - **Scope**: Scans entire git history for exposed secrets
 - **Triggers**: Push, pull request, daily schedule
 - **Detection**: API keys, passwords, tokens, private keys
 
 #### 2. Dependency Audit
+
 - **Tool**: npm audit
 - **Scope**: Checks all dependencies for known vulnerabilities
 - **Threshold**: Moderate severity and above
 - **Updates**: Checks for outdated packages
 
 #### 3. Lint and Type Check
+
 - **Tools**: ESLint, TypeScript compiler
 - **Scope**: Enforces code quality and type safety
 - **Catches**: Type errors, unsafe operations, code smells
 
 #### 4. Test Suite
+
 - **Tool**: Vitest
 - **Scope**: Runs full test suite with mock database
-- **Coverage**: Application logic, tRPC procedures, authorization
 
 ### Workflow Triggers
 
 - **On Push**: main, develop branches
-- **On Pull Request**: main, develop branches  
-- **Scheduled**: Daily at 00:00 UTC
+- **On Pull Request**: main, develop branches
 
 ### Permissions
 
@@ -134,18 +146,23 @@ Implemented via GitHub Actions workflow: `.github/workflows/security.yml`
 ## Testing & Verification
 
 ### Security Headers Test
+
 ```bash
 node scripts/test-security-headers.mjs
 ```
+
 Expected: All tests pass, all headers configured
 
 ### CI Workflow Test
+
 The workflow will run automatically on:
+
 - Next push to main/develop
 - Next pull request
 - Tomorrow at 00:00 UTC
 
 ### Manual Verification
+
 1. Start dev server: `npm run dev`
 2. Open browser developer tools
 3. Navigate to any page
@@ -155,7 +172,8 @@ The workflow will run automatically on:
 ## Migration Recommendations
 
 ### Immediate Actions (Production)
-1. ✅ Security headers - Already active via middleware
+
+1. ✅ Security headers - Already active via proxy
 2. ✅ CI secret scanning - Will run on next push
 3. 🔄 Choose RLS migration path from Option 1, 2, or 3
 4. 🔄 Implement chosen RLS approach before production deployment
@@ -163,6 +181,7 @@ The workflow will run automatically on:
 ### Recommended Path for Production
 
 **Option 2 (Least-Privilege Credentials)** is recommended because:
+
 - Simple to implement and maintain
 - Follows principle of least privilege
 - No application code changes required
@@ -170,6 +189,7 @@ The workflow will run automatically on:
 - Provides strong security posture
 
 Steps:
+
 1. Create database roles (see `docs/database-security.md`)
 2. Update `DATABASE_URL` to use application role
 3. Update deployment scripts to use migration role
@@ -188,23 +208,27 @@ Steps:
 ## Files Changed
 
 ### New Files
-- `src/middleware.ts` - Security headers middleware
+
+- `src/proxy.ts` - Security headers proxy
 - `.github/workflows/security.yml` - CI security checks
 - `docs/database-security.md` - Comprehensive security guide
 - `docs/rls-policies.sql` - Reference RLS policies
 - `docs/SECURITY-IMPLEMENTATION.md` - This document
-- `scripts/test-security-headers.mjs` - Middleware test script
+- `scripts/test-security-headers.mjs` - Security headers test script
 
 ### Modified Files
+
 - `README.md` - Added security section
 - `package-lock.json` - Dependencies installed
 
 ### Existing Files Leveraged
+
 - `prisma/migrations/20251226164724_enable_rls/migration.sql` - RLS foundation
 
 ## Compliance & Best Practices
 
 This implementation follows:
+
 - ✅ OWASP Top 10 security guidelines
 - ✅ OWASP Security Headers Project recommendations
 - ✅ PostgreSQL RLS best practices
@@ -221,16 +245,24 @@ This implementation follows:
 
 ## Questions & Next Steps
 
+
 ### Q: Which RLS option should I choose?
+
 **A**: For most cases, start with **Option 2 (Least-Privilege Credentials)**. It's simpler and provides strong security. Upgrade to Option 3 (Hybrid) if you need defense-in-depth.
 
+
 ### Q: Will security headers break my app?
+
 **A**: The CSP is configured for Next.js with Vercel Analytics. Test thoroughly in development. Adjust `script-src` if adding new third-party scripts.
 
+
 ### Q: What if Gitleaks finds secrets in history?
+
 **A**: Rotate the exposed secrets immediately, then use `git filter-branch` or BFG Repo-Cleaner to remove them from history.
 
+
 ### Q: How do I test security headers locally?
+
 **A**: Run `npm run dev` and check browser DevTools > Network > Response Headers. Or use the test script: `node scripts/test-security-headers.mjs`
 
 ---

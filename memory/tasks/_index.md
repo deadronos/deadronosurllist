@@ -21,7 +21,7 @@ None
 - [TASK020] Add reusable ErrorBoundary - Client-side error boundary component and shared fallback UI (2026-01-31).
 - [TASK019] Apply RLS policies - Apply SQL policies and wire app-side user context (2026-01-31).
 - [TASK018] Migration workflow and docs - Normalize Prisma scripts and document safe migrations (2026-01-31).
-- [TASK017] Add security middleware - Add `src/middleware.ts` for consistent security headers (2026-01-31).
+- [TASK017] Add security middleware - Add `src/proxy.ts` for consistent security headers (2026-01-31).
 - [TASK016] Container/Presentational Component Refactoring - Refactored all React files to C/P pattern (2026-01-27).
 
 - [TASK015] Dashboard visual refresh & catalog link expansion – Align dashboard theming with landing page and raise catalog link trim limit (2025-10-12).
