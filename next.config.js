@@ -3,8 +3,9 @@
  * for Docker builds.
  */
 import "./src/env.js";
+import bundleAnalyzer from "@next/bundle-analyzer";
 
-const withBundleAnalyzer = require("@next/bundle-analyzer")({
+const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
 });
 
@@ -73,4 +74,4 @@ const config = /** @type {import("next").NextConfig} */ ({
   },
 });
 
-module.exports = withBundleAnalyzer(config);
+export default withBundleAnalyzer(config);

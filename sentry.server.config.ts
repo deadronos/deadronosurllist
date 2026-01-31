@@ -12,17 +12,9 @@ Sentry.init({
         event.tags = {
           ...event.tags,
           errorType: error.name,
-          file: hint.captureContext?.filename,
         };
       }
     }
     return event;
   },
-  integrations: [
-    new Sentry.BrowserTracing(),
-    new Sentry.Replay({
-      maskAllText: false,
-      blockAllMedia: false,
-    }),
-  ],
 });

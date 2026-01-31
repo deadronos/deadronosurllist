@@ -5,13 +5,6 @@ Sentry.init({
   tracesSampleRate: 0.1,
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
-  integrations: [
-    new Sentry.BrowserTracing(),
-    new Sentry.Replay({
-      maskAllText: false,
-      blockAllMedia: false,
-    }),
-  ],
   beforeSend(event, hint) {
     if (event.exception) {
       const error = hint.originalException;
