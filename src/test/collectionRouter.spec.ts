@@ -219,6 +219,7 @@ describe("collectionRouter (mocked)", () => {
         { name: "One", url: "https://example.com/one" },
         { name: "Two", url: "https://example.com/two" },
         { name: "Three", url: "https://example.com/three" },
+        { name: "Four", url: "https://example.com/four" },
       ],
     });
 

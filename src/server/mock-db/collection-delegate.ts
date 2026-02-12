@@ -62,6 +62,14 @@ export const collectionDelegate = {
     if (Array.isArray(orderBy)) {
       items.sort((a, b) => {
         for (const sort of orderBy) {
+          // Handle each sort criterion - check for nested properties first
+          if (sort.links && sort.links._count) {
+            const diff =
+              (a.linkIds.length - b.linkIds.length) *
+              (sort.links._count === "desc" ? -1 : 1);
+            if (diff !== 0) return diff;
+          }
+          // Then handle top-level properties
           if (sort.updatedAt) {
             const dateA = a.updatedAt.getTime();
             const dateB = b.updatedAt.getTime();
@@ -79,12 +87,6 @@ export const collectionDelegate = {
           if (sort.name) {
             const diff =
               a.name.localeCompare(b.name) * (sort.name === "desc" ? -1 : 1);
-            if (diff !== 0) return diff;
-          }
-          if (sort.links && sort.links._count) {
-            const diff =
-              (a.linkIds.length - b.linkIds.length) *
-              (sort.links._count === "desc" ? -1 : 1);
             if (diff !== 0) return diff;
           }
           if (sort.id) {
