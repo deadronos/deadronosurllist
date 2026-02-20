@@ -1,0 +1,25 @@
+
+> deadronosurllist@0.1.0 postinstall
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Error: Prisma schema validation - (get-config wasm)
+Error code: P1012
+error: The datasource property `url` is no longer supported in schema files. Move connection URLs for Migrate to `prisma.config.ts` and pass either `adapter` for a direct database connection or `accelerateUrl` for Accelerate to the `PrismaClient` constructor. See https://pris.ly/d/config-datasource and https://pris.ly/d/prisma7-client-config
+  -->  prisma\schema.prisma:10
+   | 
+ 9 |   provider = "postgresql"
+10 |   url      = env("DATABASE_URL")
+   | 
+
+Validation Error Count: 1
+[Context: getConfig]
+
+Prisma CLI Version : 7.4.0
+npm error code 1
+npm error path D:\GitHub\deadronosurllist
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c prisma generate
+npm error A complete log of this run can be found in: C:\Users\irida\AppData\Local\npm-cache\_logs\2026-02-20T20_13_30_153Z-debug-0.log

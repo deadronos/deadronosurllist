@@ -1,0 +1,20 @@
+npm warn Unknown cli config "--scripts". This will stop working in the next major version of npm.
+
+> deadronosurllist@0.1.0 postinstall
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma config detected, skipping environment variable loading.
+Prisma schema loaded from prisma\schema.prisma
+Error: 
+Cannot find module 'D:\GitHub\deadronosurllist\node_modules\@prisma\client\runtime\query_engine_bg.postgresql.wasm-base64.js'
+Require stack:
+- D:\GitHub\deadronosurllist\node_modules\prisma\build\index.js
+
+
+npm error code 1
+npm error path D:\GitHub\deadronosurllist
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c prisma generate
+npm error A complete log of this run can be found in: C:\Users\irida\AppData\Local\npm-cache\_logs\2026-02-20T20_12_07_011Z-debug-0.log

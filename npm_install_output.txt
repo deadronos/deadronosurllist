@@ -1,0 +1,34 @@
+
+> deadronosurllist@0.1.0 postinstall
+> prisma generate
+
+Loaded Prisma config from prisma.config.ts.
+
+Prisma config detected, skipping environment variable loading.
+Prisma schema loaded from prisma\schema.prisma
+Error: Prisma schema validation - (get-config wasm)
+Error code: P1012
+error: Argument "url" is missing in data source block "db".
+  -->  prisma\schema.prisma:8
+   | 
+ 7 | 
+ 8 | datasource db {
+ 9 |   provider = "postgresql"
+10 |   // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
+11 |   // Further reading:
+12 |   // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
+13 |   // Connection URL for v7+ is read from prisma.config.ts instead of the
+14 |   // datasource `url` inside schema.prisma. See prisma.config.ts in the project
+15 |   // root for the datasource configuration.
+16 | }
+   | 
+
+Validation Error Count: 1
+[Context: getConfig]
+
+Prisma CLI Version : 6.19.2
+npm error code 1
+npm error path D:\GitHub\deadronosurllist
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c prisma generate
+npm error A complete log of this run can be found in: C:\Users\irida\AppData\Local\npm-cache\_logs\2026-02-20T20_10_48_052Z-debug-0.log

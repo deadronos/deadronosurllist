@@ -1,0 +1,19 @@
+
+Oops! Something went wrong! :(
+
+ESLint: 10.0.1
+
+file:///D:/GitHub/deadronosurllist/node_modules/@eslint/eslintrc/lib/config-array/override-tester.js:23
+import minimatch from "minimatch";
+       ^^^^^^^^^
+SyntaxError: The requested module 'minimatch' does not provide an export named 'default'
+    at ModuleJob._instantiate (node:internal/modules/esm/module_job:228:21)
+    at async ModuleJob.run (node:internal/modules/esm/module_job:335:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:647:26)
+    at async dynamicImportConfig (D:\GitHub\deadronosurllist\node_modules\eslint\lib\config\config-loader.js:185:17)
+    at async loadConfigFile (D:\GitHub\deadronosurllist\node_modules\eslint\lib\config\config-loader.js:275:9)
+    at async ConfigLoader.calculateConfigArray (D:\GitHub\deadronosurllist\node_modules\eslint\lib\config\config-loader.js:588:23)
+    at async #calculateConfigArray (D:\GitHub\deadronosurllist\node_modules\eslint\lib\config\config-loader.js:369:19)
+    at async directoryFilter (D:\GitHub\deadronosurllist\node_modules\eslint\lib\eslint\eslint-helpers.js:309:5)
+    at async NodeHfs.<anonymous> (file:///D:/GitHub/deadronosurllist/node_modules/@humanfs/core/src/hfs.js:586:29)
+    at async NodeHfs.walk (file:///D:/GitHub/deadronosurllist/node_modules/@humanfs/core/src/hfs.js:614:3)
