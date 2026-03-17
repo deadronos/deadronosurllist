@@ -69,14 +69,14 @@ jobs:
           SKIP_ENV_VALIDATION: true
           USE_MOCK_DB: true
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
-          NEXTAUTH_SECRET: dummy-secret-at-least-32-chars-long-123456
+          NEXTAUTH_SECRET: dummy-secret-at-least-32-chars-long-123456 # gitleaks:allow
           NEXTAUTH_URL: http://localhost:3000
-          AUTH_SECRET: dummy-secret-at-least-32-chars-long-123456
+          AUTH_SECRET: dummy-secret-at-least-32-chars-long-123456 # gitleaks:allow
           HELLO: world
-          AUTH_DISCORD_ID: "123456789012345678"
-          AUTH_DISCORD_SECRET: dummy-discord-secret
-          AUTH_GOOGLE_ID: dummy-google-id
-          AUTH_GOOGLE_SECRET: dummy-google-secret
+          AUTH_DISCORD_ID: "123456789012345678" # gitleaks:allow
+          AUTH_DISCORD_SECRET: dummy-discord-secret # gitleaks:allow
+          AUTH_GOOGLE_ID: dummy-google-id # gitleaks:allow
+          AUTH_GOOGLE_SECRET: dummy-google-secret # gitleaks:allow
 
       - name: Run Playwright tests
         run: npx playwright test
@@ -84,14 +84,14 @@ jobs:
           SKIP_ENV_VALIDATION: true
           PLAYWRIGHT_TEST_BASE_URL: http://localhost:3000
           USE_MOCK_DB: true
-          NEXTAUTH_SECRET: dummy-secret-at-least-32-chars-long-123456
+          NEXTAUTH_SECRET: dummy-secret-at-least-32-chars-long-123456 # gitleaks:allow
           NEXTAUTH_URL: http://localhost:3000
-          AUTH_SECRET: dummy-secret-at-least-32-chars-long-123456
+          AUTH_SECRET: dummy-secret-at-least-32-chars-long-123456 # gitleaks:allow
           HELLO: world
-          AUTH_DISCORD_ID: "123456789012345678"
-          AUTH_DISCORD_SECRET: dummy-discord-secret
-          AUTH_GOOGLE_ID: dummy-google-id
-          AUTH_GOOGLE_SECRET: dummy-google-secret
+          AUTH_DISCORD_ID: "123456789012345678" # gitleaks:allow
+          AUTH_DISCORD_SECRET: dummy-discord-secret # gitleaks:allow
+          AUTH_GOOGLE_ID: dummy-google-id # gitleaks:allow
+          AUTH_GOOGLE_SECRET: dummy-google-secret # gitleaks:allow
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
 
       - name: Upload Playwright report
