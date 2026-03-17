@@ -54,14 +54,14 @@ jobs:
       SKIP_ENV_VALIDATION: true
       PLAYWRIGHT_TEST_BASE_URL: http://localhost:3000
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
-      NEXTAUTH_SECRET: static-string-for-ci-testing-purposes
+      NEXTAUTH_SECRET: ci-testing-static-string-value-env-secret # gitleaks:allow
       NEXTAUTH_URL: http://localhost:3000
-      AUTH_SECRET: static-string-for-ci-testing-purposes
+      AUTH_SECRET: ci-testing-static-string-value-env-secret # gitleaks:allow
       HELLO: world
-      AUTH_DISCORD_ID: "123456789012345678"
-      AUTH_DISCORD_SECRET: static-string-for-ci-testing-purposes
-      AUTH_GOOGLE_ID: static-string-for-ci-testing-purposes
-      AUTH_GOOGLE_SECRET: static-string-for-ci-testing-purposes
+      AUTH_DISCORD_ID: "123456789012345678" # gitleaks:allow
+      AUTH_DISCORD_SECRET: ci-testing-static-string-value-env-secret # gitleaks:allow
+      AUTH_GOOGLE_ID: ci-testing-static-string-value-env-secret # gitleaks:allow
+      AUTH_GOOGLE_SECRET: ci-testing-static-string-value-env-secret # gitleaks:allow
     steps:
       - uses: actions/checkout@v4
 
