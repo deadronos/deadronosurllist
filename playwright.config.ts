@@ -30,12 +30,22 @@ export default defineConfig({
     },
   ],
 
-  webServer: process.env.CI
-    ? undefined
-    : {
-        command: "npm run dev",
-        url: "http://localhost:3000",
-        reuseExistingServer: !process.env.CI,
-        timeout: 120000,
-      },
+  webServer: {
+    command: "npm run dev",
+    url: "http://localhost:3000",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+    env: {
+      SKIP_ENV_VALIDATION: "true",
+      USE_MOCK_DB: "true",
+      USE_MOCK_AUTH: "true",
+      HELLO: "world",
+      AUTH_SECRET: "test-secret",
+      AUTH_DISCORD_ID: "v1234567890",
+      AUTH_DISCORD_SECRET: "v1234567890",
+      AUTH_GOOGLE_ID: "v1234567890",
+      AUTH_GOOGLE_SECRET: "v1234567890",
+      DATABASE_URL: "postgresql://postgres:password@localhost:5432/deadronosurllist",
+    },
+  },
 });
