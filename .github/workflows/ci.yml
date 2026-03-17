@@ -63,11 +63,22 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: Build application
+        run: npm run build
+        env:
+          USE_MOCK_DB: true
+          # Add other required build-time env vars here if needed
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+          NEXTAUTH_SECRET: secret
+          NEXTAUTH_URL: http://localhost:3000
+
       - name: Run Playwright tests
         run: npx playwright test
         env:
           PLAYWRIGHT_TEST_BASE_URL: http://localhost:3000
           USE_MOCK_DB: true
+          NEXTAUTH_SECRET: secret
+          NEXTAUTH_URL: http://localhost:3000
 
       - name: Upload Playwright report
         if: always()
