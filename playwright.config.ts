@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000",
+    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || "http://127.0.0.1:3000",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
@@ -30,12 +30,10 @@ export default defineConfig({
     },
   ],
 
-  webServer: process.env.CI
-    ? undefined
-    : {
-        command: "npm run dev",
-        url: "http://localhost:3000",
-        reuseExistingServer: !process.env.CI,
-        timeout: 120000,
-      },
+  webServer: {
+    command: process.env.CI ? "SKIP_ENV_VALIDATION=true USE_MOCK_DB=true USE_MOCK_AUTH=true HELLO=hello AUTH_SECRET=secret-secret-secret-secret-secret-secret NEXTAUTH_SECRET=secret-secret-secret-secret-secret-secret NEXTAUTH_URL=http://127.0.0.1:3000 AUTH_DISCORD_ID=1234567890 AUTH_DISCORD_SECRET=1234567890 npx next start" : "npm run dev",
+    url: "http://127.0.0.1:3000",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+  },
 });

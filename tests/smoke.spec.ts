@@ -4,7 +4,7 @@ test.describe("Smoke Tests", () => {
   test("home page renders without errors", async ({ page }) => {
     await page.goto("/");
 
-    await expect(page).toHaveTitle(/deadronosurllist/i);
+    await expect(page).toHaveTitle(/Deadronos URL List/i);
 
     await expect(page.locator("body")).toBeVisible();
   });
@@ -16,7 +16,7 @@ test.describe("Smoke Tests", () => {
   });
 
   test("sign-in page renders", async ({ page }) => {
-    await page.goto("/api/auth/signin");
+    await page.goto("/signin");
 
     await expect(page).toHaveTitle(/Sign in/i);
 

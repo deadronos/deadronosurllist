@@ -15,15 +15,16 @@ import { api } from "@/trpc/server";
 export const revalidate = 60;
 
 type UserProfilePageProps = {
-  params: { userId: string };
+  params: Promise<{ userId: string }>;
 };
 
 export default async function UserProfilePage({
   params,
 }: UserProfilePageProps) {
+  const { userId } = await params;
   const [user, collections] = await Promise.all([
-    api.user.getById({ id: params.userId }),
-    api.collection.getByUser({ userId: params.userId }),
+    api.user.getById({ id: userId }),
+    api.collection.getByUser({ userId: userId }),
   ]);
 
   if (!user) {

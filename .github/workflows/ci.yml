@@ -63,11 +63,33 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: Build application
+        run: npm run build
+        env:
+          SKIP_ENV_VALIDATION: true
+          NEXTAUTH_SECRET: "placeholder-secret-at-least-32-chars-long" # gitleaks:allow
+          NEXTAUTH_URL: "http://localhost:3000"
+          HELLO: "hello"
+          AUTH_DISCORD_ID: "1234567890" # gitleaks:allow
+          AUTH_DISCORD_SECRET: "1234567890" # gitleaks:allow
+          AUTH_GOOGLE_ID: "1234567890" # gitleaks:allow
+          AUTH_GOOGLE_SECRET: "1234567890" # gitleaks:allow
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres" # gitleaks:allow
+
       - name: Run Playwright tests
         run: npx playwright test
         env:
+          SKIP_ENV_VALIDATION: true
           PLAYWRIGHT_TEST_BASE_URL: http://localhost:3000
           USE_MOCK_DB: true
+          USE_MOCK_AUTH: true
+          NEXTAUTH_SECRET: "placeholder-secret-at-least-32-chars-long" # gitleaks:allow
+          NEXTAUTH_URL: "http://localhost:3000"
+          HELLO: "hello"
+          AUTH_DISCORD_ID: "1234567890" # gitleaks:allow
+          AUTH_DISCORD_SECRET: "1234567890" # gitleaks:allow
+          AUTH_GOOGLE_ID: "1234567890" # gitleaks:allow
+          AUTH_GOOGLE_SECRET: "1234567890" # gitleaks:allow
 
       - name: Upload Playwright report
         if: always()

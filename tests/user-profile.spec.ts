@@ -7,7 +7,8 @@ test.describe("User profiles", () => {
     });
 
     await test.step("Verify profile content", async () => {
-      await expect(page.getByText("Mock User")).toHaveCount(1);
+      // Use more specific locators to avoid multiple matches if the name appears in header/menu
+      await expect(page.locator("h1", { hasText: "Mock User" })).toHaveCount(1);
       await expect(page.getByText("Public collections")).toHaveCount(1);
       await expect(page.getByText("user1@example.com")).toHaveCount(0);
     });

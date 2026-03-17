@@ -38,6 +38,9 @@ const allowedMethods = new Set(["GET", "POST"]);
 const withAvailabilityGuard =
   (handler: RouteHandler): RouteHandler =>
   async (request, context = { params: Promise.resolve({ nextauth: [] }) }) => {
+    // Explicitly unwrap params for Next.js 15 compatibility
+    const params = await context.params;
+
     if (!allowedMethods.has(request.method)) {
       // HEAD/OPTIONS and other probes should not reach NextAuth's handler because it will
       // emit UnknownAction noise. Reply quickly without touching the core auth runtime.
@@ -72,7 +75,7 @@ const withAvailabilityGuard =
     }
 
     try {
-      return await handler(request, context);
+      return await handler(request, { params: Promise.resolve(params) });
     } catch (err) {
       // Some hosting platforms and bots probe API endpoints in ways that can
       // trigger Auth.js to throw an UnknownAction/Unsupported action error.
