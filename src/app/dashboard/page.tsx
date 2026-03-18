@@ -16,6 +16,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 
 import { auth } from "@/server/auth";
+import { getSessionUserId } from "@/server/auth/session-user";
 import { api, HydrateClient } from "@/trpc/server";
 import { createTypeGuard } from "@/lib/type-guards";
 
@@ -52,30 +53,38 @@ const isCollectionSummary = createTypeGuard<CollectionSummary>([
  */
 export default async function DashboardPage() {
   const session = await auth();
+  const userId = getSessionUserId(session);
 
-  if (!session?.user) {
+  if (!session?.user || !userId) {
+    const hasSessionWithoutUserId = Boolean(session?.user);
+    const title = hasSessionWithoutUserId
+      ? "Refresh your session."
+      : "Your collections await.";
+    const description = hasSessionWithoutUserId
+      ? "We couldn't verify the account details needed to load your dashboard. Sign out and back in to continue managing your collections."
+      : "Sign in to curate links, manage private collections, and share resources when you are ready.";
+    const actionHref = hasSessionWithoutUserId
+      ? "/api/auth/signout"
+      : "/api/auth/signin";
+    const actionLabel = hasSessionWithoutUserId ? "Sign out" : "Sign in";
+    const helperText = hasSessionWithoutUserId
+      ? "Signing in again restores the account identifier the dashboard uses for secure collection access."
+      : "Authentication keeps your collections private until you make them public.";
+
     return (
       <div className="min-h-[calc(100vh-3.5rem)]">
         <StudioShell>
           <div className="mx-auto max-w-2xl">
             <Card className="bg-background/55 border backdrop-blur">
               <CardHeader>
-                <CardTitle className="text-2xl">
-                  Your collections await.
-                </CardTitle>
-                <CardDescription>
-                  Sign in to curate links, manage private collections, and share
-                  resources when you are ready.
-                </CardDescription>
+                <CardTitle className="text-2xl">{title}</CardTitle>
+                <CardDescription>{description}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button asChild size="lg" className="w-full">
-                  <Link href="/api/auth/signin">Sign in</Link>
+                  <Link href={actionHref}>{actionLabel}</Link>
                 </Button>
-                <div className="text-muted-foreground text-sm">
-                  Authentication keeps your collections private until you make
-                  them public.
-                </div>
+                <div className="text-muted-foreground text-sm">{helperText}</div>
               </CardContent>
             </Card>
           </div>

@@ -53,6 +53,26 @@ describe("collectionRouter (mocked)", () => {
     expect(res[0]?._count?.links).toBeDefined();
   });
 
+  it.each(["", "   "])(
+    "getAll rejects sessions without a usable user id (%j)",
+    async (invalidUserId) => {
+      const baseSession = createSession("user1");
+      const invalidCaller = createTestCaller({
+        session: {
+          ...baseSession,
+          user: {
+            ...baseSession.user,
+            id: invalidUserId,
+          },
+        },
+      });
+
+      await expect(invalidCaller.collection.getAll()).rejects.toMatchObject({
+        code: "UNAUTHORIZED",
+      });
+    },
+  );
+
   it("getPublic returns the seeded public collection", async () => {
     const res = await caller.collection.getPublic();
     expect(res).not.toBeNull();
