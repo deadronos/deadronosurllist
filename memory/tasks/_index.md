@@ -10,6 +10,7 @@ None
 
 ## Completed
 
+- [TASK029] Dependency refresh - Upgrade packages, fix compatibility issues, and open a maintenance PR (2026-03-18).
 - [TASK028] Add user profiles - Public profile pages for user collections (2026-01-31).
 - [TASK027] Build advanced search - Sorting and richer filtering for the public catalog (2026-01-31).
 - [TASK026] Add visual and load testing - Screenshot diffs + k6 load scripts (2026-01-31).

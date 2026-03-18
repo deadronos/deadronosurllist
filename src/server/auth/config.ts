@@ -48,6 +48,7 @@ declare module "next-auth/jwt" {
  */
 const authEnv: AuthEnvShape = {
   NODE_ENV: env.NODE_ENV,
+  USE_MOCK_AUTH: process.env.USE_MOCK_AUTH,
   AUTH_DISCORD_ID: process.env.AUTH_DISCORD_ID,
   AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET,
   AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,

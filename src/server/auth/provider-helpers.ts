@@ -2,6 +2,7 @@ import type { Provider } from "next-auth/providers/index";
 
 export type AuthEnvShape = {
   NODE_ENV: string;
+  USE_MOCK_AUTH?: string;
   AUTH_DISCORD_ID?: string;
   AUTH_DISCORD_SECRET?: string;
   AUTH_GOOGLE_ID?: string;
@@ -100,6 +101,7 @@ export const buildAuthProviders = (
   const statuses: ProviderStatus[] = [];
 
   const isProduction = env.NODE_ENV === "production";
+  const isMockAuth = env.USE_MOCK_AUTH?.toLowerCase() === "true";
 
   descriptors.forEach((descriptor) => {
     const clientId = env[descriptor.credentials.clientId];
@@ -115,7 +117,7 @@ export const buildAuthProviders = (
         secretInvalid: clientSecretInvalid,
       });
 
-      if (isProduction && !descriptor.optional) {
+      if (isProduction && !isMockAuth && !descriptor.optional) {
         throw new Error(
           `[auth] ${descriptor.label} provider misconfigured: ${reason}. Supply valid credentials before deploying.`,
         );
@@ -148,7 +150,7 @@ export const buildAuthProviders = (
           ? error.message
           : "Unknown error creating provider configuration";
 
-      if (isProduction && !descriptor.optional) {
+      if (isProduction && !isMockAuth && !descriptor.optional) {
         throw new Error(
           `[auth] ${descriptor.label} provider failed to initialize: ${reason}`,
         );
