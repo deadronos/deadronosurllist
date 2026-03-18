@@ -13,6 +13,7 @@ import { ZodError } from "zod";
 import type { Session } from "next-auth";
 
 import { auth } from "@/server/auth";
+import { getSessionUserId } from "@/server/auth/session-user";
 import { db, withUserDb } from "@/server/db";
 import type { LinkListDatabase } from "@/server/db.types";
 
@@ -133,8 +134,7 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
 export const protectedProcedure = t.procedure
   .use(timingMiddleware)
   .use(({ ctx, next }) => {
-    const userId =
-      typeof ctx.session?.user?.id === "string" ? ctx.session.user.id.trim() : "";
+    const userId = getSessionUserId(ctx.session);
 
     if (!ctx.session?.user || !userId) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
