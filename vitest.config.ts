@@ -1,6 +1,5 @@
 import { defineConfig } from "vitest/config";
 import type { UserConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
 
 /// <reference types="@vitest/browser/providers/playwright" />
 
@@ -46,6 +45,9 @@ if (shouldEnableBrowser) {
 }
 
 export default defineConfig({
+  resolve: {
+    tsconfigPaths: true,
+  },
   test: {
     environment: "node",
     globals: true,
@@ -63,5 +65,4 @@ export default defineConfig({
     },
     browser: browserConfig,
   },
-  plugins: [tsconfigPaths()],
 });

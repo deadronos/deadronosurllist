@@ -39,6 +39,7 @@ const descriptor = (overrides?: Partial<AuthProviderDescriptor>) =>
 
 const baseEnv: AuthEnvShape = {
   NODE_ENV: "development",
+  USE_MOCK_AUTH: undefined,
   AUTH_DISCORD_ID: "123456789012",
   AUTH_DISCORD_SECRET: "super-secure-secret",
   AUTH_GOOGLE_ID: undefined,
@@ -78,6 +79,23 @@ describe("buildAuthProviders", () => {
     };
     expect(() => buildAuthProviders(env, [descriptor()])).toThrowError(
       /provider misconfigured/i,
+    );
+  });
+
+  it("disables misconfigured required providers in mock-auth production builds", () => {
+    const env = {
+      ...baseEnv,
+      NODE_ENV: "production",
+      USE_MOCK_AUTH: "true",
+      AUTH_DISCORD_ID: "mock-id",
+      AUTH_DISCORD_SECRET: "mock-secret",
+    };
+
+    const result = buildAuthProviders(env, [descriptor()]);
+    expect(result.providers).toHaveLength(0);
+    expect(result.diagnostics.hasEnabledProvider).toBe(false);
+    expect(result.diagnostics.disabledProviders[0]?.reason).toContain(
+      "placeholder",
     );
   });
 
