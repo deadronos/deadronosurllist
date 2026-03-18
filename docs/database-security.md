@@ -4,9 +4,9 @@ This guide provides instructions for securing your PostgreSQL database using Row
 
 ## Current Security Status
 
-✅ **Row Level Security (RLS) Enabled**: All tables have RLS enabled via migration `20251226164724_enable_rls`
+✅ **Row Level Security (RLS) Enabled**: All tables have RLS enabled via `20251226164724_enable_rls`, and scoped owner policies are applied via `20260131193000_apply_rls_policies`
 
-⚠️ **Application-Level Authorization**: The application currently enforces data access control at the application level through tRPC procedures, not at the database level
+✅ **Hybrid Authorization Model**: Protected tRPC procedures still enforce ownership in application code and also run database work with transaction-local user context via `withUserDb()` in `src/server/db.ts`
 
 ✅ **Public Data Access**: RLS policies allow public read access to collections marked as `isPublic` and their associated links
 
@@ -15,6 +15,7 @@ This guide provides instructions for securing your PostgreSQL database using Row
 The current RLS implementation provides **defense-in-depth** protection with the following policies:
 
 ### Enabled Tables
+
 - `Collection` - RLS enabled
 - `Link` - RLS enabled  
 - `Post` - RLS enabled
@@ -24,55 +25,51 @@ The current RLS implementation provides **defense-in-depth** protection with the
 - `VerificationToken` - RLS enabled (NextAuth)
 
 ### Active Policies
+
 1. **Public collections are viewable by everyone** - Allows SELECT on `Collection` where `isPublic = true`
 2. **Links in public collections are viewable** - Allows SELECT on `Link` where parent collection is public
+3. **Owner-scoped policies are available for protected tables** - `Collection`, `Link`, and NextAuth tables can rely on `current_setting('app.current_user_id', true)` when protected work runs inside `withUserDb()`
 
 ## Migration Path Options
 
-### Option 1: Implement Full RLS (Recommended for High Security)
+### Option 1: Full RLS (Implemented in the application runtime)
 
-To fully leverage RLS, you need to set the current user ID at the database level for each request:
+The application already sets the current user ID at the database level for protected requests:
 
 1. **Modify Prisma connection to use transaction-level settings:**
 
 ```typescript
 // src/server/db.ts
-// Add this helper function
-async function withUser<T>(
+export const withUserDb = async <T>(
   userId: string,
-  operation: (tx: PrismaClient) => Promise<T>
-): Promise<T> {
-  return await prisma.$transaction(async (tx) => {
-    // Set the user ID for this transaction
-    await tx.$executeRaw`SET LOCAL app.current_user_id = ${userId}`;
-    return await operation(tx);
+  operation: (scopedDb: LinkListDatabase) => Promise<T>,
+): Promise<T> => {
+  return prisma.$transaction(async (tx) => {
+    await tx.$queryRaw`SELECT set_config('app.current_user_id', ${userId}, true)`;
+    return operation(createTransactionDatabase(tx));
   });
-}
-```
-
-2. **Update tRPC context to wrap database operations:**
-
-```typescript
-// src/server/api/trpc.ts
-export const createTRPCContext = async (
-  opts: CreateContextOptions,
-): Promise<TRPCContext> => {
-  const session = await auth();
-  
-  // Wrap db operations with user context if authenticated
-  const dbWithContext = session?.user?.id 
-    ? wrapDbWithUserContext(db, session.user.id)
-    : db;
-
-  return {
-    db: dbWithContext,
-    session,
-    ...opts,
-  };
 };
 ```
 
-3. **Apply the missing RLS policies (see `docs/rls-policies.sql`)**
+1. **Protected procedures already wrap database operations with that helper:**
+
+```typescript
+// src/server/api/trpc.ts
+export const protectedProcedure = t.procedure
+  .use(/* auth guard */)
+  .use(async ({ ctx, next }) =>
+    withUserDb(ctx.session.user.id, (scopedDb) =>
+      next({
+        ctx: {
+          ...ctx,
+          db: scopedDb,
+        },
+      }),
+    ),
+  );
+```
+
+1. **Keep `docs/rls-policies.sql` and the applied migrations in sync when policies change**
 
 ### Option 2: Least-Privilege Database User (Simpler, Production-Ready)
 
@@ -147,25 +144,27 @@ DATABASE_URL="$DATABASE_URL" npm start
 ### Option 3: Hybrid Approach (Recommended)
 
 Combine both approaches:
+
 1. Use least-privilege credentials (Option 2) for basic security
 2. Implement RLS policies for defense-in-depth
 3. Keep application-level checks as the primary authorization mechanism
 
 This provides multiple layers of security:
+
 - **Layer 1**: Application-level authorization in tRPC procedures
 - **Layer 2**: Database-level RLS policies (defense-in-depth)
 - **Layer 3**: Least-privilege database credentials
 
 ## Testing RLS Policies
 
-If you implement full RLS (Option 1), test the policies:
+If you need to test the full RLS path manually, verify the policies with a scoped session setting:
 
 ```bash
 # Connect as the application user
 psql "$DATABASE_URL"
 
-# Set the user ID
-SET app.current_user_id = 'some-user-id-here';
+# Set the user ID for the session
+SELECT set_config('app.current_user_id', 'some-user-id-here', false);
 
 # Try to query collections - should only see owned collections
 SELECT * FROM "Collection";
@@ -190,20 +189,21 @@ VALUES ('test', 'Test', 'different-user-id');
 
 ## Additional Security Recommendations
 
-1. **Enable SSL/TLS** for database connections in production:
-   ```
-   DATABASE_URL="postgresql://user:pass@host:5432/db?sslmode=require"
-   ```
+- **Enable SSL/TLS** for database connections in production:
 
-2. **Use connection pooling** with PgBouncer or Prisma's built-in pooling
+  ```text
+  DATABASE_URL="postgresql://user:pass@host:5432/db?sslmode=require"
+  ```
 
-3. **Regular backups** with encrypted storage
+- **Use connection pooling** with PgBouncer or Prisma's built-in pooling
 
-4. **Database firewall rules** to restrict network access
+- **Regular backups** with encrypted storage
 
-5. **Audit logging** to track all database operations
+- **Database firewall rules** to restrict network access
 
-6. **Regular security updates** for PostgreSQL
+- **Audit logging** to track all database operations
+
+- **Regular security updates** for PostgreSQL
 
 ## Resources
 

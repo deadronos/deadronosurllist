@@ -1,6 +1,6 @@
 # Copilot Instructions for T3 Stack Application
 
-This is a **T3 Stack** project using Next.js 15, tRPC, NextAuth.js, Prisma, and TypeScript with strict patterns.
+This is a **T3 Stack** project using Next.js 16, tRPC, NextAuth.js, Prisma, and TypeScript with strict patterns.
 
 **Important**: This project uses a structured Memory Bank system (see `.github/instructions/memory-bank.instructions.md`). Always check `/memory/` folder for context:
 - `/memory/tasks/` - Task management with individual files and `_index.md`

@@ -195,7 +195,7 @@ export const withUserDb = async <T>(
   }
 
   return prismaSingleton.$transaction(async (tx) => {
-    await tx.$executeRaw`SET LOCAL app.current_user_id = ${userId}`;
+    await tx.$queryRaw`SELECT set_config('app.current_user_id', ${userId}, true)`;
     const scopedDb = createTransactionDatabase(tx);
     return operation(scopedDb);
   });

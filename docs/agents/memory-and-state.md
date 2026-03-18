@@ -22,4 +22,4 @@ The `/memory/` folder is the source of truth for the project's current state.
 
 ---
 
-See also: [.github/instructions/memory-bank.instructions.md](file:///d:/GitHub/deadronosurllist/.github/instructions/memory-bank.instructions.md)
+See also: [`.github/instructions/memory-bank.instructions.md`](../../.github/instructions/memory-bank.instructions.md)

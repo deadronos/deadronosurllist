@@ -2,7 +2,7 @@
 
 ## Context
 
-The repository currently sets several security headers via `next.config.js` (runtime) and `vercel.json` (edge/platform). The review recommendation calls for `src/proxy.ts` as the consistent application-level mechanism.
+The repository should set security headers via a single application-level mechanism. The review recommendation calls for `src/proxy.ts` to be the consistent source of truth, rather than splitting behavior across framework/platform config files.
 
 ## Requirements (EARS)
 
@@ -15,7 +15,7 @@ The repository currently sets several security headers via `next.config.js` (run
 
 - Add `src/proxy.ts` and make it the primary “source of truth” for request-time security headers.
 - Keep `next.config.js` headers as a fallback/safety net only if needed, but prefer single-source header definitions.
-- Keep `vercel.json` headers minimal (or aligned) to avoid conflicting values.
+- Avoid reintroducing duplicate header definitions in other config files unless they are intentionally kept in sync.
 
 ### Header set
 
@@ -44,4 +44,4 @@ The repository currently sets several security headers via `next.config.js` (run
 ## Risks / notes
 
 - CSP is easy to break; treat tightening as an iterative effort.
-- Avoid header duplication conflicts between `vercel.json`, `next.config.js`, and proxy.
+- Avoid header duplication conflicts between `next.config.js`, platform configuration, and proxy.

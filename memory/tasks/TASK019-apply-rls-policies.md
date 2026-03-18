@@ -15,7 +15,7 @@ Complete Row-Level Security policies and wire app-side user context.
 ## Acceptance criteria
 
 - A Prisma migration applies the policies in `docs/rls-policies.sql` (or the selected subset).
-- Protected DB access runs with `SET LOCAL app.current_user_id = <userId>` (or equivalent).
+- Protected DB access runs with `SELECT set_config('app.current_user_id', <userId>, true)` (or equivalent).
 - Anonymous access remains limited to public collections/links.
 - Mock DB mode still works without RLS.
 

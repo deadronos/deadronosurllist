@@ -2,7 +2,7 @@
 
 ## Context
 
-`vercel.json` exists, and CI runs lint/typecheck/unit/e2e. There are no GitHub Actions workflows for Vercel preview or production deployment.
+The repository uses package scripts plus GitHub Actions for CI/deploy automation. There are no Vercel preview or production deployment workflows yet.
 
 ## Requirements (EARS)
 

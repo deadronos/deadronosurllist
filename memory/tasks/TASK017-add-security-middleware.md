@@ -15,7 +15,7 @@ Add Next.js middleware to consistently apply security headers.
 ## Acceptance criteria
 
 - `src/proxy.ts` exists and applies the agreed header set on matched routes.
-- No conflicting header values between middleware, `next.config.js`, and `vercel.json` (documented decision).
+- No conflicting header values between `src/proxy.ts`, `next.config.js`, and any platform-level configuration (documented decision).
 - Playwright smoke test for headers continues to pass.
 
 ## Implementation plan
@@ -43,7 +43,7 @@ Add Next.js middleware to consistently apply security headers.
 ### 2026-01-31
 
 - Added `src/proxy.ts` with CSP and security headers.
-- Removed redundant header config from `next.config.js` and `vercel.json`.
+- Removed redundant header config from `next.config.js` and kept `src/proxy.ts` as the primary source of truth.
 - Verified lint/typecheck via `npm run check`.
 
 ## Validation

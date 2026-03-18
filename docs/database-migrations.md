@@ -90,8 +90,8 @@ Option 2 - Postgres Extension (recommended):
 Ensure these are set in your production environment:
 
 - `DATABASE_URL` - PostgreSQL connection string
-- `DIRECT_URL` - Direct database connection (for Prisma Accelerate)
-- `POSTGRES_PRISMA_URL` - Prisma-specific connection string (for connection pooling)
+- `DIRECT_URL` - Direct database connection (recommended for non-pooled migration/runtime access when your provider supplies one)
+- `POSTGRES_PRISMA_URL` - Optional provider-specific fallback connection string used by some hosted Postgres setups
 
 ## Rollback Procedures
 

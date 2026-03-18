@@ -222,7 +222,7 @@ USING (true);
 -- ============================================================================
 --
 -- 1. These policies require transaction-level user context:
---    await prisma.$executeRaw`SET LOCAL app.current_user_id = ${userId}`;
+--    await prisma.$queryRaw`SELECT set_config('app.current_user_id', ${userId}, true)`;
 --
 -- 2. The policies assume user IDs are strings (cuid format)
 --
