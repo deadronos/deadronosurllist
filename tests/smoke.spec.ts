@@ -18,9 +18,12 @@ test.describe("Smoke Tests", () => {
   test("sign-in page renders", async ({ page }) => {
     await page.goto("/api/auth/signin");
 
-    // In mock auth mode, it might redirect or show a different title than expected by the default NextAuth signin page
-    // Let's just check for visibility of body
     await expect(page.locator("body")).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: /sign in to start publishing collections/i,
+      }),
+    ).toBeVisible();
   });
 
   test("health endpoint returns 200", async ({ request }) => {

@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { notFound } from "next/navigation";
 
 import { StudioShell } from "@/app/_components/studio-shell";
@@ -41,12 +40,10 @@ export default async function UserProfilePage({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
             <div className="relative flex size-16 items-center justify-center overflow-hidden rounded-full bg-muted text-muted-foreground">
               {user.image ? (
-                <Image
+                <img
                   src={user.image}
                   alt={`${displayName} avatar`}
-                  fill
-                  sizes="64px"
-                  className="object-cover"
+                  className="h-full w-full object-cover"
                 />
               ) : (
                 <span className="text-xl font-semibold">{initial}</span>
