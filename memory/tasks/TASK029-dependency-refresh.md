@@ -52,6 +52,7 @@ Open a new branch, update to the latest packages, fix resulting errors, and open
 - Switched Vitest to native Vite tsconfig path resolution and fixed the `preview` script.
 - Added `turbopack.root`, mock-auth-safe provider initialization, and Playwright config/test hardening.
 - Revalidated with `npm run check`, `npm test`, `npm run build`, and `npx playwright test --reporter=line`.
+- Pushed branch `chore/dependency-refresh-2026-03` and opened PR #76.
 
 ## Validation
 
@@ -59,4 +60,4 @@ Open a new branch, update to the latest packages, fix resulting errors, and open
 - ✅ `npm test`
 - ✅ `npm run build`
 - ✅ `npx playwright test --reporter=line`
-- ⚪ `gh pr create`
+- ✅ `gh pr create`
