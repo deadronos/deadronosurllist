@@ -16,6 +16,9 @@ on:
         required: true
         default: "true"
 
+permissions:
+  contents: read
+
 jobs:
   visual:
     name: Visual Regression
