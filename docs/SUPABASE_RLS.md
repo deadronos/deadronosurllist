@@ -4,26 +4,31 @@ This document outlines the strategy and SQL commands to enable Row Level Securit
 
 ## Architecture Context
 
-*   **Stack**: T3 Stack (Next.js, tRPC, Prisma, NextAuth.js).
-*   **Database**: PostgreSQL (hosted on Supabase).
-*   **Authentication**: NextAuth.js (stores users in `public.User` table with CUIDs).
-*   **Connection**: Prisma connects via the transaction pooler or direct connection, typically using the `postgres` or `service_role` credentials.
+* **Stack**: T3 Stack (Next.js, tRPC, Prisma, NextAuth.js).
+* **Database**: PostgreSQL (hosted on Supabase).
+* **Authentication**: NextAuth.js (stores users in `public.User` table with CUIDs).
+* **Connection**: Prisma connects via the transaction pooler or direct connection, typically using the `postgres` or `service_role` credentials.
 
 ## Security Model
 
 ### 1. Prisma (Backend)
-Prisma is configured to use a privileged connection string (defined in `DATABASE_URL` / `DIRECT_URL`).
-*   **Effect**: Prisma bypasses RLS policies. It has full read/write access.
-*   **Security**: Application-level authorization is handled in tRPC routers (`protectedProcedure`).
+
+Prisma runs server-side using the configured database connection string.
+
+* **Effect**: Whether RLS applies depends on the database role you use. In this app, protected tRPC procedures set `app.current_user_id` transaction-locally via `withUserDb()` so user-scoped RLS policies can be enforced when the runtime role does not bypass RLS.
+* **Security**: Application-level authorization still runs in tRPC routers (`protectedProcedure`) and remains the primary guardrail.
 
 ### 2. External Access (Supabase API / Studio)
+
 If you enable RLS, you secure the database against:
-*   Accidental leaks of the `anon` (public) key.
-*   Unintended access via Supabase Studio or Client SDKs.
+
+* Accidental leaks of the `anon` (public) key.
+* Unintended access via Supabase Studio or Client SDKs.
 
 ### The ID Mismatch Challenge
-*   **NextAuth User ID**: CUID (String, e.g., `clq...`).
-*   **Supabase Auth User ID**: UUID (e.g., `550e8400...`).
+
+* **NextAuth User ID**: CUID (String, e.g., `clq...`).
+* **Supabase Auth User ID**: UUID (e.g., `550e8400...`).
 
 Because these IDs do not match, **standard Supabase RLS policies relying on `auth.uid()` will not work** for user-specific data (like "Users can only edit their own posts") unless you migrate to Supabase Auth.
 
@@ -32,7 +37,11 @@ Because these IDs do not match, **standard Supabase RLS policies relying on `aut
 ## Applying the RLS Configuration
 
 ### Option 1: Using Prisma Migrations (Recommended)
-A migration file has been added to the project at `prisma/migrations/<timestamp>_enable_rls/migration.sql`.
+
+RLS is version-controlled in Prisma migrations, including:
+
+* `prisma/migrations/20251226164724_enable_rls/migration.sql`
+* `prisma/migrations/20260131193000_apply_rls_policies/migration.sql`
 
 To apply this to your database, simply run:
 
@@ -43,6 +52,7 @@ npx prisma migrate deploy
 This ensures the RLS settings are version-controlled and applied consistently across environments.
 
 ### Option 2: Manual SQL
+
 If you prefer to run the SQL manually in the Supabase Dashboard SQL Editor, use the script below:
 
 ```sql
@@ -83,9 +93,10 @@ USING (
 -- NOTE: No "INSERT", "UPDATE", or "DELETE" policies are created for 'anon'.
 -- This effectively makes the database Read-Only for public users
 -- and Read-Only (scoped) for public data.
--- All Writes must go through Prisma (which bypasses RLS).
+-- All writes should go through your server-side Prisma layer using the appropriate runtime role and user context.
 ```
 
 ## Summary
-*   **Prisma/tRPC**: Continue to work as normal (bypassing RLS).
-*   **Supabase Data API**: Now restricted. Anonymous users can only query public collections and links. They cannot write data or see private collections.
+
+* **Protected Prisma/tRPC flows**: Continue to work with application-level checks and transaction-local `app.current_user_id` context for RLS-aware queries.
+* **Supabase Data API**: Can be restricted so anonymous users only query public collections and links; they cannot write data or see private collections.

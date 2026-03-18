@@ -2,9 +2,9 @@
 
 ## Architectural Overview
 
-- **Frontend:** Next.js 15 App Router using server components for data prefetch and client components for interactive forms.
+- **Frontend:** Next.js 16 App Router using server components for data prefetch and client components for interactive forms.
 - **API Layer:** tRPC routers in `src/server/api/routers` exposing type-safe procedures for posts, collections, and links.
-- **Data Access:** Prisma client in production; deterministic in-memory mock (`src/server/db.mock.ts`) when `USE_MOCK_DB=1`.
+- **Data Access:** Prisma client in production; deterministic in-memory mock (`src/server/db.mock.ts`) when `USE_MOCK_DB=1` or no supported Postgres datasource URL is available.
 - **Authentication:** NextAuth.js with Discord provider; session surfaced through `auth()` helper and `protectedProcedure` middleware.
 - **Styling:** Tailwind CSS utility classes paired with `@radix-ui/themes` provider for the public landing experience.
 
@@ -21,7 +21,7 @@
 ## Cross-Cutting Patterns
 
 - Context factory ensures Prisma or mock client is attached to each tRPC request via `createTRPCContext`.
-- Protected procedures enforce per-user access using `ctx.session.user.id` checks before mutations.
+- Protected procedures normalize `session.user.id` with `getSessionUserId()` and scope DB work through `withUserDb()` so transaction-local RLS context is applied consistently.
 - Seed helpers in the mock database guard against duplicate entries while guaranteeing the "Discover Links" collection exists for public visitors.
 - Hydration helper (`HydrateClient`) bridges server-fetched data with client components to avoid waterfalls.
 - Auth provider builder centralizes credential validation, producing `authDiagnostics` for UI consumption and strictness in production.

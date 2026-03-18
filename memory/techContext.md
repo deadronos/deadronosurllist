@@ -3,8 +3,8 @@
 ## Languages & Frameworks
 
 - TypeScript across both frontend and backend code.
-- Next.js 15 App Router with React Server Components.
-- tRPC 2024.x for type-safe procedure calls.
+- Next.js 16 App Router with React Server Components.
+- tRPC v11 for type-safe procedure calls.
 - Prisma ORM with PostgreSQL schema; in-memory mock for local workflows.
 
 ## Tooling & Dependencies
@@ -17,7 +17,7 @@
 ## Environment Configuration
 
 - Runtime environment variables validated in `src/env.js` using `@t3-oss/env-nextjs`.
-- `USE_MOCK_DB=1` selects the in-memory database; default connects to Prisma.
+- `USE_MOCK_DB=1` selects the in-memory database; otherwise runtime DB access uses Prisma when a supported Postgres URL is available and falls back to the mock DB if it is not.
 - Discord OAuth credentials required for full auth flow in non-mock environments.
 
 ## Developer Workflow

@@ -12,7 +12,7 @@ This document summarizes the security improvements implemented to address the re
 
 ### Current Status
 
-- **RLS Enabled**: All database tables have RLS enabled via migration `20251226164724_enable_rls`
+- **RLS Enabled**: All database tables have RLS enabled via `20251226164724_enable_rls`, with scoped owner policies applied in `20260131193000_apply_rls_policies`
 - **Public Access Policies**: Active policies allow public read access to:
 
   - Collections where `isPublic = true`
@@ -47,12 +47,13 @@ Three implementation paths are documented in `docs/database-security.md`:
 
 ### Current Security Model
 
-The application currently uses **application-level authorization**:
+The application currently uses a **hybrid authorization model**:
 
 - tRPC procedures check `ctx.session.user.id`
 - `protectedProcedure` enforces authentication
-- Database queries include `createdById` filters
-- RLS provides defense-in-depth backup
+- `withUserDb()` sets `app.current_user_id` transaction-locally for protected database work
+- Database queries still include `createdById` filters where appropriate
+- RLS provides active defense-in-depth, not just a future backup
 
 ## 2. Security Headers
 
@@ -175,31 +176,31 @@ The workflow will run automatically on:
 
 1. ✅ Security headers - Already active via proxy
 2. ✅ CI secret scanning - Will run on next push
-3. 🔄 Choose RLS migration path from Option 1, 2, or 3
-4. 🔄 Implement chosen RLS approach before production deployment
+3. 🔄 Pair the existing RLS implementation with least-privilege runtime/migration credentials
+4. 🔄 Verify production credentials do not unintentionally bypass RLS
 
 ### Recommended Path for Production
 
-**Option 2 (Least-Privilege Credentials)** is recommended because:
+**Option 3 (Hybrid)** is recommended because the repo already ships the transaction-scoped RLS path and benefits further from least-privilege credentials:
 
 - Simple to implement and maintain
 - Follows principle of least privilege
-- No application code changes required
-- Works with existing architecture
+- Builds on the existing `withUserDb()` + RLS policy integration
+- Works with the current architecture and migrations
 - Provides strong security posture
 
 Steps:
 
 1. Create database roles (see `docs/database-security.md`)
-2. Update `DATABASE_URL` to use application role
-3. Update deployment scripts to use migration role
-4. Test thoroughly in staging
+2. Point runtime secrets at the least-privilege application role
+3. Use a migration-capable role only for deploy/migration steps
+4. Test RLS behavior thoroughly in staging
 5. Deploy to production
 
 ### Future Enhancements
 
 1. **Stricter CSP**: Migrate to nonce-based CSP to remove `unsafe-inline`
-2. **Full RLS**: Implement Option 1 for defense-in-depth
+2. **Least-Privilege Roles**: Ensure runtime credentials do not bypass the RLS policies already present
 3. **Rate Limiting**: Add API rate limiting middleware
 4. **CORS Configuration**: Fine-tune CORS policies for API routes
 5. **Audit Logging**: Log security-sensitive operations
@@ -224,6 +225,7 @@ Steps:
 ### Existing Files Leveraged
 
 - `prisma/migrations/20251226164724_enable_rls/migration.sql` - RLS foundation
+- `prisma/migrations/20260131193000_apply_rls_policies/migration.sql` - Scoped owner policies
 
 ## Compliance & Best Practices
 
@@ -245,21 +247,17 @@ This implementation follows:
 
 ## Questions & Next Steps
 
-
 ### Q: Which RLS option should I choose?
 
-**A**: For most cases, start with **Option 2 (Least-Privilege Credentials)**. It's simpler and provides strong security. Upgrade to Option 3 (Hybrid) if you need defense-in-depth.
-
+**A**: The repository already implements the app-side work needed for **Option 3 (Hybrid)**. In practice, the remaining choice is whether to pair that with least-privilege database credentials in production.
 
 ### Q: Will security headers break my app?
 
 **A**: The CSP is configured for Next.js with Vercel Analytics. Test thoroughly in development. Adjust `script-src` if adding new third-party scripts.
 
-
 ### Q: What if Gitleaks finds secrets in history?
 
 **A**: Rotate the exposed secrets immediately, then use `git filter-branch` or BFG Repo-Cleaner to remove them from history.
-
 
 ### Q: How do I test security headers locally?
 

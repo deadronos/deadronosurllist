@@ -7,7 +7,7 @@ This document captures the current implementation state of the LinkList project 
 - Implemented a comprehensive in-memory database (`src/server/db.mock.ts`) that mirrors the Prisma client surface area used across the app.
 - Seeded the mock store with deterministic data (user `user1`, collection `col_seed`, and one example link) to provide predictable initial state for local development and tests.
 - Added helpers to reset and reuse store state across Vitest runs, enabling isolated, repeatable specs.
-- Ensured Next.js uses the mock automatically when `USE_MOCK_DB=1` thanks to module aliasing in `next.config.js`.
+- Ensured runtime database selection uses the mock automatically when `USE_MOCK_DB=1`, while `src/server/db.ts` also falls back to the mock when no supported Postgres URL is available.
 
 ## Key Decisions
 
@@ -27,8 +27,8 @@ This document captures the current implementation state of the LinkList project 
 
 1. Port additional routers (e.g., posts) or new features to leverage the mock while backend infrastructure is finalized.
 2. Expand tests to cover failure cases (authorization violations, invalid data) using the same in-memory context.
-3. When ready for a database, replace `USE_MOCK_DB` guard with real Prisma client instantiation—no API changes required for dependent code.
+3. When running against a real database, leave `USE_MOCK_DB` unset/false and provide a supported Postgres connection string; the Prisma runtime path is already wired in `src/server/db.ts`.
 4. Explore optimistic UI feedback (or lightweight toasts) for link edits/deletions so changes feel instant while mutations settle.
 5. Extend the collection manager with quality-of-life tools such as a public/private toggle per link and quick filtering for large collections.
 
-_Last updated: 2025-10-09_
+Last updated: 2025-10-09.

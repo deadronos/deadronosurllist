@@ -25,4 +25,4 @@ Essential commands and development lifecycle for this project.
 
 ---
 
-See also: [.github/instructions/spec-driven-workflow-v1.instructions.md](file:///d:/GitHub/deadronosurllist/.github/instructions/spec-driven-workflow-v1.instructions.md)
+See also: [`.github/instructions/spec-driven-workflow-v1.instructions.md`](../../.github/instructions/spec-driven-workflow-v1.instructions.md)

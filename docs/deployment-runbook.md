@@ -15,22 +15,23 @@ Configure these in your Vercel project settings under **Settings > Environment V
 
 ### Application Variables
 
-| Variable                 | Description                               | Example                       | Required |
-| ------------------------ | ----------------------------------------- | ----------------------------- | -------- |
-| `NEXT_PUBLIC_VERCEL_URL` | Public URL of the deployed app            | `https://your-app.vercel.app` | Yes      |
-| `DATABASE_URL`           | Prisma database connection (pooled)       | `postgres://...`              | Yes      |
-| `DIRECT_URL`             | Direct database connection (non-pooled)   | `postgres://...`              | Yes      |
-| `POSTGRES_PRISMA_URL`    | Prisma-specific connection for Accelerate | `postgres://...`              | Yes      |
+| Variable                 | Description                             | Example                       | Required    |
+| ------------------------ | --------------------------------------- | ----------------------------- | ----------- |
+| `NEXT_PUBLIC_VERCEL_URL` | Public URL of the deployed app          | `https://your-app.vercel.app` | Yes         |
+| `DATABASE_URL`           | Prisma database connection (pooled)     | `postgres://...`              | Yes         |
+| `DIRECT_URL`             | Direct database connection (non-pooled) | `postgres://...`              | Recommended |
+| `POSTGRES_PRISMA_URL`    | Optional provider-specific fallback URL | `postgres://...`              | Optional    |
 
 ### Environment-Specific Variables
 
 #### Production
 
 - `NODE_ENV` = `production` (set automatically by Vercel)
-- `NEXTAUTH_SECRET` - Required for session security
-- `NEXTAUTH_URL` - Should be set to `https://your-app.vercel.app`
-- `DISCORD_CLIENT_ID` - Discord OAuth application ID
-- `DISCORD_CLIENT_SECRET` - Discord OAuth application secret
+- `AUTH_SECRET` - Required for session security
+- `AUTH_DISCORD_ID` - Discord OAuth application ID
+- `AUTH_DISCORD_SECRET` - Discord OAuth application secret
+- `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` - Optional Google OAuth credentials
+- `NEXTAUTH_URL` - Optional explicit auth base URL when your platform does not auto-detect it
 
 #### Preview/Development
 
@@ -38,10 +39,10 @@ Configure these in your Vercel project settings under **Settings > Environment V
 
 ### Environment Variable Notes
 
-**Important:** This project uses `dotenvx` locally for development. In Vercel:
+**Important:** This project uses `dotenvx` in npm scripts locally and in CI. In Vercel, prefer the same package script used by the repository:
 
-- **Recommended:** Use direct `next build` (configured in `vercel.json`)
-- **Alternative:** If using `dotenvx run` in Vercel, ensure `dotenvx` is installed and `.env` is not checked in
+- **Recommended:** Use `npm run build`
+- **Note:** Vercel environment variables are injected at build/runtime, so no checked-in `.env` file is required
 
 ## GitHub Actions Secrets
 
@@ -76,7 +77,7 @@ The deployment workflows require these repository secrets to be configured:
 
 4. **Build Settings:**
    - Framework Preset: `Next.js`
-   - Build Command: `next build` (handled by `vercel.json`)
+   - Build Command: `npm run build`
    - Output Directory: `.next`
    - Install Command: `npm install`
 

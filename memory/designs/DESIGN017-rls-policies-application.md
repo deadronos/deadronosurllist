@@ -2,7 +2,7 @@
 
 ## Context
 
-RLS is enabled via migration (`enable_rls`) and reference policies are documented in `docs/rls-policies.sql`, including per-user policies requiring `SET LOCAL app.current_user_id`.
+RLS is enabled via migration (`enable_rls`) and reference policies are documented in `docs/rls-policies.sql`, including per-user policies that rely on transaction-local `app.current_user_id` set via `set_config(...)`.
 
 ## Requirements (EARS)
 
@@ -20,7 +20,7 @@ RLS is enabled via migration (`enable_rls`) and reference policies are documente
 ### Phase B (App)
 
 - Introduce a single helper used by all protected operations to run DB work in a transaction which sets:
-  - `SET LOCAL app.current_user_id = <session.user.id>`
+  - `SELECT set_config('app.current_user_id', <session.user.id>, true)`
 - Prefer “one place” integration:
   - either a `ctx.dbWithUser(session.user.id)` wrapper
   - or a tRPC middleware for `protectedProcedure` which provides a scoped DB client
