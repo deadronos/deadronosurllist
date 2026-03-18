@@ -52,8 +52,12 @@ const isCollectionSummary = createTypeGuard<CollectionSummary>([
  */
 export default async function DashboardPage() {
   const session = await auth();
+  const userId =
+    typeof session?.user?.id === "string" ? session.user.id.trim() : "";
 
-  if (!session?.user) {
+  if (!session?.user || !userId) {
+    const needsSessionRefresh = Boolean(session?.user);
+
     return (
       <div className="min-h-[calc(100vh-3.5rem)]">
         <StudioShell>
@@ -61,20 +65,30 @@ export default async function DashboardPage() {
             <Card className="bg-background/55 border backdrop-blur">
               <CardHeader>
                 <CardTitle className="text-2xl">
-                  Your collections await.
+                  {needsSessionRefresh
+                    ? "Refresh your session."
+                    : "Your collections await."}
                 </CardTitle>
                 <CardDescription>
-                  Sign in to curate links, manage private collections, and share
-                  resources when you are ready.
+                  {needsSessionRefresh
+                    ? "We couldn't verify the account details needed to load your dashboard. Sign out and back in to continue managing your collections."
+                    : "Sign in to curate links, manage private collections, and share resources when you are ready."}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button asChild size="lg" className="w-full">
-                  <Link href="/api/auth/signin">Sign in</Link>
+                  <Link
+                    href={
+                      needsSessionRefresh ? "/api/auth/signout" : "/api/auth/signin"
+                    }
+                  >
+                    {needsSessionRefresh ? "Sign out" : "Sign in"}
+                  </Link>
                 </Button>
                 <div className="text-muted-foreground text-sm">
-                  Authentication keeps your collections private until you make
-                  them public.
+                  {needsSessionRefresh
+                    ? "Signing in again restores the account identifier the dashboard uses for secure collection access."
+                    : "Authentication keeps your collections private until you make them public."}
                 </div>
               </CardContent>
             </Card>

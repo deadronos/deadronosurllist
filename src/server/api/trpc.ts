@@ -133,13 +133,23 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
 export const protectedProcedure = t.procedure
   .use(timingMiddleware)
   .use(({ ctx, next }) => {
-    if (!ctx.session?.user) {
+    const userId =
+      typeof ctx.session?.user?.id === "string" ? ctx.session.user.id.trim() : "";
+
+    if (!ctx.session?.user || !userId) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
+
     return next({
       ctx: {
-        // infers the `session` as non-nullable
-        session: { ...ctx.session, user: ctx.session.user },
+        ...ctx,
+        session: {
+          ...ctx.session,
+          user: {
+            ...ctx.session.user,
+            id: userId,
+          },
+        },
       },
     });
   })
