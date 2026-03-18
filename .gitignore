@@ -7,6 +7,11 @@
 
 # testing
 /coverage
+/playwright-report/
+/test-results/
+
+# local logs
+/dev_output.log
 
 # database
 /prisma/db.sqlite
