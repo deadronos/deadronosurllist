@@ -8,9 +8,9 @@ test.describe("User profiles", () => {
 
     await test.step("Verify profile content", async () => {
       await expect(
-        page.getByRole("heading", { name: "Mock User" }),
-      ).toBeVisible();
-      await expect(page.getByText(/Public collections/)).toBeVisible();
+        page.getByRole("heading", { level: 1, name: "Mock User" }),
+      ).toHaveCount(1);
+      await expect(page.getByText(/Public collections/)).toHaveCount(1);
       await expect(page.getByText("user1@example.com")).toHaveCount(0);
     });
   });

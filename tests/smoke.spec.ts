@@ -16,7 +16,7 @@ test.describe("Smoke Tests", () => {
   });
 
   test("sign-in page renders", async ({ page }) => {
-    await page.goto("/api/auth/signin");
+    await page.goto("/signin");
 
     await expect(page.locator("body")).toBeVisible();
     await expect(

@@ -118,8 +118,8 @@ export default async function AuthErrorPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  const resolvedParams = await searchParams;
-  const copy = resolveErrorCopy(resolvedParams?.error);
+  const { error } = await searchParams;
+  const copy = resolveErrorCopy(error);
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)]">
