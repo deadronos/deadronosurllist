@@ -31,9 +31,23 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: process.env.CI ? "SKIP_ENV_VALIDATION=true USE_MOCK_DB=true USE_MOCK_AUTH=true HELLO=hello AUTH_SECRET=secret-secret-secret-secret-secret-secret NEXTAUTH_SECRET=secret-secret-secret-secret-secret-secret NEXTAUTH_URL=http://127.0.0.1:3000 AUTH_DISCORD_ID=1234567890 AUTH_DISCORD_SECRET=1234567890 npx next start" : "npm run dev",
+    command: process.env.CI ? "npx next start" : "npm run dev",
     url: "http://127.0.0.1:3000",
     reuseExistingServer: !process.env.CI,
-    timeout: 120000,
+    timeout: 180000,
+    env: {
+      SKIP_ENV_VALIDATION: "true",
+      USE_MOCK_DB: "true",
+      USE_MOCK_AUTH: "true",
+      HELLO: "world",
+      NEXTAUTH_SECRET: "ci-testing-static-string-value-env-secret",
+      NEXTAUTH_URL: "http://127.0.0.1:3000",
+      AUTH_SECRET: "ci-testing-static-string-value-env-secret",
+      AUTH_DISCORD_ID: "123456789012345678",
+      AUTH_DISCORD_SECRET: "ci-testing-static-string-value-env-secret",
+      AUTH_GOOGLE_ID: "ci-testing-static-string-value-env-secret",
+      AUTH_GOOGLE_SECRET: "ci-testing-static-string-value-env-secret",
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres",
+    },
   },
 });

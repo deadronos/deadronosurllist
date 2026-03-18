@@ -18,9 +18,12 @@ test.describe("Smoke Tests", () => {
   test("sign-in page renders", async ({ page }) => {
     await page.goto("/signin");
 
-    await expect(page).toHaveTitle(/Sign in/i);
-
     await expect(page.locator("body")).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: /sign in to start publishing collections/i,
+      }),
+    ).toBeVisible();
   });
 
   test("health endpoint returns 200", async ({ request }) => {

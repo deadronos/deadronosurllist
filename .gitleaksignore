@@ -1,0 +1,14 @@
+3cdbae68dc48b81419d526f5f85e336818370de4:.github/workflows/ci.yml:generic-api-key:72
+3cdbae68dc48b81419d526f5f85e336818370de4:.github/workflows/ci.yml:generic-api-key:74
+3cdbae68dc48b81419d526f5f85e336818370de4:.github/workflows/ci.yml:discord-client-id:76
+3cdbae68dc48b81419d526f5f85e336818370de4:.github/workflows/ci.yml:generic-api-key:87
+3cdbae68dc48b81419d526f5f85e336818370de4:.github/workflows/ci.yml:discord-client-id:91
+3cdbae68dc48b81419d526f5f85e336818370de4:.github/workflows/ci.yml:generic-api-key:89
+6c04c03860b8e2aafd28c94263e38626e27e9211:.github/workflows/ci.yml:discord-client-id:61
+9bdeea2210c812cb89fcf905048641a3f230896a:.github/workflows/ci.yml:discord-client-id:61
+5c44844b1b902df8889ceec88e543c594ffd8f2b:.github/workflows/ci.yml:discord-client-id:61
+# Previous dummy secrets
+static-string-for-ci-testing-purposes
+ci-testing-static-string-value-env-secret
+# Previous discord id
+123456789012345678
