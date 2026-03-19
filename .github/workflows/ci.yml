@@ -97,6 +97,10 @@ jobs:
 
       - name: Run Playwright tests
         run: npx playwright test
+        env:
+          # Force diagnostic mode for the auth-flow spec by overriding IDs to placeholders
+          AUTH_DISCORD_ID: "placeholder"
+          AUTH_GOOGLE_ID: "placeholder"
 
       - name: Upload Playwright report
         if: always()
