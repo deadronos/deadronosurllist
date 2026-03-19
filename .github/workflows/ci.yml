@@ -80,6 +80,9 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: Create dummy .env
+        run: touch .env
+
       - name: Build application
         run: npm run build
 
