@@ -1,0 +1,89 @@
+<<<<<<< SEARCH
+export type AuthEnvShape = {
+  NODE_ENV: string;
+  USE_MOCK_AUTH?: string;
+  AUTH_DISCORD_ID?: string;
+=======
+export type AuthEnvShape = {
+  NODE_ENV: string;
+  USE_MOCK_AUTH?: string;
+  SKIP_ENV_VALIDATION?: string;
+  AUTH_DISCORD_ID?: string;
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+  const isProduction = env.NODE_ENV === "production";
+  const isMockAuth = env.USE_MOCK_AUTH?.toLowerCase() === "true";
+
+  descriptors.forEach((descriptor) => {
+    const { provider, status } = resolveProvider(
+      env,
+      descriptor,
+      isProduction,
+      isMockAuth,
+    );
+=======
+  const isProduction = env.NODE_ENV === "production";
+  const isMockAuth = env.USE_MOCK_AUTH?.toLowerCase() === "true";
+  const skipEnvValidation = env.SKIP_ENV_VALIDATION?.toLowerCase() === "true";
+
+  descriptors.forEach((descriptor) => {
+    const { provider, status } = resolveProvider(
+      env,
+      descriptor,
+      isProduction,
+      isMockAuth,
+      skipEnvValidation,
+    );
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+const resolveProvider = (
+  env: AuthEnvShape,
+  descriptor: AuthProviderDescriptor,
+  isProduction: boolean,
+  isMockAuth: boolean,
+): { provider?: Provider; status: ProviderStatus } => {
+=======
+const resolveProvider = (
+  env: AuthEnvShape,
+  descriptor: AuthProviderDescriptor,
+  isProduction: boolean,
+  isMockAuth: boolean,
+  skipEnvValidation: boolean,
+): { provider?: Provider; status: ProviderStatus } => {
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+      if (isProduction && !isMockAuth && !descriptor.optional) {
+        throw new Error(
+          `[auth] ${descriptor.label} provider misconfigured: ${reason}. Supply valid credentials before deploying.`,
+        );
+      }
+=======
+      if (
+        isProduction &&
+        !isMockAuth &&
+        !skipEnvValidation &&
+        !descriptor.optional
+      ) {
+        throw new Error(
+          `[auth] ${descriptor.label} provider misconfigured: ${reason}. Supply valid credentials before deploying.`,
+        );
+      }
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+      if (isProduction && !isMockAuth && !descriptor.optional) {
+        throw new Error(
+          `[auth] ${descriptor.label} provider failed to initialize: ${reason}`,
+        );
+      }
+=======
+      if (
+        isProduction &&
+        !isMockAuth &&
+        !skipEnvValidation &&
+        !descriptor.optional
+      ) {
+        throw new Error(
+          `[auth] ${descriptor.label} provider failed to initialize: ${reason}`,
+        );
+      }
+>>>>>>> REPLACE
