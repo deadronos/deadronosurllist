@@ -80,7 +80,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Create non-placeholder .env
+      - name: Create non-placeholder .env for build
         run: |
           echo "AUTH_DISCORD_ID=111111111111111111" >> .env
           echo "AUTH_DISCORD_SECRET=111111111111111111" >> .env
@@ -91,6 +91,7 @@ jobs:
           echo "AUTH_SECRET=111111111111111111" >> .env
           echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres" >> .env
           echo "HELLO=world" >> .env
+          echo "USE_MOCK_AUTH=true" >> .env
 
       - name: Build application
         run: npm run build
