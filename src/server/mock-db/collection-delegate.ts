@@ -3,7 +3,11 @@ import { randomId } from "./ids";
 import { getStore } from "./store";
 import { ensureUser } from "./users";
 import { matchesCollectionWhere } from "./filters";
-import { sortByDate } from "./sort";
+import {
+  sortByDate,
+  compareCollections,
+  type CollectionSortCriterion,
+} from "./sort";
 import { toCollectionResult } from "./mappers";
 
 const touchCollection = (collectionId: string) => {
@@ -60,43 +64,9 @@ export const collectionDelegate = {
 
     // Sort
     if (Array.isArray(orderBy)) {
-      items.sort((a, b) => {
-        for (const sort of orderBy) {
-          // Handle each sort criterion - check for nested properties first
-          if (sort.links && sort.links._count) {
-            const diff =
-              (a.linkIds.length - b.linkIds.length) *
-              (sort.links._count === "desc" ? -1 : 1);
-            if (diff !== 0) return diff;
-          }
-          // Then handle top-level properties
-          if (sort.updatedAt) {
-            const dateA = a.updatedAt.getTime();
-            const dateB = b.updatedAt.getTime();
-            const diff =
-              (dateA - dateB) * (sort.updatedAt === "desc" ? -1 : 1);
-            if (diff !== 0) return diff;
-          }
-          if (sort.createdAt) {
-            const dateA = a.createdAt.getTime();
-            const dateB = b.createdAt.getTime();
-            const diff =
-              (dateA - dateB) * (sort.createdAt === "desc" ? -1 : 1);
-            if (diff !== 0) return diff;
-          }
-          if (sort.name) {
-            const diff =
-              a.name.localeCompare(b.name) * (sort.name === "desc" ? -1 : 1);
-            if (diff !== 0) return diff;
-          }
-          if (sort.id) {
-            const diff =
-              a.id.localeCompare(b.id) * (sort.id === "desc" ? -1 : 1);
-            if (diff !== 0) return diff;
-          }
-        }
-        return 0;
-      });
+      items.sort((a, b) =>
+        compareCollections(a, b, orderBy as CollectionSortCriterion[]),
+      );
     } else if (orderBy && "order" in orderBy && orderBy.order) {
       const direction = orderBy.order === "desc" ? -1 : 1;
       items.sort((a, b) => (a.order - b.order) * direction);
@@ -157,7 +127,8 @@ export const collectionDelegate = {
       createdById,
       createdAt: now,
       updatedAt: now,
-      order: typeof data.order === "number" ? data.order : store.collections.size,
+      order:
+        typeof data.order === "number" ? data.order : store.collections.size,
       linkIds: [],
     };
     store.collections.set(record.id, record);
@@ -225,7 +196,10 @@ export const collectionDelegate = {
     return count;
   },
 
-  delete: async (args: { where: { id: string }; include?: CollectionInclude }) => {
+  delete: async (args: {
+    where: { id: string };
+    include?: CollectionInclude;
+  }) => {
     const store = getStore();
     const { id } = args.where;
     const record = store.collections.get(id);
