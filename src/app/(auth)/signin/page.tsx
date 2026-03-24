@@ -19,6 +19,8 @@ import type { AuthDiagnostics } from "@/server/auth/provider-helpers";
 
 import { SignInButtons } from "./sign-in-buttons";
 
+export const dynamic = "force-dynamic";
+
 export default function SignInPage() {
   const {
     enabledProviders,

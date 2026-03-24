@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Mock } from "vitest";
 
 import type * as ServerDbModule from "@/server/db";
+import { runTransaction } from "@/server/mock-db/transactions";
 
 type QueryRawImplementation = (
   strings: TemplateStringsArray,
@@ -129,5 +130,82 @@ describe("withUserDb", () => {
     expect(sql).toContain("SELECT set_config('app.current_user_id', ");
     expect(sql).toContain(", true)");
     expect(boundUserId).toBe("user-123");
+  });
+
+  it("preserves transaction operation order through the scoped db helper", async () => {
+    const tx = createMockTransactionClient();
+    const prismaClient = {
+      $transaction: vi.fn(async (callback: (client: MockTransactionClient) => Promise<unknown>) =>
+        callback(tx),
+      ),
+    };
+
+    class MockPrismaClient {
+      constructor(_options: unknown) {
+        return prismaClient;
+      }
+    }
+
+    class MockPrismaPg {
+      constructor(_options: unknown) {
+        return { adapter: "pg" };
+      }
+    }
+
+    vi.doMock("@prisma/client", () => ({
+      PrismaClient: MockPrismaClient,
+    }));
+    vi.doMock("@prisma/adapter-pg", () => ({
+      PrismaPg: MockPrismaPg,
+    }));
+
+    process.env.USE_MOCK_DB = "false";
+    process.env.DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/app";
+
+    const { withUserDb } = await vi.importActual<typeof ServerDbModule>(
+      "@/server/db",
+    );
+
+    const steps: string[] = [];
+
+    const result = await withUserDb("user-123", async (scopedDb) =>
+      scopedDb.$transaction([
+        async () => {
+          steps.push("first-start");
+          await Promise.resolve();
+          steps.push("first-end");
+          return "first";
+        },
+        async () => {
+          steps.push("second-start");
+          return "second";
+        },
+      ]),
+    );
+
+    expect(result).toEqual(["first", "second"]);
+    expect(steps).toEqual(["first-start", "first-end", "second-start"]);
+  });
+});
+
+describe("runTransaction", () => {
+  it("executes operations sequentially", async () => {
+    const steps: string[] = [];
+
+    const result = await runTransaction([
+      async () => {
+        steps.push("first-start");
+        await Promise.resolve();
+        steps.push("first-end");
+        return "first";
+      },
+      async () => {
+        steps.push("second-start");
+        return "second";
+      },
+    ]);
+
+    expect(result).toEqual(["first", "second"]);
+    expect(steps).toEqual(["first-start", "first-end", "second-start"]);
   });
 });
