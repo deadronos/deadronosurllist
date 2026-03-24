@@ -58,14 +58,14 @@ jobs:
       SKIP_ENV_VALIDATION: true
       PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:3000
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
-      NEXTAUTH_SECRET: 111111111111111111 # gitleaks:allow
+      NEXTAUTH_SECRET: "placeholder" # gitleaks:allow
       NEXTAUTH_URL: http://localhost:3000
-      AUTH_SECRET: 111111111111111111 # gitleaks:allow
+      AUTH_SECRET: "placeholder" # gitleaks:allow
       HELLO: world
-      AUTH_DISCORD_ID: "111111111111111111" # gitleaks:allow
-      AUTH_DISCORD_SECRET: 111111111111111111 # gitleaks:allow
-      AUTH_GOOGLE_ID: 111111111111111111 # gitleaks:allow
-      AUTH_GOOGLE_SECRET: 111111111111111111 # gitleaks:allow
+      AUTH_DISCORD_ID: "placeholder" # gitleaks:allow
+      AUTH_DISCORD_SECRET: "placeholder" # gitleaks:allow
+      AUTH_GOOGLE_ID: "placeholder" # gitleaks:allow
+      AUTH_GOOGLE_SECRET: "placeholder" # gitleaks:allow
     steps:
       - uses: actions/checkout@v4
 
@@ -80,15 +80,15 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Create non-placeholder .env
+      - name: Create placeholder .env
         run: |
-          echo "AUTH_DISCORD_ID=111111111111111111" >> .env
-          echo "AUTH_DISCORD_SECRET=111111111111111111" >> .env
-          echo "AUTH_GOOGLE_ID=111111111111111111" >> .env
-          echo "AUTH_GOOGLE_SECRET=111111111111111111" >> .env
-          echo "NEXTAUTH_SECRET=111111111111111111" >> .env
+          echo "AUTH_DISCORD_ID=placeholder" >> .env
+          echo "AUTH_DISCORD_SECRET=placeholder" >> .env
+          echo "AUTH_GOOGLE_ID=placeholder" >> .env
+          echo "AUTH_GOOGLE_SECRET=placeholder" >> .env
+          echo "NEXTAUTH_SECRET=placeholder" >> .env
           echo "NEXTAUTH_URL=http://localhost:3000" >> .env
-          echo "AUTH_SECRET=111111111111111111" >> .env
+          echo "AUTH_SECRET=placeholder" >> .env
           echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres" >> .env
           echo "HELLO=world" >> .env
 
@@ -97,10 +97,6 @@ jobs:
 
       - name: Run Playwright tests
         run: npx playwright test
-        env:
-          # Force diagnostic mode for the auth-flow spec by overriding IDs to placeholders
-          AUTH_DISCORD_ID: "placeholder"
-          AUTH_GOOGLE_ID: "placeholder"
 
       - name: Upload Playwright report
         if: always()
