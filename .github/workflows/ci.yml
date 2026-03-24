@@ -82,15 +82,15 @@ jobs:
 
       - name: Create non-placeholder .env
         run: |
-          echo 'AUTH_DISCORD_ID="111111111111111111"' >> .env
-          echo 'AUTH_DISCORD_SECRET="111111111111111111"' >> .env
-          echo 'AUTH_GOOGLE_ID="111111111111111111"' >> .env
-          echo 'AUTH_GOOGLE_SECRET="111111111111111111"' >> .env
-          echo 'NEXTAUTH_SECRET="111111111111111111"' >> .env
-          echo 'NEXTAUTH_URL="http://localhost:3000"' >> .env
-          echo 'AUTH_SECRET="111111111111111111"' >> .env
-          echo 'DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"' >> .env
-          echo 'HELLO="world"' >> .env
+          echo "AUTH_DISCORD_ID=111111111111111111" >> .env
+          echo "AUTH_DISCORD_SECRET=111111111111111111" >> .env
+          echo "AUTH_GOOGLE_ID=111111111111111111" >> .env
+          echo "AUTH_GOOGLE_SECRET=111111111111111111" >> .env
+          echo "NEXTAUTH_SECRET=111111111111111111" >> .env
+          echo "NEXTAUTH_URL=http://localhost:3000" >> .env
+          echo "AUTH_SECRET=111111111111111111" >> .env
+          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres" >> .env
+          echo "HELLO=world" >> .env
 
       - name: Build application
         run: npm run build
