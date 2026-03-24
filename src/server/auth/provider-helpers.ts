@@ -1,4 +1,5 @@
 import type { Provider } from "next-auth/providers/index";
+import { PLACEHOLDER_TOKENS } from "./constants";
 
 export type AuthEnvShape = {
   NODE_ENV: string;
@@ -42,20 +43,6 @@ export type AuthProviderBuildResult = {
   providers: Provider[];
   diagnostics: AuthDiagnostics;
 };
-
-const PLACEHOLDER_TOKENS = [
-  "mock",
-  "test",
-  "fake",
-  "placeholder",
-  "changeme",
-  "todo",
-  "sample",
-  "example",
-  "xxxx",
-  "abcd",
-  "your",
-];
 
 const isLikelyPlaceholder = (value?: string) => {
   if (!value) return true;
