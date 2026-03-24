@@ -67,7 +67,9 @@ const isLikelyPlaceholder = (value?: string) => {
   }
 
   // Very short values are rarely valid client IDs/secrets for OAuth providers.
-  if (trimmed.length < 10) {
+  // Numeric strings are allowed as they can appear as scientific notation in some environments.
+  const isNumeric = /^-?\d+(\.\d+)?(E[+-]?\d+)?$/i.test(trimmed);
+  if (!isNumeric && trimmed.length < 10) {
     return true;
   }
 
