@@ -67,9 +67,10 @@ const isLikelyPlaceholder = (value?: string) => {
   }
 
   // Very short values are rarely valid client IDs/secrets for OAuth providers.
-  // Numeric strings are allowed as they can appear as scientific notation in some environments.
-  const isNumeric = /^-?\d+(\.\d+)?(E[+-]?\d+)?$/i.test(trimmed);
-  if (!isNumeric && trimmed.length < 10) {
+  // We explicitly allow values that look like scientific notation because unquoted
+  // large numbers in YAML (like GitHub Actions workflows) are often parsed this way.
+  const isScientificNotation = /^-?\d+(\.\d+)E[+-]?\d+$/i.test(trimmed);
+  if (trimmed.length < 10 && !isScientificNotation) {
     return true;
   }
 
