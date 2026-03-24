@@ -1,7 +1,11 @@
 export async function runTransaction(
   operations: Array<(() => Promise<unknown>) | Promise<unknown>>,
 ) {
-  return Promise.all(
-    operations.map((op) => (typeof op === "function" ? op() : op)),
-  );
+  const results: unknown[] = [];
+
+  for (const op of operations) {
+    results.push(await (typeof op === "function" ? op() : op));
+  }
+
+  return results;
 }
