@@ -105,11 +105,11 @@ const createTransactionDatabase = (
   client: Prisma.TransactionClient,
 ): LinkListDatabase => ({
   $transaction: async (operations) => {
-    const results: unknown[] = [];
-    for (const operation of operations) {
-      results.push(await (typeof operation === "function" ? operation() : operation));
-    }
-    return results;
+    return Promise.all(
+      operations.map((operation) =>
+        typeof operation === "function" ? operation() : operation,
+      ),
+    );
   },
   ...createDelegates(client),
 });
