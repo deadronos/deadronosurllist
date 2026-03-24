@@ -51,6 +51,11 @@ export const withUserDb = async <T>(
 };
 ```
 
+**Important:** keep the work inside `withUserDb()` and the database helpers
+sequential. The transaction client is shared across the entire callback, so
+running multiple operations with `Promise.all()` can change execution order and
+break reorder-style mutations that depend on deterministic writes.
+
 1. **Protected procedures already wrap database operations with that helper:**
 
 ```typescript
