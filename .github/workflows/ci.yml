@@ -56,10 +56,10 @@ jobs:
       USE_MOCK_DB: true
       USE_MOCK_AUTH: true
       SKIP_ENV_VALIDATION: true
-      PLAYWRIGHT_TEST_BASE_URL: http://localhost:3000
+      PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:3000
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
       NEXTAUTH_SECRET: 111111111111111111 # gitleaks:allow
-      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_URL: http://127.0.0.1:3000
       AUTH_SECRET: 111111111111111111 # gitleaks:allow
       HELLO: world
       AUTH_DISCORD_ID: "111111111111111111" # gitleaks:allow
@@ -87,7 +87,7 @@ jobs:
           echo "AUTH_GOOGLE_ID=111111111111111111" >> .env
           echo "AUTH_GOOGLE_SECRET=111111111111111111" >> .env
           echo "NEXTAUTH_SECRET=111111111111111111" >> .env
-          echo "NEXTAUTH_URL=http://localhost:3000" >> .env
+          echo "NEXTAUTH_URL=http://127.0.0.1:3000" >> .env
           echo "AUTH_SECRET=111111111111111111" >> .env
           echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres" >> .env
           echo "HELLO=world" >> .env

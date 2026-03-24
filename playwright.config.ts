@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000",
+    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || "http://127.0.0.1:3000",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
@@ -32,7 +32,7 @@ export default defineConfig({
 
   webServer: {
     command: process.env.CI ? "npx next start" : "npm run preview",
-    url: "http://localhost:3000",
+    url: "http://127.0.0.1:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 180000,
     env: {
@@ -41,7 +41,7 @@ export default defineConfig({
       USE_MOCK_AUTH: "true",
       HELLO: "world",
       NEXTAUTH_SECRET: "ci-testing-static-string-value-env-secret",
-      NEXTAUTH_URL: "http://localhost:3000",
+      NEXTAUTH_URL: "http://127.0.0.1:3000",
       AUTH_SECRET: "ci-testing-static-string-value-env-secret",
       AUTH_DISCORD_ID: "123456789012345678",
       AUTH_DISCORD_SECRET: "ci-testing-static-string-value-env-secret",
