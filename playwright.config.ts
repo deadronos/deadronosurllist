@@ -43,7 +43,7 @@ export default defineConfig({
       NEXTAUTH_SECRET: "ci-auth-static-credential-value",
       NEXTAUTH_URL: "http://localhost:3000",
       AUTH_SECRET: "ci-auth-static-credential-value",
-      AUTH_DISCORD_ID: "ci-auth-static-credential-value",
+      AUTH_DISCORD_ID: "123456789012345678",
       AUTH_DISCORD_SECRET: "ci-auth-static-credential-value",
       AUTH_GOOGLE_ID: "ci-auth-static-credential-value",
       AUTH_GOOGLE_SECRET: "ci-auth-static-credential-value",
