@@ -106,13 +106,9 @@ const createTransactionDatabase = (
 ): LinkListDatabase => ({
   $transaction: async (operations) => {
     const results: unknown[] = [];
-
     for (const operation of operations) {
-      results.push(
-        await (typeof operation === "function" ? operation() : operation),
-      );
+      results.push(await (typeof operation === "function" ? operation() : operation));
     }
-
     return results;
   },
   ...createDelegates(client),

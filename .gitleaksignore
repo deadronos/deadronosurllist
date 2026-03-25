@@ -12,3 +12,5 @@ static-string-for-ci-testing-purposes
 ci-testing-static-string-value-env-secret
 # Previous discord id
 123456789012345678
+# Current dummy secrets for CI
+ci-test-auth-credential-value
