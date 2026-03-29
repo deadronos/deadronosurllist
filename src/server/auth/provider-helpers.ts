@@ -53,6 +53,12 @@ const isLikelyPlaceholder = (value?: string) => {
     return true;
   }
 
+  // Large numeric strings (>= 10 digits) or scientific notation (common in unquoted YAML)
+  // are permitted regardless of the keyword check.
+  if (/^\d{10,}$/.test(trimmed) || /^\d+\.\d+E\+\d+$/.test(trimmed)) {
+    return false;
+  }
+
   // Very short values are rarely valid client IDs/secrets for OAuth providers.
   if (trimmed.length < 10) {
     return true;
