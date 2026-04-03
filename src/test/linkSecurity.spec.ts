@@ -1,32 +1,15 @@
+import { createTestCaller, createSession, type AppCaller } from "./setup-trpc";
 import { beforeEach, describe, it, expect } from "vitest";
 
-import { createCaller } from "@/server/api/root";
-import { db } from "@/server/db";
-import type { Session } from "next-auth";
 
-type AppCaller = ReturnType<typeof createCaller>;
 
 let caller: AppCaller;
 let collectionId: string;
 
-const createSession = (userId: string): Session => ({
-  user: {
-    id: userId,
-    name: `Test ${userId}`,
-    email: null,
-    image: null,
-  },
-  expires: new Date(Date.now() + 60_000).toISOString(),
-});
 
 beforeEach(async () => {
   // Create context with mock session
-  const context = {
-    db,
-    session: createSession("security-test-user"),
-    headers: new Headers(),
-  };
-  caller = createCaller(context);
+  caller = createTestCaller({ session: createSession("security-test-user") });
 
   // Create a fresh collection for this test suite
   const collection = await caller.collection.create({

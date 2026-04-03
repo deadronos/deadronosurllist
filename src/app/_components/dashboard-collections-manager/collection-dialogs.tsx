@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,6 +9,8 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { DialogActions } from "@/components/ui/dialog-actions";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 
 import type { DashboardCollectionModel } from "./types";
 
@@ -29,12 +30,6 @@ type DeleteCollectionDialogProps = {
   isDeleting: boolean;
 };
 
-/**
- * Dialog for editing a collection's details.
- *
- * @param {EditCollectionDialogProps} props - Component properties.
- * @returns {JSX.Element} The dialog component.
- */
 export function EditCollectionDialog({
   open,
   onOpenChange,
@@ -76,19 +71,10 @@ export function EditCollectionDialog({
             aria-label="Collection description"
           />
 
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save changes"}
-            </Button>
-          </div>
+          <DialogActions
+            isSubmitting={isSubmitting}
+            onCancel={() => onOpenChange(false)}
+          />
         </form>
       </DialogContent>
     </Dialog>
@@ -103,39 +89,17 @@ export function DeleteCollectionDialog({
   isDeleting,
 }: DeleteCollectionDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Delete collection</DialogTitle>
-          <DialogDescription>
-            This action cannot be undone. All links in this collection will be
-            removed.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="text-sm">
-          Are you sure you want to delete <strong>{collection?.name}</strong>?
-        </div>
-
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => onOpenChange(false)}
-            disabled={isDeleting}
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={onConfirm}
-            disabled={isDeleting}
-          >
-            {isDeleting ? "Deleting..." : "Delete"}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <ConfirmDeleteDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Delete collection"
+      description="This action cannot be undone. All links in this collection will be removed."
+      onConfirm={onConfirm}
+      isDeleting={isDeleting}
+    >
+      <div className="text-sm">
+        Are you sure you want to delete <strong>{collection?.name}</strong>?
+      </div>
+    </ConfirmDeleteDialog>
   );
 }

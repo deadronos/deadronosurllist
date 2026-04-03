@@ -1,12 +1,9 @@
+import { createTestCaller, createSession, type AppCaller } from "./setup-trpc";
+import { createCaller } from "@/server/api/root";
 import { beforeEach, describe, it, expect } from "vitest";
 
-import { createCaller } from "@/server/api/root";
 import { createTRPCContext } from "@/server/api/trpc";
-import { db } from "@/server/db";
-import type { LinkListDatabase } from "@/server/db.types";
-import type { Session } from "next-auth";
 
-type AppCaller = ReturnType<typeof createCaller>;
 
 type LinkResult = {
   id: string;
@@ -22,32 +19,8 @@ type CountResult = {
 
 let caller: AppCaller;
 
-type TestContext = {
-  db: LinkListDatabase;
-  session: Session | null;
-  headers: Headers;
-};
 
-const createSession = (userId: string): Session => ({
-  user: {
-    id: userId,
-    name: `Test ${userId}`,
-    email: null,
-    image: null,
-  },
-  expires: new Date(Date.now() + 60_000).toISOString(),
-});
 
-const createTestCaller = (overrides?: Partial<TestContext>): AppCaller => {
-  const context: TestContext = {
-    db,
-    session: createSession("user1"),
-    headers: new Headers(),
-    ...overrides,
-  };
-
-  return createCaller(context);
-};
 
 beforeEach(async () => {
   const context = await createTRPCContext({ headers: new Headers() });

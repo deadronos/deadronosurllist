@@ -1,22 +1,16 @@
 "use client";
 
 import { type CSSProperties } from "react";
-import {
-  ExternalLinkIcon,
-  GripVerticalIcon,
-  PencilIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { ExternalLinkIcon, PencilIcon, Trash2Icon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-import { cn } from "@/lib/utils";
+import { SortableItemCard } from "./sortable-item-card";
 import type { CollectionLinkModel } from "./collection-links-manager/types";
 
 export interface SortableLinkItemViewProps {
@@ -41,58 +35,34 @@ export function SortableLinkItemView({
   dragProps,
 }: SortableLinkItemViewProps) {
   return (
-    <Card
-      ref={setNodeRef}
+    <SortableItemCard
+      isDragging={isDragging}
+      dragDisabled={dragDisabled}
+      dragDisabledTooltip="Reordering disabled while filtering"
+      dragEnabledTooltip="Drag to reorder"
+      setNodeRef={setNodeRef}
       style={style}
-      className={cn(
-        "bg-background/45 border backdrop-blur",
-        isDragging ? "ring-ring/30 ring-2" : null,
-      )}
+      dragProps={dragProps}
     >
-      <div className="flex items-center justify-between gap-3 px-6">
-        <div className="flex min-w-0 items-center gap-3">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                className={cn(
-                  "bg-background/40 text-muted-foreground hover:text-foreground inline-flex size-9 items-center justify-center rounded-lg border",
-                  dragDisabled
-                    ? "cursor-not-allowed opacity-60"
-                    : "cursor-grab",
-                )}
-                {...dragProps}
-                aria-label="Drag to reorder"
-              >
-                <GripVerticalIcon className="size-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent>
-              {dragDisabled
-                ? "Reordering disabled while filtering"
-                : "Drag to reorder"}
-            </TooltipContent>
-          </Tooltip>
-
-          <div className="min-w-0">
-            <a
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 truncate text-sm font-medium hover:underline"
-            >
-              <span className="truncate">{link.name}</span>
-              <ExternalLinkIcon className="text-muted-foreground size-3" />
-            </a>
-            {link.comment ? (
-              <div className="text-muted-foreground mt-1 truncate text-sm">
-                {link.comment}
-              </div>
-            ) : null}
-          </div>
+      <div className="flex items-center justify-between gap-3 w-full">
+        <div className="min-w-0">
+          <a
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 truncate text-sm font-medium hover:underline max-w-full"
+          >
+            <span className="truncate">{link.name}</span>
+            <ExternalLinkIcon className="text-muted-foreground size-3 shrink-0" />
+          </a>
+          {link.comment ? (
+            <div className="text-muted-foreground mt-1 truncate text-sm">
+              {link.comment}
+            </div>
+          ) : null}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -125,6 +95,6 @@ export function SortableLinkItemView({
           </Tooltip>
         </div>
       </div>
-    </Card>
+    </SortableItemCard>
   );
 }

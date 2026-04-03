@@ -48,6 +48,29 @@ export function useOptimisticList<T extends { id: string }>(
     }),
   );
 
+  const executeOptimisticMutation = useCallback(
+    (
+      rollbackItems: T[],
+      mutationFn: (callbacks: OperationCallbacks) => void,
+      successMessage: string,
+      errorMessage: string,
+      externalCallbacks: OperationCallbacks = {},
+    ) => {
+      mutationFn({
+        onSuccess: () => {
+          setFeedback({ type: "success", message: successMessage });
+          externalCallbacks.onSuccess?.();
+        },
+        onError: () => {
+          setItems(rollbackItems);
+          setFeedback({ type: "error", message: errorMessage });
+          externalCallbacks.onError?.();
+        },
+      });
+    },
+    [],
+  );
+
   const handleDragEnd = useCallback(
     (
       event: DragEndEvent,
@@ -73,23 +96,20 @@ export function useOptimisticList<T extends { id: string }>(
         }
 
         const reordered = arrayMove(previousItems, oldIndex, newIndex);
-        const rollback = previousItems;
 
         startTransition(() => {
-          onReorder(reordered, {
-            onSuccess: () =>
-              setFeedback({ type: "success", message: successMessage }),
-            onError: () => {
-              setItems(rollback);
-              setFeedback({ type: "error", message: errorMessage });
-            },
-          });
+          executeOptimisticMutation(
+            previousItems,
+            (callbacks) => onReorder(reordered, callbacks),
+            successMessage,
+            errorMessage,
+          );
         });
 
         return reordered;
       });
     },
-    [],
+    [executeOptimisticMutation],
   );
 
   const optimisticUpdate = useCallback(
@@ -106,19 +126,15 @@ export function useOptimisticList<T extends { id: string }>(
         prev.map((item) => (item.id === id ? updateFn(item) : item)),
       );
 
-      mutationFn({
-        onSuccess: () => {
-          setFeedback({ type: "success", message: successMessage });
-          externalCallbacks.onSuccess?.();
-        },
-        onError: () => {
-          setItems(previousItems);
-          setFeedback({ type: "error", message: errorMessage });
-          externalCallbacks.onError?.();
-        },
-      });
+      executeOptimisticMutation(
+        previousItems,
+        mutationFn,
+        successMessage,
+        errorMessage,
+        externalCallbacks,
+      );
     },
-    [items],
+    [items, executeOptimisticMutation],
   );
 
   const optimisticDelete = useCallback(
@@ -132,19 +148,15 @@ export function useOptimisticList<T extends { id: string }>(
       const previousItems = items;
       setItems((prev) => prev.filter((item) => item.id !== id));
 
-      mutationFn({
-        onSuccess: () => {
-          setFeedback({ type: "success", message: successMessage });
-          externalCallbacks.onSuccess?.();
-        },
-        onError: () => {
-          setItems(previousItems);
-          setFeedback({ type: "error", message: errorMessage });
-          externalCallbacks.onError?.();
-        },
-      });
+      executeOptimisticMutation(
+        previousItems,
+        mutationFn,
+        successMessage,
+        errorMessage,
+        externalCallbacks,
+      );
     },
-    [items],
+    [items, executeOptimisticMutation],
   );
 
   return {
