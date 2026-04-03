@@ -55,4 +55,5 @@
     "tests",
     "playwright.config.ts"
   ]
+
 }
