@@ -105,18 +105,26 @@ export const mapCollectionRecordToCatalogItem = (
   linkLimit: number,
 ): PublicCatalogItem => {
   const links = Array.isArray(collection.links) ? collection.links : [];
-  const sortedLinks = [...links].sort((a, b) => a.order - b.order);
 
-  // Filter unsafe links (javascript:, etc.) to prevent Stored XSS
-  const safeLinks = sortedLinks.filter((link) => isSafeUrl(link.url));
-
-  const trimmedLinks = safeLinks.slice(0, linkLimit).map((link) => ({
-    id: link.id,
-    name: link.name,
-    url: link.url,
-    comment: link.comment,
-    order: link.order,
-  }));
+  // Filter, trim, and map links in a single pass for performance.
+  // We rely on Prisma's `orderBy: { order: "asc" }` for the sort order.
+  const trimmedLinks = [];
+  if (linkLimit > 0) {
+    for (const link of links) {
+      if (isSafeUrl(link.url)) {
+        trimmedLinks.push({
+          id: link.id,
+          name: link.name,
+          url: link.url,
+          comment: link.comment,
+          order: link.order,
+        });
+        if (trimmedLinks.length >= linkLimit) {
+          break;
+        }
+      }
+    }
+  }
 
   return {
     id: collection.id,
