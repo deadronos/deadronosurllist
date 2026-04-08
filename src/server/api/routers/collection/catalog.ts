@@ -69,7 +69,6 @@ export type PublicCatalogItem = z.infer<typeof publicCollectionSchema>;
 export type PublicCatalogResponse = z.infer<typeof publicCatalogResponseSchema>;
 export type PublicCatalogSortBy = PublicCatalogInput["sortBy"];
 export type PublicCatalogSortOrder = PublicCatalogInput["sortOrder"];
-type PublicCatalogLink = PublicCatalogItem["topLinks"][number];
 
 type CollectionRecord = {
   id: string;
@@ -93,18 +92,6 @@ const toIsoString = (value: Date | string): string => {
   return value.toISOString();
 };
 
-const isAscendingByOrder = (
-  links: Array<Pick<PublicCatalogLink, "order">>,
-): boolean => {
-  for (let index = 1; index < links.length; index += 1) {
-    if (links[index - 1]!.order > links[index]!.order) {
-      return false;
-    }
-  }
-
-  return true;
-};
-
 /**
  * Maps a database collection record to a public catalog item.
  * Trims the number of links to the specified limit.
@@ -118,16 +105,12 @@ export const mapCollectionRecordToCatalogItem = (
   linkLimit: number,
 ): PublicCatalogItem => {
   const links = Array.isArray(collection.links) ? collection.links : [];
-  const orderedLinks =
-    links.length > 1 && !isAscendingByOrder(links)
-      ? [...links].sort((a, b) => a.order - b.order)
-      : links;
 
-  // Filter, trim, and map links in a single pass when data is already ordered.
-  // Fall back to sorting only when the incoming records are out of order.
-  const trimmedLinks: PublicCatalogLink[] = [];
+  // Filter, trim, and map links in a single pass for performance.
+  // We rely on Prisma's `orderBy: { order: "asc" }` for the sort order.
+  const trimmedLinks = [];
   if (linkLimit > 0) {
-    for (const link of orderedLinks) {
+    for (const link of links) {
       if (isSafeUrl(link.url)) {
         trimmedLinks.push({
           id: link.id,
