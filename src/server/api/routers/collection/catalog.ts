@@ -69,7 +69,6 @@ export type PublicCatalogItem = z.infer<typeof publicCollectionSchema>;
 export type PublicCatalogResponse = z.infer<typeof publicCatalogResponseSchema>;
 export type PublicCatalogSortBy = PublicCatalogInput["sortBy"];
 export type PublicCatalogSortOrder = PublicCatalogInput["sortOrder"];
-type PublicCatalogLink = PublicCatalogItem["topLinks"][number];
 
 type CollectionRecord = {
   id: string;
@@ -93,18 +92,6 @@ const toIsoString = (value: Date | string): string => {
   return value.toISOString();
 };
 
-const isAscendingByOrder = (
-  links: Array<Pick<PublicCatalogLink, "order">>,
-): boolean => {
-  for (let index = 1; index < links.length; index += 1) {
-    if (links[index - 1]!.order > links[index]!.order) {
-      return false;
-    }
-  }
-
-  return true;
-};
-
 /**
  * Maps a database collection record to a public catalog item.
  * Trims the number of links to the specified limit.
@@ -118,30 +105,18 @@ export const mapCollectionRecordToCatalogItem = (
   linkLimit: number,
 ): PublicCatalogItem => {
   const links = Array.isArray(collection.links) ? collection.links : [];
-  const orderedLinks =
-    links.length > 1 && !isAscendingByOrder(links)
-      ? [...links].sort((a, b) => a.order - b.order)
-      : links;
+  const sortedLinks = [...links].sort((a, b) => a.order - b.order);
 
-  // Filter, trim, and map links in a single pass when data is already ordered.
-  // Fall back to sorting only when the incoming records are out of order.
-  const trimmedLinks: PublicCatalogLink[] = [];
-  if (linkLimit > 0) {
-    for (const link of orderedLinks) {
-      if (isSafeUrl(link.url)) {
-        trimmedLinks.push({
-          id: link.id,
-          name: link.name,
-          url: link.url,
-          comment: link.comment,
-          order: link.order,
-        });
-        if (trimmedLinks.length >= linkLimit) {
-          break;
-        }
-      }
-    }
-  }
+  // Filter unsafe links (javascript:, etc.) to prevent Stored XSS
+  const safeLinks = sortedLinks.filter((link) => isSafeUrl(link.url));
+
+  const trimmedLinks = safeLinks.slice(0, linkLimit).map((link) => ({
+    id: link.id,
+    name: link.name,
+    url: link.url,
+    comment: link.comment,
+    order: link.order,
+  }));
 
   return {
     id: collection.id,
