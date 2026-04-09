@@ -71,15 +71,10 @@ export class ErrorBoundary extends Component<
   public componentDidCatch(error: Error, info: ErrorInfo) {
     this.props.onError?.(error, info);
     try {
-      if (Sentry.isEnabled()) {
-        Sentry.captureException(error);
-        return;
-      }
+      Sentry.captureException(error);
     } catch {
-      // Fall back to local logging below.
+      // Swallow errors if Sentry is disabled.
     }
-
-    console.error("ErrorBoundary caught an error:", error, info);
   }
 
   private handleReset = () => {

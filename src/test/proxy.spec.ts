@@ -1,14 +1,16 @@
 import { expect, test, vi, describe, beforeEach, afterEach } from "vitest";
+import type { Mock } from "vitest";
 import { proxy } from "../proxy";
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-vi.mock("next/server", () => {
-  return {
-    NextResponse: {
-      next: vi.fn(),
-    },
-  };
-});
+/**
+ * Minimal interface to satisfy the proxy function return type and our assertions.
+ * Using a local interface avoids issues with mocked types being seen as 'any' by the linter.
+ */
+interface MockResponseShape {
+  headers: Headers;
+}
 
 describe("proxy utility", () => {
   const originalEnv = process.env.NODE_ENV;
@@ -23,13 +25,17 @@ describe("proxy utility", () => {
 
   test("should set security headers", () => {
     const mockHeaders = new Headers();
-    const mockResponse = {
+    const mockResponse: MockResponseShape = {
       headers: mockHeaders,
     };
-    (NextResponse.next as any).mockReturnValue(mockResponse);
 
-    const mockRequest = {} as NextRequest;
-    const response = proxy(mockRequest);
+    // Cast the mocked NextResponse.next to a Vitest Mock with explicit types.
+    // Casting through 'unknown' first is required by strict ESLint rules for unsafe values.
+    const nextMock = NextResponse.next as unknown as Mock<[], MockResponseShape>;
+    nextMock.mockReturnValue(mockResponse);
+
+    const mockRequest = {} as unknown as NextRequest;
+    const response = proxy(mockRequest) as unknown as MockResponseShape;
 
     expect(response.headers.get("Content-Security-Policy")).toContain("default-src 'self'");
     expect(response.headers.get("X-Frame-Options")).toBe("DENY");
@@ -43,13 +49,15 @@ describe("proxy utility", () => {
   test("should set Strict-Transport-Security in production", () => {
     process.env.NODE_ENV = "production";
     const mockHeaders = new Headers();
-    const mockResponse = {
+    const mockResponse: MockResponseShape = {
       headers: mockHeaders,
     };
-    (NextResponse.next as any).mockReturnValue(mockResponse);
 
-    const mockRequest = {} as NextRequest;
-    const response = proxy(mockRequest);
+    const nextMock = NextResponse.next as unknown as Mock<[], MockResponseShape>;
+    nextMock.mockReturnValue(mockResponse);
+
+    const mockRequest = {} as unknown as NextRequest;
+    const response = proxy(mockRequest) as unknown as MockResponseShape;
 
     expect(response.headers.get("Strict-Transport-Security")).toBe("max-age=31536000; includeSubDomains; preload");
   });
@@ -57,13 +65,15 @@ describe("proxy utility", () => {
   test("should NOT set Strict-Transport-Security in non-production", () => {
     process.env.NODE_ENV = "development";
     const mockHeaders = new Headers();
-    const mockResponse = {
+    const mockResponse: MockResponseShape = {
       headers: mockHeaders,
     };
-    (NextResponse.next as any).mockReturnValue(mockResponse);
 
-    const mockRequest = {} as NextRequest;
-    const response = proxy(mockRequest);
+    const nextMock = NextResponse.next as unknown as Mock<[], MockResponseShape>;
+    nextMock.mockReturnValue(mockResponse);
+
+    const mockRequest = {} as unknown as NextRequest;
+    const response = proxy(mockRequest) as unknown as MockResponseShape;
 
     expect(response.headers.get("Strict-Transport-Security")).toBeNull();
   });
