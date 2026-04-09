@@ -1,32 +1,33 @@
-import { expect, test, vi, describe, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { proxy } from "../proxy";
-import { NextResponse, NextRequest } from "next/server";
+import type { NextRequest, NextResponse } from "next/server";
+
+const nextResponseNextMock = vi.fn();
 
 vi.mock("next/server", () => {
   return {
     NextResponse: {
-      next: vi.fn(),
+      next: nextResponseNextMock,
     },
   };
 });
 
 describe("proxy utility", () => {
-  const originalEnv = process.env.NODE_ENV;
-
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("NODE_ENV", "test");
   });
 
   afterEach(() => {
-    process.env.NODE_ENV = originalEnv;
+    vi.unstubAllEnvs();
   });
 
   test("should set security headers", () => {
     const mockHeaders = new Headers();
     const mockResponse = {
       headers: mockHeaders,
-    };
-    (NextResponse.next as any).mockReturnValue(mockResponse);
+    } as unknown as NextResponse;
+    nextResponseNextMock.mockReturnValue(mockResponse);
 
     const mockRequest = {} as NextRequest;
     const response = proxy(mockRequest);
@@ -41,12 +42,12 @@ describe("proxy utility", () => {
   });
 
   test("should set Strict-Transport-Security in production", () => {
-    process.env.NODE_ENV = "production";
+    vi.stubEnv("NODE_ENV", "production");
     const mockHeaders = new Headers();
     const mockResponse = {
       headers: mockHeaders,
-    };
-    (NextResponse.next as any).mockReturnValue(mockResponse);
+    } as unknown as NextResponse;
+    nextResponseNextMock.mockReturnValue(mockResponse);
 
     const mockRequest = {} as NextRequest;
     const response = proxy(mockRequest);
@@ -55,12 +56,12 @@ describe("proxy utility", () => {
   });
 
   test("should NOT set Strict-Transport-Security in non-production", () => {
-    process.env.NODE_ENV = "development";
+    vi.stubEnv("NODE_ENV", "development");
     const mockHeaders = new Headers();
     const mockResponse = {
       headers: mockHeaders,
-    };
-    (NextResponse.next as any).mockReturnValue(mockResponse);
+    } as unknown as NextResponse;
+    nextResponseNextMock.mockReturnValue(mockResponse);
 
     const mockRequest = {} as NextRequest;
     const response = proxy(mockRequest);
