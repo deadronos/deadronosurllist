@@ -47,7 +47,7 @@ export default defineConfig({
       AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET ?? "static-credential-for-ci-run",
       AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID ?? "static-credential-for-ci-run",
       AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET ?? "static-credential-for-ci-run",
-      DATABASE_URL: process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/postgres",
+      DATABASE_URL: process.env.DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:5432/postgres",
     },
   },
 });
