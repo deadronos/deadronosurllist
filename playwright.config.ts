@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: "html",
   use: {
-    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || "http://127.0.0.1:3000",
+    baseURL: process.env.PLAYWRIGHT_TEST_BASE_URL || "http://localhost:3000",
     trace: "on-first-retry",
     screenshot: "only-on-failure",
   },
@@ -32,7 +32,7 @@ export default defineConfig({
 
   webServer: {
     command: process.env.CI ? "npx next start" : "npm run preview",
-    url: "http://127.0.0.1:3000",
+    url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 180000,
     env: {
@@ -41,13 +41,13 @@ export default defineConfig({
       USE_MOCK_AUTH: "true",
       HELLO: "world",
       NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ?? "static-credential-for-ci-run",
-      NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? "http://127.0.0.1:3000",
+      NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? "http://localhost:3000",
       AUTH_SECRET: process.env.AUTH_SECRET ?? "static-credential-for-ci-run",
       AUTH_DISCORD_ID: process.env.AUTH_DISCORD_ID ?? "123456789012345678",
       AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET ?? "static-credential-for-ci-run",
       AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID ?? "static-credential-for-ci-run",
       AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET ?? "static-credential-for-ci-run",
-      DATABASE_URL: process.env.DATABASE_URL ?? "postgresql://postgres:postgres@127.0.0.1:5432/postgres",
+      DATABASE_URL: process.env.DATABASE_URL ?? "postgresql://postgres:postgres@localhost:5432/postgres",
     },
   },
 });
