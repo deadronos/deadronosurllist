@@ -1,38 +1,43 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { proxy } from "../proxy";
-import type { NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+type MockResponseShape = {
+  headers: Headers;
+};
 
 const { nextResponseNextMock } = vi.hoisted(() => ({
   nextResponseNextMock: vi.fn(),
 }));
 
-vi.mock("next/server", () => {
-  return {
-    NextResponse: {
-      next: nextResponseNextMock,
-    },
-  };
-});
+vi.mock("next/server", () => ({
+  NextResponse: {
+    next: nextResponseNextMock,
+  },
+}));
 
 describe("proxy utility", () => {
+  const env = process.env as Record<string, string | undefined>;
+  const originalEnv = env.NODE_ENV;
+
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv("NODE_ENV", "test");
   });
 
   afterEach(() => {
-    vi.unstubAllEnvs();
+    env.NODE_ENV = originalEnv;
   });
 
   test("should set security headers", () => {
     const mockHeaders = new Headers();
-    const mockResponse = {
+    const mockResponse: MockResponseShape = {
       headers: mockHeaders,
-    } as unknown as NextResponse;
+    };
+
     nextResponseNextMock.mockReturnValue(mockResponse);
 
-    const mockRequest = {} as NextRequest;
-    const response = proxy(mockRequest);
+    const mockRequest = {} as unknown as NextRequest;
+    const response = proxy(mockRequest) as MockResponseShape;
 
     expect(response.headers.get("Content-Security-Policy")).toContain(
       "default-src 'self'",
@@ -50,15 +55,16 @@ describe("proxy utility", () => {
   });
 
   test("should set Strict-Transport-Security in production", () => {
-    vi.stubEnv("NODE_ENV", "production");
+    env.NODE_ENV = "production";
     const mockHeaders = new Headers();
-    const mockResponse = {
+    const mockResponse: MockResponseShape = {
       headers: mockHeaders,
-    } as unknown as NextResponse;
+    };
+
     nextResponseNextMock.mockReturnValue(mockResponse);
 
-    const mockRequest = {} as NextRequest;
-    const response = proxy(mockRequest);
+    const mockRequest = {} as unknown as NextRequest;
+    const response = proxy(mockRequest) as MockResponseShape;
 
     expect(response.headers.get("Strict-Transport-Security")).toBe(
       "max-age=31536000; includeSubDomains; preload",
@@ -66,15 +72,16 @@ describe("proxy utility", () => {
   });
 
   test("should NOT set Strict-Transport-Security in non-production", () => {
-    vi.stubEnv("NODE_ENV", "development");
+    env.NODE_ENV = "development";
     const mockHeaders = new Headers();
-    const mockResponse = {
+    const mockResponse: MockResponseShape = {
       headers: mockHeaders,
-    } as unknown as NextResponse;
+    };
+
     nextResponseNextMock.mockReturnValue(mockResponse);
 
-    const mockRequest = {} as NextRequest;
-    const response = proxy(mockRequest);
+    const mockRequest = {} as unknown as NextRequest;
+    const response = proxy(mockRequest) as MockResponseShape;
 
     expect(response.headers.get("Strict-Transport-Security")).toBeNull();
   });
