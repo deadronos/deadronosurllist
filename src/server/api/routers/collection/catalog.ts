@@ -85,28 +85,12 @@ type CollectionRecord = {
   }>;
 };
 
-type PublicCatalogLink = PublicCatalogItem["topLinks"][number];
-
 const toIsoString = (value: Date | string): string => {
   if (typeof value === "string") {
     return value;
   }
   return value.toISOString();
 };
-
-const isAscendingByOrder = (
-  links: NonNullable<CollectionRecord["links"]>,
-): boolean =>
-  links.every(
-    (link, index, orderedLinks) => {
-      if (index === 0) {
-        return true;
-      }
-
-      const previousLink = orderedLinks[index - 1];
-      return previousLink ? previousLink.order <= link.order : true;
-    },
-  );
 
 /**
  * Maps a database collection record to a public catalog item.
@@ -121,16 +105,12 @@ export const mapCollectionRecordToCatalogItem = (
   linkLimit: number,
 ): PublicCatalogItem => {
   const links = Array.isArray(collection.links) ? collection.links : [];
-  const orderedLinks =
-    links.length > 1 && !isAscendingByOrder(links)
-      ? [...links].sort((a, b) => a.order - b.order)
-      : links;
 
-  // Filter, trim, and map links in a single pass when data is already ordered.
-  // Fall back to sorting only when the incoming records are out of order.
-  const trimmedLinks: PublicCatalogLink[] = [];
+  // Filter, trim, and map links in a single pass for performance.
+  // We rely on Prisma's `orderBy: { order: "asc" }` for the sort order.
+  const trimmedLinks = [];
   if (linkLimit > 0) {
-    for (const link of orderedLinks) {
+    for (const link of links) {
       if (isSafeUrl(link.url)) {
         trimmedLinks.push({
           id: link.id,
@@ -217,7 +197,7 @@ export async function fetchPublicCatalog(
       include: {
         links: {
           orderBy: { order: "asc" },
-          // Fetch a bit more than requested to account for potential filtering of unsafe links.
+          // Fetch a bit more than requested to account for potential filtering of unsafe links
           take: linkLimit + 10,
         },
       },
