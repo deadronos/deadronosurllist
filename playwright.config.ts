@@ -41,7 +41,7 @@ export default defineConfig({
       USE_MOCK_AUTH: "true",
       HELLO: "world",
       NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ?? "static-credential-for-ci-run",
-      NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? "http://127.0.0.1:3000",
+      NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? "http://localhost:3000",
       AUTH_SECRET: process.env.AUTH_SECRET ?? "static-credential-for-ci-run",
       AUTH_DISCORD_ID: process.env.AUTH_DISCORD_ID ?? "123456789012345678",
       AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET ?? "static-credential-for-ci-run",
