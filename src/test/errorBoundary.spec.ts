@@ -1,6 +1,6 @@
 import type { ErrorInfo } from "react";
 import * as Sentry from "@sentry/nextjs";
-import { beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 import { ErrorBoundary } from "../components/error-boundary";
 
@@ -11,6 +11,10 @@ vi.mock("@sentry/nextjs", () => ({
 describe("ErrorBoundary", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   test("logs a fallback error when Sentry capture throws", () => {
@@ -29,6 +33,7 @@ describe("ErrorBoundary", () => {
     boundary.componentDidCatch(error, info);
 
     expect(onError).toHaveBeenCalledWith(error, info);
+    expect(Sentry.captureException).toHaveBeenCalledWith(error);
     expect(consoleErrorSpy).toHaveBeenCalledWith(
       "ErrorBoundary caught an error:",
       error,
