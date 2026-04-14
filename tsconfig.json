@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    /* Base Options: */
     "esModuleInterop": true,
     "skipLibCheck": true,
     "target": "es2022",
@@ -9,15 +8,17 @@
     "moduleDetection": "force",
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    /* Strictness */
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "checkJs": true,
-    /* Bundled projects */
-    "lib": ["dom", "dom.iterable", "ES2022"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "ES2022"
+    ],
     "noEmit": true,
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "plugins": [
       {
@@ -25,11 +26,12 @@
       }
     ],
     "incremental": true,
-    /* Path Aliases */
     "baseUrl": ".",
     "ignoreDeprecations": "5.0",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
   "include": [
@@ -38,22 +40,16 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.js",
-    "src/app/**.{ts,tsx,js,cjs}",
-    "src/server/**.{ts,tsx,js,cjs}",
-    "src/trpc/**.{ts,tsx,js,cjs}",
+    "src/**/*",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
-    "coverage",
-    "coverage/*",
-    "coverage/**/*",
     "playwright-report",
     "test-results",
     "scripts/load",
     "tests",
     "playwright.config.ts"
   ]
-
 }
