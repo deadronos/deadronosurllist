@@ -11,7 +11,11 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "checkJs": true,
-    "lib": ["dom", "dom.iterable", "ES2022"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "ES2022"
+    ],
     "noEmit": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
@@ -23,9 +27,11 @@
     ],
     "incremental": true,
     "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
+    "ignoreDeprecations": "5.0",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   },
   "include": [
@@ -35,7 +41,15 @@
     "**/*.cjs",
     "**/*.js",
     "src/**/*",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "playwright-report", "test-results", "scripts/load", "tests", "playwright.config.ts"]
+  "exclude": [
+    "node_modules",
+    "playwright-report",
+    "test-results",
+    "scripts/load",
+    "tests",
+    "playwright.config.ts"
+  ]
 }

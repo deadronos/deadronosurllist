@@ -85,6 +85,8 @@ type CollectionRecord = {
   }>;
 };
 
+type PublicCatalogLink = PublicCatalogItem["topLinks"][number];
+
 const toIsoString = (value: Date | string): string => {
   if (typeof value === "string") {
     return value;
@@ -108,7 +110,7 @@ export const mapCollectionRecordToCatalogItem = (
 
   // Filter, trim, and map links in a single pass for performance.
   // We rely on Prisma's `orderBy: { order: "asc" }` for the sort order.
-  const trimmedLinks = [];
+  const trimmedLinks: PublicCatalogLink[] = [];
   if (linkLimit > 0) {
     for (const link of links) {
       if (isSafeUrl(link.url)) {

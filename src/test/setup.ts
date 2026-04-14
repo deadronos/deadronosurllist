@@ -26,6 +26,7 @@ vi.mock("next/server", () => ({
   NextResponse: {
     json: vi.fn(),
     redirect: vi.fn(),
+    next: vi.fn(),
   },
   headers: () => new Headers(),
 }));

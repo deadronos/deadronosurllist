@@ -73,7 +73,7 @@ export class ErrorBoundary extends Component<
     try {
       Sentry.captureException(error);
     } catch {
-      // Swallow errors if Sentry is disabled.
+      console.error("ErrorBoundary caught an error:", error, info);
     }
   }
 
