@@ -354,4 +354,73 @@ describe("collectionRouter (mocked)", () => {
     const fetched = await caller.collection.getById({ id: created.id });
     expect(fetched).toBeNull();
   });
+
+  describe("getPublicById", () => {
+    it("fetches a public collection and its links successfully", async () => {
+      const publicColl = await caller.collection.create({
+        name: "Public Collection",
+        description: "Public Description",
+        isPublic: true,
+      });
+
+      await caller.link.create({
+        collectionId: publicColl.id,
+        name: "Link 1",
+        url: "https://example.com/1",
+      });
+
+      const result = await caller.collection.getPublicById({ id: publicColl.id });
+      expect(result).not.toBeNull();
+      expect(result?.name).toBe("Public Collection");
+      expect(result?.description).toBe("Public Description");
+      expect(result?.links).toHaveLength(1);
+      expect(result?.links[0]?.name).toBe("Link 1");
+      expect(result?.links[0]?.url).toBe("https://example.com/1");
+    });
+
+    it("returns null when trying to fetch a private collection", async () => {
+      const privateColl = await caller.collection.create({
+        name: "Private Collection",
+        description: "Private Description",
+        isPublic: false,
+      });
+
+      const result = await caller.collection.getPublicById({ id: privateColl.id });
+      expect(result).toBeNull();
+    });
+
+    it("filters out unsafe links to prevent stored XSS", async () => {
+      const publicColl = await caller.collection.create({
+        name: "Public Collection XSS",
+        isPublic: true,
+      });
+
+      // Inject a safe link
+      await db.link.create({
+        data: {
+          collectionId: publicColl.id,
+          name: "Safe Link",
+          url: "https://example.com",
+          order: 1,
+        },
+      });
+
+      // Inject an unsafe link
+      await db.link.create({
+        data: {
+          collectionId: publicColl.id,
+          name: "Unsafe Link",
+          url: "javascript:alert('XSS')",
+          order: 2,
+        },
+      });
+
+      const result = await caller.collection.getPublicById({ id: publicColl.id });
+      expect(result).not.toBeNull();
+      expect(result?.links).toHaveLength(1);
+      expect(result?.links[0]?.name).toBe("Safe Link");
+      expect(result?.links[0]?.url).toBe("https://example.com");
+      expect(result?.links.find((l) => l.url.startsWith("javascript:"))).toBeUndefined();
+    });
+  });
 });
