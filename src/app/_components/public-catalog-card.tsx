@@ -27,8 +27,10 @@ export function PublicCatalogCard({ collection }: PublicCatalogCardProps) {
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <CardTitle className="text-base leading-tight">
-              {collection.name}
+            <CardTitle className="text-base leading-tight hover:underline">
+              <Link href={`/public-collections/${collection.id}`}>
+                {collection.name}
+              </Link>
             </CardTitle>
             {collection.description ? (
               <CardDescription className="mt-1 line-clamp-2">
@@ -76,7 +78,10 @@ export function PublicCatalogCard({ collection }: PublicCatalogCardProps) {
           </div>
         )}
 
-        <div className="flex justify-end">
+        <div className="flex items-center justify-between gap-2">
+          <Button asChild variant="ghost" size="sm">
+            <Link href={`/public-collections/${collection.id}`}>View full list</Link>
+          </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/signin">Publish your own</Link>
           </Button>

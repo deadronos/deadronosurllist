@@ -12,6 +12,7 @@ import {
   publicCatalogInputSchema,
   publicCatalogResponseSchema,
 } from "./collection/catalog";
+import { isSafeUrl } from "@/server/api/validation";
 import { invalidatePublicCatalogCache } from "@/server/cache/public-catalog";
 import {
   normalizeDescriptionForCreate,
@@ -50,6 +51,38 @@ export const collectionRouter = createTRPCRouter({
     .output(publicCatalogResponseSchema)
     .query(async ({ ctx, input }) => {
       return fetchPublicCatalog(ctx, input);
+    }),
+
+  /**
+   * Get a single public collection with all its links.
+   * Accessible by anyone.
+   *
+   * @param {object} input - The input object.
+   * @param {string} input.id - The ID of the collection to retrieve.
+   * @returns {Promise<CollectionRecord | null>} The public collection with links, or null if not found/private.
+   */
+  getPublicById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const collection = await ctx.db.collection.findFirst({
+        where: {
+          id: input.id,
+          isPublic: true,
+        },
+        include: {
+          links: { orderBy: { order: "asc" } },
+        },
+      });
+
+      if (!collection) return null;
+
+      // Filter out unsafe links to prevent stored XSS
+      const safeLinks = (collection.links ?? []).filter((link) => isSafeUrl(link.url));
+
+      return {
+        ...collection,
+        links: safeLinks,
+      };
     }),
 
   /**

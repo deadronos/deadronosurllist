@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { StudioShell } from "@/app/_components/studio-shell";
@@ -74,8 +75,10 @@ export default async function UserProfilePage({
                 >
                   <CardHeader className="space-y-2">
                     <div className="flex items-start justify-between gap-3">
-                      <CardTitle className="text-base">
-                        {collection.name}
+                      <CardTitle className="text-base hover:underline">
+                        <Link href={`/public-collections/${collection.id}`}>
+                          {collection.name}
+                        </Link>
                       </CardTitle>
                       <Badge variant="secondary">Public</Badge>
                     </div>
