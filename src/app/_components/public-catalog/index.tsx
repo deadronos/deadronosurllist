@@ -124,6 +124,8 @@ export function PublicCatalog({
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
+    maxPages: 20,
+    staleTime: 5 * 60 * 1000,
   });
 
   const pages = data?.pages ?? (initialData ? initialData.pages : []);

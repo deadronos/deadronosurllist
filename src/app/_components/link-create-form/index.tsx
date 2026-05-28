@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import { toast } from "sonner";
 
 import { api } from "@/trpc/react";
 
@@ -32,6 +33,9 @@ export function LinkCreateForm({ collectionId }: { collectionId: string }) {
         utils.collection.getById.invalidate({ id: collectionId }),
       );
     },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to create link");
+    },
   });
 
   const previewMutation = api.link.preview.useMutation({
@@ -42,6 +46,9 @@ export function LinkCreateForm({ collectionId }: { collectionId: string }) {
       if (!comment && data.description) {
         setComment(data.description);
       }
+    },
+    onError: (error) => {
+      toast.error(error.message ?? "Failed to fetch link metadata");
     },
   });
 
