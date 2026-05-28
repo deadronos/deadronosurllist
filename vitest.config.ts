@@ -53,7 +53,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ["src/test/setup.ts"],
     passWithNoTests: false,
-    include: ["src/test/*.spec.ts"],
+    include: ["src/test/*.spec.ts", "src/test/contract/**/*.spec.ts"],
     includeSource: ["src/**/*.{js,ts,tsx}"],
     exclude: ["node_modules/"],
     coverage: {

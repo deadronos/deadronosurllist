@@ -29,6 +29,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest --run",
     "test:watch": "vitest",
+    "test:contract": "vitest run src/test/contract",
+    "test:contract:watch": "vitest watch src/test/contract",
     "visual:test": "npx playwright test tests/visual.spec.ts"
   },
   "dependencies": {
