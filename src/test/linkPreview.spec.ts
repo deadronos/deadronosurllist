@@ -2,10 +2,14 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { createCaller } from "@/server/api/root";
 import { db } from "@/server/db";
 import type { Session } from "next-auth";
+import type { LinkPreviewResponse } from "@/server/api/link-preview";
 
-// Mock fetch globally
-const fetchMock = vi.fn();
-global.fetch = fetchMock;
+// Mock the link-preview module so tests don't make real HTTP requests
+const mockFetchPreview = vi.fn<() => Promise<LinkPreviewResponse>>();
+vi.mock("@/server/api/link-preview", () => ({
+  fetchLinkPreview: (...args: Parameters<typeof mockFetchPreview>) =>
+    mockFetchPreview(...args),
+}));
 
 // Mock session
 const mockSession: Session = {
@@ -18,31 +22,21 @@ const mockSession: Session = {
   expires: new Date(Date.now() + 60_000).toISOString(),
 };
 
+const caller = createCaller({
+  db,
+  session: mockSession,
+  headers: new Headers(),
+});
+
 describe("linkRouter.preview", () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  it("fetches metadata successfully", async () => {
-    const htmlContent = `
-      <html>
-        <head>
-          <title>Example Page</title>
-          <meta name="description" content="This is an example description">
-        </head>
-        <body></body>
-      </html>
-    `;
-
-    fetchMock.mockResolvedValue({
-      text: () => Promise.resolve(htmlContent),
-    } as Response);
-
-    // Create caller with mocked session
-    const caller = createCaller({
-      db,
-      session: mockSession,
-      headers: new Headers(),
+  it("returns metadata on successful preview", async () => {
+    mockFetchPreview.mockResolvedValue({
+      title: "Example Page",
+      description: "This is an example description",
     });
 
     const result = await caller.link.preview({ url: "https://example.com" });
@@ -51,23 +45,18 @@ describe("linkRouter.preview", () => {
       title: "Example Page",
       description: "This is an example description",
     });
-    expect(fetchMock).toHaveBeenCalledWith("https://example.com", expect.any(Object));
+    expect(mockFetchPreview).toHaveBeenCalledWith("https://example.com");
   });
 
-  it("handles missing metadata gracefully", async () => {
-    const htmlContent = `<html><head></head><body></body></html>`;
-
-    fetchMock.mockResolvedValue({
-      text: () => Promise.resolve(htmlContent),
-    } as Response);
-
-    const caller = createCaller({
-      db,
-      session: mockSession,
-      headers: new Headers(),
+  it("returns empty strings when page has no metadata", async () => {
+    mockFetchPreview.mockResolvedValue({
+      title: "",
+      description: "",
     });
 
-    const result = await caller.link.preview({ url: "https://example.com/empty" });
+    const result = await caller.link.preview({
+      url: "https://example.com/empty",
+    });
 
     expect(result).toEqual({
       title: "",
@@ -75,20 +64,48 @@ describe("linkRouter.preview", () => {
     });
   });
 
-  it("handles fetch errors gracefully", async () => {
-    fetchMock.mockRejectedValue(new Error("Network error"));
-
-    const caller = createCaller({
-      db,
-      session: mockSession,
-      headers: new Headers(),
+  it("throws BAD_REQUEST when preview fetch fails", async () => {
+    mockFetchPreview.mockResolvedValue({
+      ok: false,
+      reason: "Server returned HTTP 404",
     });
 
-    const result = await caller.link.preview({ url: "https://example.com/error" });
+    await expect(
+      caller.link.preview({ url: "https://example.com/error" }),
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      message: expect.stringContaining("404"),
+    });
+  });
 
-    expect(result).toEqual({
-      title: "",
-      description: "",
+  it("throws BAD_REQUEST when request times out", async () => {
+    mockFetchPreview.mockResolvedValue({
+      ok: false,
+      reason: "Request timed out after 5000ms",
+    });
+
+    await expect(
+      caller.link.preview({ url: "https://slow.example.com" }),
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      message: expect.stringContaining("timed out"),
+    });
+  });
+
+  it("throws BAD_REQUEST when body exceeds size limit", async () => {
+    mockFetchPreview.mockResolvedValue({
+      ok: false,
+      reason: "Response body exceeded 524288 bytes",
+    });
+
+    await expect(
+      caller.link.preview({ url: "https://example.com/huge" }),
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      message: expect.stringContaining("exceeded"),
     });
   });
 });
