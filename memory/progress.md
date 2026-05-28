@@ -36,3 +36,4 @@
 - 2026-01-31: Implemented user profile routing (`/u/[userId]`) with safe public fields and added unit + Playwright coverage.
 - 2026-01-31: Verified lint/typecheck via `npm run check` after dependency updates.
 - 2026-03-18: Completed TASK029 by refreshing runtime/dev dependencies, aligning ESLint/Next/Vite tooling, fixing preview and mock-auth production-build behavior, and validating with `npm run check`, `npm test`, `npm run build`, and `npx playwright test --reporter=line` (with WebKit-specific catalog/not-found cases quarantined).
+- 2026-05-28: Completed issue #110 by implementing formal contract/integration tests between tRPC routers, Prisma schema, and frontend forms. Added 107 new tests across 6 test files: Prisma schema snapshot tests, collection router integration tests, link router integration tests, schema contract tests, form contract tests, and auth boundary tests. Created PR #113. All tests pass (213 total), typecheck and lint clean.
