@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useRef,
   useState,
   useTransition,
 } from "react";
@@ -33,6 +34,16 @@ export function useOptimisticList<T extends { id: string }>(
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [, startTransition] = useTransition();
 
+  const mutationQueueRef = useRef<Array<() => void>>([]);
+  const isMutatingRef = useRef(false);
+
+  const processQueue = useCallback(() => {
+    if (isMutatingRef.current || mutationQueueRef.current.length === 0) return;
+    isMutatingRef.current = true;
+    const next = mutationQueueRef.current.shift()!;
+    next();
+  }, []);
+
   useEffect(() => {
     setItems(initialItems);
   }, [initialItems]);
@@ -60,19 +71,26 @@ export function useOptimisticList<T extends { id: string }>(
       errorMessage: string,
       externalCallbacks: OperationCallbacks = {},
     ) => {
-      mutationFn({
-        onSuccess: () => {
-          setFeedback({ type: "success", message: successMessage });
-          externalCallbacks.onSuccess?.();
-        },
-        onError: () => {
-          setItems(rollbackItems);
-          setFeedback({ type: "error", message: errorMessage });
-          externalCallbacks.onError?.();
-        },
+      mutationQueueRef.current.push(() => {
+        mutationFn({
+          onSuccess: () => {
+            setFeedback({ type: "success", message: successMessage });
+            externalCallbacks.onSuccess?.();
+            isMutatingRef.current = false;
+            processQueue();
+          },
+          onError: () => {
+            setItems(rollbackItems);
+            setFeedback({ type: "error", message: errorMessage });
+            externalCallbacks.onError?.();
+            isMutatingRef.current = false;
+            processQueue();
+          },
+        });
       });
+      processQueue();
     },
-    [],
+    [processQueue],
   );
 
   const handleDragEnd = useCallback(
