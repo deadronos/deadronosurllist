@@ -126,9 +126,11 @@ function extractModels(schema: string) {
   const modelNamesArray: string[] = [];
 
   // First pass: collect all model names
-  let match;
+  let match: RegExpExecArray | null;
   while ((match = modelRegex.exec(schema)) !== null) {
-    modelNamesArray.push(match[1]);
+    if (match[1]) {
+      modelNamesArray.push(match[1]);
+    }
   }
 
   // Reset regex
@@ -138,6 +140,8 @@ function extractModels(schema: string) {
   while ((match = modelRegex.exec(schema)) !== null) {
     const modelName = match[1];
     const modelBody = match[2];
+
+    if (!modelName || !modelBody) continue;
 
     const lines = modelBody.split('\n');
     const fields: string[] = [];
@@ -149,14 +153,14 @@ function extractModels(schema: string) {
 
       if (trimmed.startsWith('@@index')) {
         const indexMatch = trimmed.match(/@@index\(\[([^\]]+)\]\)/);
-        if (indexMatch) {
+        if (indexMatch?.[1]) {
           indexes.push(indexMatch[1]);
         }
       } else if (trimmed.startsWith('@@unique')) {
         // Skip unique constraints
       } else if (!trimmed.startsWith('@@')) {
         const fieldMatch = trimmed.match(/^(\w+)\s+/);
-        if (fieldMatch) {
+        if (fieldMatch?.[1]) {
           const fieldName = fieldMatch[1];
           // Skip relation fields:
           // - Fields with @relation attribute

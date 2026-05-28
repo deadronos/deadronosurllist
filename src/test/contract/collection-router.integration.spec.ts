@@ -255,7 +255,7 @@ describe("Collection Router Integration Tests", () => {
 
       await expect(
         unauthenticatedCaller.collection.reorder({
-          items: [{ id: "some-id", order: 0 }],
+          collectionIds: ["some-id"],
         }),
       ).rejects.toMatchObject({
         code: "UNAUTHORIZED",
