@@ -1,6 +1,8 @@
-import { load } from "cheerio";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { fetchLinkPreview } from "@/server/api/link-preview";
+import type { LinkPreviewResult } from "@/server/api/link-preview";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { urlSchema } from "@/server/api/validation";
 import { invalidatePublicCatalogCache } from "@/server/cache/public-catalog";
@@ -15,43 +17,31 @@ export const linkRouter = createTRPCRouter({
   /**
    * Fetch metadata (title, description) for a given URL.
    *
+   * Hardened with:
+   * - 5-second timeout (AbortController)
+   * - 512 KB response body cap
+   * - HTTP status check (non-2xx → error)
+   * - Redirect limit (5 hops via native fetch)
+   *
    * @param {object} input - The input object.
    * @param {string} input.url - The URL to fetch metadata for.
    * @returns {Promise<{ title: string; description: string }>} The extracted metadata.
+   * @throws {TRPCError} BAD_REQUEST when the preview cannot be fetched.
    */
   preview: protectedProcedure
     .input(z.object({ url: urlSchema }))
     .mutation(async ({ input }) => {
-      try {
-        const response = await fetch(input.url, {
-          headers: {
-            "User-Agent": "LinkList-Bot/1.0",
-          },
+      const result = await fetchLinkPreview(input.url);
+
+      if ("ok" in result && result.ok === false) {
+        console.warn("Link preview failed for", input.url, ":", result.reason);
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Unable to fetch preview: ${result.reason}`,
         });
-        const html = await response.text();
-        const $ = load(html);
-
-        const title =
-          $("title").text() ||
-          $('meta[property="og:title"]').attr("content") ||
-          "";
-
-        const description =
-          $('meta[name="description"]').attr("content") ||
-          $('meta[property="og:description"]').attr("content") ||
-          "";
-
-        return {
-          title: title.trim(),
-          description: description.trim(),
-        };
-      } catch (error) {
-        console.error("Failed to fetch metadata for", input.url, error);
-        return {
-          title: "",
-          description: "",
-        };
       }
+
+      return result as LinkPreviewResult;
     }),
 
   /**
