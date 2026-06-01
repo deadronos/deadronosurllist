@@ -36,12 +36,32 @@ export function useOptimisticList<T extends { id: string }>(
 
   const mutationQueueRef = useRef<Array<() => void>>([]);
   const isMutatingRef = useRef(false);
+  const isProcessingRef = useRef(false);
 
   const processQueue = useCallback(() => {
-    if (isMutatingRef.current || mutationQueueRef.current.length === 0) return;
-    isMutatingRef.current = true;
+    // Prevent concurrent processing — only one processQueue can run at a time
+    if (isProcessingRef.current || mutationQueueRef.current.length === 0) return;
+    isProcessingRef.current = true;
+
     const next = mutationQueueRef.current.shift()!;
-    next();
+
+    try {
+      next();
+    } catch {
+      // Ensure we never get stuck — clear processing flag even on unhandled errors
+      isProcessingRef.current = false;
+      isMutatingRef.current = false;
+    }
+  }, []);
+
+  /**
+   * Guard to ensure mutations execute sequentially.
+   * Returns false if another mutation is already in-flight.
+   */
+  const acquireMutationLock = useCallback(() => {
+    if (isMutatingRef.current) return false;
+    isMutatingRef.current = true;
+    return true;
   }, []);
 
   useEffect(() => {
@@ -63,6 +83,36 @@ export function useOptimisticList<T extends { id: string }>(
     }),
   );
 
+  /**
+   * Creates the standard mutation callbacks for a queued operation.
+   * Returns callbacks that reset the mutation lock and trigger queue processing.
+   */
+  const createMutationCallbacks = useCallback(
+    (
+      rollbackItems: T[],
+      successMessage: string,
+      errorMessage: string,
+      externalCallbacks: OperationCallbacks = {},
+    ): OperationCallbacks => ({
+      onSuccess: () => {
+        setFeedback({ type: "success", message: successMessage });
+        externalCallbacks.onSuccess?.();
+        isMutatingRef.current = false;
+        isProcessingRef.current = false;
+        processQueue();
+      },
+      onError: () => {
+        setItems(rollbackItems);
+        setFeedback({ type: "error", message: errorMessage });
+        externalCallbacks.onError?.();
+        isMutatingRef.current = false;
+        isProcessingRef.current = false;
+        processQueue();
+      },
+    }),
+    [processQueue],
+  );
+
   const executeOptimisticMutation = useCallback(
     (
       rollbackItems: T[],
@@ -71,26 +121,22 @@ export function useOptimisticList<T extends { id: string }>(
       errorMessage: string,
       externalCallbacks: OperationCallbacks = {},
     ) => {
-      mutationQueueRef.current.push(() => {
-        mutationFn({
-          onSuccess: () => {
-            setFeedback({ type: "success", message: successMessage });
-            externalCallbacks.onSuccess?.();
-            isMutatingRef.current = false;
-            processQueue();
-          },
-          onError: () => {
-            setItems(rollbackItems);
-            setFeedback({ type: "error", message: errorMessage });
-            externalCallbacks.onError?.();
-            isMutatingRef.current = false;
-            processQueue();
-          },
-        });
-      });
-      processQueue();
+      const callbacks = createMutationCallbacks(
+        rollbackItems,
+        successMessage,
+        errorMessage,
+        externalCallbacks,
+      );
+
+      mutationQueueRef.current.push(() => mutationFn(callbacks));
+
+      // Only start processing if we successfully acquired the lock
+      if (acquireMutationLock()) {
+        processQueue();
+      }
+      // Otherwise the in-flight mutation's callback will call processQueue
     },
-    [processQueue],
+    [acquireMutationLock, processQueue, createMutationCallbacks],
   );
 
   const handleDragEnd = useCallback(
