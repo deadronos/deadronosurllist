@@ -39,7 +39,7 @@ function mockFetchResponse(
     status,
     headers,
     text: () => Promise.resolve(body),
-  } as Response);
+  });
 }
 
 describe("fetchLinkPreview", () => {

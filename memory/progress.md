@@ -1,5 +1,6 @@
 # Progress Log
 
+- 2026-06-19: Completed TASK030 dependency refresh - Upgraded package.json dependencies and devDependencies to their latest versions (Next 16.2.9, TS 6.0.3, ESLint 10.5.0, etc.), resolved a type assertion/inference error in providerHelper.spec.ts, resolved testing-library/dom dependency issue, and added turbopack.root configuration in next.config.js; validated with `npm run check`, `npm test`, and `npm run build` passing successfully.
 - 2026-04-14: Resolved merge conflicts on `pr/deadronos/104` by merging `main`, keeping the optimized catalog mapper, restoring the error boundary and proxy regression tests, updating security workflows, and normalizing `tsconfig.json`; validated with `npm run check`, `npm test`, and `npm run build` before committing merge commit `e567aa5`.
 - 2025-10-09: Initiated TASK001 to create a Radix-themed public welcome page backed by a seeded public collection.
 - 2025-10-09: Added Radix UI dependency and wrapped the application layout with the Radix Theme provider.

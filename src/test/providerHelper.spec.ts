@@ -25,7 +25,7 @@ import {
   __private,
 } from "@/server/auth/provider-helpers";
 
-const descriptor = (overrides?: Partial<AuthProviderDescriptor>) =>
+const descriptor = (overrides?: Partial<AuthProviderDescriptor>): AuthProviderDescriptor =>
   ({
     id: "demo",
     label: "Demo",
@@ -35,7 +35,7 @@ const descriptor = (overrides?: Partial<AuthProviderDescriptor>) =>
     },
     createProvider: () => createStubProvider("demo"),
     ...overrides,
-  }) as AuthProviderDescriptor;
+  });
 
 const baseEnv: AuthEnvShape = {
   NODE_ENV: "development",

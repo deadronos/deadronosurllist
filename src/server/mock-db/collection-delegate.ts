@@ -65,7 +65,7 @@ export const collectionDelegate = {
     // Sort
     if (Array.isArray(orderBy)) {
       items.sort((a, b) =>
-        compareCollections(a, b, orderBy as CollectionSortCriterion[]),
+        compareCollections(a, b, orderBy),
       );
     } else if (orderBy && "order" in orderBy && orderBy.order) {
       const direction = orderBy.order === "desc" ? -1 : 1;
