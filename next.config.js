@@ -3,6 +3,7 @@
  * for Docker builds.
  */
 import "./src/env.js";
+import { fileURLToPath } from "node:url";
 import bundleAnalyzer from "@next/bundle-analyzer";
 
 const withBundleAnalyzer = bundleAnalyzer({
@@ -11,6 +12,9 @@ const withBundleAnalyzer = bundleAnalyzer({
 
 const config = /** @type {import("next").NextConfig} */ ({
   allowedDevOrigins: ["http://127.0.0.1:3000", "http://localhost:3000"],
+  turbopack: {
+    root: fileURLToPath(new URL(".", import.meta.url)),
+  },
   serverExternalPackages: [
     "pg",
     "pg-connection-string",

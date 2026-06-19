@@ -64,9 +64,9 @@ const createDelegates = (
 ): Pick<LinkListDatabase, "collection" | "link" | "user"> => ({
   collection: {
     findMany: async (args) =>
-      (await client.collection.findMany(args)) as CollectionRecord[],
+      (await client.collection.findMany(args)),
     findFirst: async (args) =>
-      (await client.collection.findFirst(args)) as CollectionRecord | null,
+      (await client.collection.findFirst(args)),
     create: (args) => client.collection.create(args),
     update: (args) => client.collection.update(args),
     updateMany: (args) => client.collection.updateMany(args),
@@ -76,18 +76,18 @@ const createDelegates = (
   },
   link: {
     findFirst: async (args) =>
-      (await client.link.findFirst(args)) as LinkRecord | null,
+      (await client.link.findFirst(args)),
     findMany: async (args) =>
-      (await client.link.findMany(args)) as LinkRecord[],
+      (await client.link.findMany(args)),
     create: (args) => client.link.create(args),
     createMany: (args) => client.link.createMany(args),
-    update: async (args) => (await client.link.update(args)) as LinkRecord,
+    update: async (args) => (await client.link.update(args)),
     updateMany: (args) => client.link.updateMany(args),
-    delete: async (args) => (await client.link.delete(args)) as LinkRecord,
+    delete: async (args) => (await client.link.delete(args)),
   },
   user: {
     findFirst: async (args) =>
-      (await client.user.findFirst(args)) as PublicUserRecord | null,
+      (await client.user.findFirst(args)),
   },
 });
 
