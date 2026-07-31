@@ -58,3 +58,6 @@ yarn-error.log*
 .vercel
 
 .vercel
+
+# git worktrees
+/.worktrees/
