@@ -10,6 +10,7 @@ None
 
 ## Completed
 
+- [TASK031] Dependency refresh - Upgrade packages, fix compatibility issues, and open a maintenance PR (2026-07-31).
 - [TASK030] Dependency refresh - Upgrade packages, fix compatibility issues, and open a maintenance PR (2026-06-19).
 - [TASK029] Dependency refresh - Upgrade packages, fix compatibility issues, and open a maintenance PR (2026-03-18).
 - [TASK028] Add user profiles - Public profile pages for user collections (2026-01-31).
