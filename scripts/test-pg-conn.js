@@ -16,7 +16,7 @@ const client = new Client({
   connectionTimeoutMillis: 10000,
 });
 
-(async () => {
+void (async () => {
   try {
     await client.connect();
     console.log("PG: connected successfully");

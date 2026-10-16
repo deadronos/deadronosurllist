@@ -121,7 +121,7 @@ function startServer() {
     });
 
     serverProcess.on("error", (err) => {
-      reject(err);
+      reject(err instanceof Error ? err : new Error(String(err)));
     });
 
     setTimeout(() => {
@@ -264,4 +264,4 @@ process.on("SIGINT", () => {
   process.exit(1);
 });
 
-main();
+void main();

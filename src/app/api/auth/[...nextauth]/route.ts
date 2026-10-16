@@ -37,7 +37,7 @@ const allowedMethods = new Set(["GET", "POST"]);
 
 const withAvailabilityGuard =
   (handler: RouteHandler): RouteHandler =>
-  async (request, context = { params: Promise.resolve({ nextauth: [] }) }) => {
+  async (request, context) => {
     // Explicitly unwrap params for Next.js 15 compatibility
     const params = await context.params;
 
