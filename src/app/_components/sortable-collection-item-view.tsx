@@ -45,7 +45,7 @@ export function SortableCollectionItemView({
       style={style}
       dragProps={dragProps}
     >
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-3">
+      <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <div className="text-sm leading-tight font-semibold">
             <Link
@@ -62,7 +62,7 @@ export function SortableCollectionItemView({
           ) : null}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 sm:justify-end shrink-0">
+        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
           <div className="text-muted-foreground text-sm">
             {collection.linkCount.toLocaleString()}{" "}
             {collection.linkCount === 1 ? "link" : "links"}

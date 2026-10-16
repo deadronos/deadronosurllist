@@ -75,7 +75,11 @@ const sortConfig = sortOptions.reduce(
   },
   {} as Record<
     PublicCatalogSortKey,
-    { label: string; sortBy: PublicCatalogSortBy; sortOrder: PublicCatalogSortOrder }
+    {
+      label: string;
+      sortBy: PublicCatalogSortBy;
+      sortOrder: PublicCatalogSortOrder;
+    }
   >,
 );
 

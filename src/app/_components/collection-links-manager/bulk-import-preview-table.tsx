@@ -47,7 +47,9 @@ export function BulkImportPreviewTable({
             <TableCell className="align-top">
               <Input
                 value={link.name}
-                onChange={(event) => onUpdate(index, "name", event.target.value)}
+                onChange={(event) =>
+                  onUpdate(index, "name", event.target.value)
+                }
               />
             </TableCell>
             <TableCell className="align-top">

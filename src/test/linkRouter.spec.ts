@@ -4,7 +4,6 @@ import { beforeEach, describe, it, expect } from "vitest";
 
 import { createTRPCContext } from "@/server/api/trpc";
 
-
 type LinkResult = {
   id: string;
   order: number;
@@ -18,9 +17,6 @@ type CountResult = {
 };
 
 let caller: AppCaller;
-
-
-
 
 beforeEach(async () => {
   const context = await createTRPCContext({ headers: new Headers() });

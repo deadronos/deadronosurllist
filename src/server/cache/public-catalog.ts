@@ -13,7 +13,8 @@ type CacheEntry = {
 
 const cache = new Map<string, CacheEntry>();
 
-const isCacheEnabled = () => process.env.DISABLE_PUBLIC_CATALOG_CACHE !== "true";
+const isCacheEnabled = () =>
+  process.env.DISABLE_PUBLIC_CATALOG_CACHE !== "true";
 
 const normalizeInput = (input: PublicCatalogInput) => ({
   q: input.q?.trim() ?? "",

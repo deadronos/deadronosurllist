@@ -39,7 +39,7 @@ export default async function UserProfilePage({
       <StudioShell>
         <div className="space-y-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="relative flex size-16 items-center justify-center overflow-hidden rounded-full bg-muted text-muted-foreground">
+            <div className="bg-muted text-muted-foreground relative flex size-16 items-center justify-center overflow-hidden rounded-full">
               {user.image ? (
                 <img
                   src={user.image}
@@ -62,7 +62,7 @@ export default async function UserProfilePage({
 
           {collections.length === 0 ? (
             <Card className="bg-background/55 border backdrop-blur">
-              <CardContent className="p-6 text-sm text-muted-foreground">
+              <CardContent className="text-muted-foreground p-6 text-sm">
                 This user has not published any public collections yet.
               </CardContent>
             </Card>

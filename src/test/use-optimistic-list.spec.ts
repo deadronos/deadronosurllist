@@ -42,22 +42,26 @@ describe("useOptimisticList", () => {
 
     const callOrder: string[] = [];
 
-    const mutationFn1 = vi.fn((callbacks: { onSuccess?: () => void; onError?: () => void }) => {
-      callOrder.push("mutation1-start");
-      // Don't resolve immediately
-      setTimeout(() => {
-        callOrder.push("mutation1-complete");
-        callbacks.onSuccess?.();
-      }, 50);
-    });
+    const mutationFn1 = vi.fn(
+      (callbacks: { onSuccess?: () => void; onError?: () => void }) => {
+        callOrder.push("mutation1-start");
+        // Don't resolve immediately
+        setTimeout(() => {
+          callOrder.push("mutation1-complete");
+          callbacks.onSuccess?.();
+        }, 50);
+      },
+    );
 
-    const mutationFn2 = vi.fn((callbacks: { onSuccess?: () => void; onError?: () => void }) => {
-      callOrder.push("mutation2-start");
-      setTimeout(() => {
-        callOrder.push("mutation2-complete");
-        callbacks.onSuccess?.();
-      }, 10);
-    });
+    const mutationFn2 = vi.fn(
+      (callbacks: { onSuccess?: () => void; onError?: () => void }) => {
+        callOrder.push("mutation2-start");
+        setTimeout(() => {
+          callOrder.push("mutation2-complete");
+          callbacks.onSuccess?.();
+        }, 10);
+      },
+    );
 
     act(() => {
       result.current.optimisticUpdate(
@@ -87,9 +91,11 @@ describe("useOptimisticList", () => {
   test("rolls back to previous items on error", () => {
     const { result } = renderHook(() => useOptimisticList(items));
 
-    const mutationFn = vi.fn((callbacks: { onSuccess?: () => void; onError?: () => void }) => {
-      callbacks.onError?.();
-    });
+    const mutationFn = vi.fn(
+      (callbacks: { onSuccess?: () => void; onError?: () => void }) => {
+        callbacks.onError?.();
+      },
+    );
 
     act(() => {
       result.current.optimisticUpdate(
@@ -102,15 +108,20 @@ describe("useOptimisticList", () => {
     });
 
     expect(result.current.items).toEqual(items);
-    expect(result.current.feedback).toEqual({ type: "error", message: "Failed" });
+    expect(result.current.feedback).toEqual({
+      type: "error",
+      message: "Failed",
+    });
   });
 
   test("sets success feedback on success", () => {
     const { result } = renderHook(() => useOptimisticList(items));
 
-    const mutationFn = vi.fn((callbacks: { onSuccess?: () => void; onError?: () => void }) => {
-      callbacks.onSuccess?.();
-    });
+    const mutationFn = vi.fn(
+      (callbacks: { onSuccess?: () => void; onError?: () => void }) => {
+        callbacks.onSuccess?.();
+      },
+    );
 
     act(() => {
       result.current.optimisticUpdate(
@@ -122,15 +133,20 @@ describe("useOptimisticList", () => {
       );
     });
 
-    expect(result.current.feedback).toEqual({ type: "success", message: "Updated" });
+    expect(result.current.feedback).toEqual({
+      type: "success",
+      message: "Updated",
+    });
   });
 
   test("optimistic delete removes item", () => {
     const { result } = renderHook(() => useOptimisticList(items));
 
-    const mutationFn = vi.fn((callbacks: { onSuccess?: () => void; onError?: () => void }) => {
-      callbacks.onSuccess?.();
-    });
+    const mutationFn = vi.fn(
+      (callbacks: { onSuccess?: () => void; onError?: () => void }) => {
+        callbacks.onSuccess?.();
+      },
+    );
 
     act(() => {
       result.current.optimisticDelete("2", mutationFn, "Deleted", "Failed");
@@ -145,15 +161,20 @@ describe("useOptimisticList", () => {
   test("optimistic delete rolls back on error", () => {
     const { result } = renderHook(() => useOptimisticList(items));
 
-    const mutationFn = vi.fn((callbacks: { onSuccess?: () => void; onError?: () => void }) => {
-      callbacks.onError?.();
-    });
+    const mutationFn = vi.fn(
+      (callbacks: { onSuccess?: () => void; onError?: () => void }) => {
+        callbacks.onError?.();
+      },
+    );
 
     act(() => {
       result.current.optimisticDelete("2", mutationFn, "Deleted", "Failed");
     });
 
     expect(result.current.items).toEqual(items);
-    expect(result.current.feedback).toEqual({ type: "error", message: "Failed" });
+    expect(result.current.feedback).toEqual({
+      type: "error",
+      message: "Failed",
+    });
   });
 });

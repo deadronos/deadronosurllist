@@ -1,8 +1,15 @@
 "use client";
 
-import { DndContext, type DragEndEvent, type SensorDescriptor } from "@dnd-kit/core";
+import {
+  DndContext,
+  type DragEndEvent,
+  type SensorDescriptor,
+} from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 import { SortableLinkItem } from "../sortable-link-item";
 import type { CollectionLinkModel } from "./types";
@@ -45,8 +52,15 @@ export function LinksList({
   }
 
   return (
-    <DndContext sensors={sensors} onDragEnd={onDragEnd} modifiers={[restrictToVerticalAxis]}>
-      <SortableContext items={links.map((link) => link.id)} strategy={verticalListSortingStrategy}>
+    <DndContext
+      sensors={sensors}
+      onDragEnd={onDragEnd}
+      modifiers={[restrictToVerticalAxis]}
+    >
+      <SortableContext
+        items={links.map((link) => link.id)}
+        strategy={verticalListSortingStrategy}
+      >
         <div className="mt-6 space-y-2">
           {links.map((link) => (
             <SortableLinkItem

@@ -63,10 +63,8 @@ const createDelegates = (
   client: PrismaClient | Prisma.TransactionClient,
 ): Pick<LinkListDatabase, "collection" | "link" | "user"> => ({
   collection: {
-    findMany: async (args) =>
-      (await client.collection.findMany(args)),
-    findFirst: async (args) =>
-      (await client.collection.findFirst(args)),
+    findMany: async (args) => await client.collection.findMany(args),
+    findFirst: async (args) => await client.collection.findFirst(args),
     create: (args) => client.collection.create(args),
     update: (args) => client.collection.update(args),
     updateMany: (args) => client.collection.updateMany(args),
@@ -75,19 +73,16 @@ const createDelegates = (
     deleteMany: (args) => client.collection.deleteMany(args),
   },
   link: {
-    findFirst: async (args) =>
-      (await client.link.findFirst(args)),
-    findMany: async (args) =>
-      (await client.link.findMany(args)),
+    findFirst: async (args) => await client.link.findFirst(args),
+    findMany: async (args) => await client.link.findMany(args),
     create: (args) => client.link.create(args),
     createMany: (args) => client.link.createMany(args),
-    update: async (args) => (await client.link.update(args)),
+    update: async (args) => await client.link.update(args),
     updateMany: (args) => client.link.updateMany(args),
-    delete: async (args) => (await client.link.delete(args)),
+    delete: async (args) => await client.link.delete(args),
   },
   user: {
-    findFirst: async (args) =>
-      (await client.user.findFirst(args)),
+    findFirst: async (args) => await client.user.findFirst(args),
   },
 });
 
@@ -107,7 +102,9 @@ const createTransactionDatabase = (
   $transaction: async (operations) => {
     const results: unknown[] = [];
     for (const operation of operations) {
-      results.push(await (typeof operation === "function" ? operation() : operation));
+      results.push(
+        await (typeof operation === "function" ? operation() : operation),
+      );
     }
     return results;
   },
@@ -136,12 +133,11 @@ if (useMock) {
   );
   const baseLogLevels: Prisma.LogLevel[] =
     env.NODE_ENV === "development" ? ["error", "warn"] : ["error"];
-  const logConfig: Prisma.PrismaClientOptions["log"] =
-    enableSlowQueryLogging
-      ? [{ emit: "event", level: "query" }, ...baseLogLevels]
-      : env.NODE_ENV === "development"
-        ? ["query", "error", "warn"]
-        : ["error"];
+  const logConfig: Prisma.PrismaClientOptions["log"] = enableSlowQueryLogging
+    ? [{ emit: "event", level: "query" }, ...baseLogLevels]
+    : env.NODE_ENV === "development"
+      ? ["query", "error", "warn"]
+      : ["error"];
 
   const createPrismaClient = () => {
     const client = new PrismaClient({

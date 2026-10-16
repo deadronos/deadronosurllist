@@ -42,7 +42,9 @@ describe("urlSchema", () => {
     const result = urlSchema.safeParse("ftp://example.com");
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0]?.message).toBe("Only http and https URLs are allowed");
+      expect(result.error.issues[0]?.message).toBe(
+        "Only http and https URLs are allowed",
+      );
     }
   });
 
@@ -50,7 +52,9 @@ describe("urlSchema", () => {
     const result = urlSchema.safeParse("javascript:alert(1)");
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0]?.message).toBe("Only http and https URLs are allowed");
+      expect(result.error.issues[0]?.message).toBe(
+        "Only http and https URLs are allowed",
+      );
     }
   });
 
@@ -58,7 +62,9 @@ describe("urlSchema", () => {
     const result = urlSchema.safeParse("data:text/html,<html></html>");
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.issues[0]?.message).toBe("Only http and https URLs are allowed");
+      expect(result.error.issues[0]?.message).toBe(
+        "Only http and https URLs are allowed",
+      );
     }
   });
 
@@ -68,7 +74,9 @@ describe("urlSchema", () => {
     if (!result.success) {
       // Zod's internal .url() validation should catch this.
       // The error code might vary depending on the Zod version (e.g., invalid_string or invalid_format).
-      expect(result.error.issues[0]?.message).not.toBe("Only http and https URLs are allowed");
+      expect(result.error.issues[0]?.message).not.toBe(
+        "Only http and https URLs are allowed",
+      );
       expect(result.error.issues[0]?.code).toBeDefined();
     }
   });

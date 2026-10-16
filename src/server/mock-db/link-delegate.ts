@@ -65,7 +65,8 @@ export const linkDelegate = {
       collectionId,
       url: data.url as string,
       name: data.name as string,
-      comment: data.comment === undefined ? null : (data.comment as string | null),
+      comment:
+        data.comment === undefined ? null : (data.comment as string | null),
       order: (data.order as number) ?? 0,
       createdAt: now,
       updatedAt: now,
@@ -80,7 +81,9 @@ export const linkDelegate = {
     return toLinkResult(record);
   },
 
-  createMany: async (args: { data: Record<string, unknown>[] | Record<string, unknown> }) => {
+  createMany: async (args: {
+    data: Record<string, unknown>[] | Record<string, unknown>;
+  }) => {
     const store = getStore();
     const dataArray = Array.isArray(args.data) ? args.data : [args.data];
     const now = new Date();
@@ -98,7 +101,8 @@ export const linkDelegate = {
         collectionId,
         url: data.url as string,
         name: data.name as string,
-        comment: data.comment === undefined ? null : (data.comment as string | null),
+        comment:
+          data.comment === undefined ? null : (data.comment as string | null),
         order: (data.order as number) ?? 0,
         createdAt: now,
         updatedAt: now,
@@ -138,7 +142,10 @@ export const linkDelegate = {
     return toLinkResult(record, { include: args.include });
   },
 
-  updateMany: async (args: { where?: Record<string, unknown>; data: Record<string, unknown> }) => {
+  updateMany: async (args: {
+    where?: Record<string, unknown>;
+    data: Record<string, unknown>;
+  }) => {
     const store = getStore();
     const where = args.where;
     const data = args.data;

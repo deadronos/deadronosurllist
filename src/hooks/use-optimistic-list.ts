@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import {
   type DragEndEvent,
   KeyboardSensor,
@@ -27,9 +21,7 @@ type OperationCallbacks = {
  * @param {T[]} initialItems - The initial list of items.
  * @returns {object} The state and handlers for the list.
  */
-export function useOptimisticList<T extends { id: string }>(
-  initialItems: T[],
-) {
+export function useOptimisticList<T extends { id: string }>(initialItems: T[]) {
   const [items, setItems] = useState(initialItems);
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [, startTransition] = useTransition();
@@ -40,7 +32,8 @@ export function useOptimisticList<T extends { id: string }>(
 
   const processQueue = useCallback(() => {
     // Prevent concurrent processing — only one processQueue can run at a time
-    if (isProcessingRef.current || mutationQueueRef.current.length === 0) return;
+    if (isProcessingRef.current || mutationQueueRef.current.length === 0)
+      return;
     isProcessingRef.current = true;
 
     const next = mutationQueueRef.current.shift()!;
@@ -155,9 +148,7 @@ export function useOptimisticList<T extends { id: string }>(
         const oldIndex = previousItems.findIndex(
           (item) => item.id === active.id,
         );
-        const newIndex = previousItems.findIndex(
-          (item) => item.id === over.id,
-        );
+        const newIndex = previousItems.findIndex((item) => item.id === over.id);
 
         if (oldIndex === -1 || newIndex === -1) {
           return previousItems;

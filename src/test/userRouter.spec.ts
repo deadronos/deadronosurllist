@@ -3,10 +3,6 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { db } from "@/server/db";
 
-
-
-
-
 let caller: AppCaller;
 
 const maybeReset = (db as unknown as { reset?: () => void }).reset;

@@ -11,7 +11,9 @@ export const matchStringFilter = (
       const needle =
         f.mode === "insensitive" ? f.contains.toLowerCase() : f.contains;
       const haystack =
-        f.mode === "insensitive" ? (actual ?? "").toLowerCase() : actual ?? "";
+        f.mode === "insensitive"
+          ? (actual ?? "").toLowerCase()
+          : (actual ?? "");
       return haystack.includes(needle);
     }
   }

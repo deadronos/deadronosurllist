@@ -6,7 +6,10 @@ import {
   type SensorDescriptor,
 } from "@dnd-kit/core";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 import { SortableCollectionItem } from "../sortable-collection-item";
 import type { DashboardCollectionModel } from "./types";

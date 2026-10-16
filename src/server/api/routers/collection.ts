@@ -77,7 +77,9 @@ export const collectionRouter = createTRPCRouter({
       if (!collection) return null;
 
       // Filter out unsafe links to prevent stored XSS
-      const safeLinks = (collection.links ?? []).filter((link) => isSafeUrl(link.url));
+      const safeLinks = (collection.links ?? []).filter((link) =>
+        isSafeUrl(link.url),
+      );
 
       return {
         ...collection,

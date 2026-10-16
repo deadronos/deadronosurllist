@@ -54,6 +54,8 @@ export type LinkListDatabase = {
     delete(args: Prisma.LinkDeleteArgs): Promise<LinkRecord>;
   };
   user: {
-    findFirst(args?: Prisma.UserFindFirstArgs): Promise<PublicUserRecord | null>;
+    findFirst(
+      args?: Prisma.UserFindFirstArgs,
+    ): Promise<PublicUserRecord | null>;
   };
 };

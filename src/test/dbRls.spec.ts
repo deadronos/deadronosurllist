@@ -78,8 +78,9 @@ describe("withUserDb", () => {
   it("sets the transaction-local RLS user context with set_config", async () => {
     const tx = createMockTransactionClient();
     const prismaClient = {
-      $transaction: vi.fn(async (callback: (client: MockTransactionClient) => Promise<unknown>) =>
-        callback(tx),
+      $transaction: vi.fn(
+        async (callback: (client: MockTransactionClient) => Promise<unknown>) =>
+          callback(tx),
       ),
     };
 
@@ -103,11 +104,11 @@ describe("withUserDb", () => {
     }));
 
     process.env.USE_MOCK_DB = "false";
-    process.env.DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/app";
+    process.env.DATABASE_URL =
+      "postgresql://postgres:postgres@localhost:5432/app";
 
-    const { withUserDb } = await vi.importActual<typeof ServerDbModule>(
-      "@/server/db",
-    );
+    const { withUserDb } =
+      await vi.importActual<typeof ServerDbModule>("@/server/db");
 
     const result = await withUserDb("user-123", async () => "ok");
 

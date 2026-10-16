@@ -6,7 +6,10 @@ import type {
 } from "./types";
 import { getStore } from "./store";
 
-import type { CollectionRecord as CollectionDto, LinkRecord as LinkDto } from "../db.types";
+import type {
+  CollectionRecord as CollectionDto,
+  LinkRecord as LinkDto,
+} from "../db.types";
 
 const cloneDate = (value: Date) => new Date(value.getTime());
 
@@ -82,7 +85,10 @@ export const toLinkResult = (
           : includeOptions.collection.include;
       const collectionRecord = store.collections.get(record.collectionId);
       if (collectionRecord) {
-        base.collection = toCollectionResult(collectionRecord, collectionInclude);
+        base.collection = toCollectionResult(
+          collectionRecord,
+          collectionInclude,
+        );
       }
     }
   }

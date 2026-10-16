@@ -29,7 +29,11 @@ export const compareCollections = (
 ): number => {
   for (const sort of orderBy) {
     if (sort.links?._count) {
-      const diff = compareValues(a.linkIds.length, b.linkIds.length, sort.links._count);
+      const diff = compareValues(
+        a.linkIds.length,
+        b.linkIds.length,
+        sort.links._count,
+      );
       if (diff !== 0) return diff;
     }
     if (sort.updatedAt) {

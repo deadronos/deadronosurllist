@@ -18,7 +18,9 @@ describe("isHttpUrl", () => {
     expect(isHttpUrl("mailto:user@example.com")).toBe(false);
     expect(isHttpUrl("file:///etc/passwd")).toBe(false);
     expect(isHttpUrl("javascript:alert(1)")).toBe(false);
-    expect(isHttpUrl("data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==")).toBe(false);
+    expect(isHttpUrl("data:text/plain;base64,SGVsbG8sIFdvcmxkIQ==")).toBe(
+      false,
+    );
   });
 
   test("returns false for non-URL strings", () => {
