@@ -423,7 +423,7 @@ describe("collectionRouter (mocked)", () => {
       expect(result?.links[0]?.name).toBe("Safe Link");
       expect(result?.links[0]?.url).toBe("https://example.com");
       expect(
-        result?.links.find((l) => l.url.startsWith("javascript:")),
+        result?.links.find((l) => !l.url.startsWith("https://")),
       ).toBeUndefined();
     });
   });
