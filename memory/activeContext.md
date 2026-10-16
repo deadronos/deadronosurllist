@@ -8,5 +8,5 @@
 - Focus: TASK017–TASK030 completed, covering security middleware, RLS-scoped DB access, error boundaries, Vercel deploy workflows, expanded Playwright coverage, performance monitoring, API docs, caching, advanced catalog search, public user profiles, and previous dependency updates.
 - Focus: Public catalog supports server-side search + sorting with cache invalidation and mock DB seed expansion for paging.
 - Focus: Optional visual/load testing workflows are staged with manual triggers and environment gating.
-- Next Actions: Wait for the TASK032 dependency-refresh PR to be reviewed and merged; stale PR #116 has been superseded and closed.
+- Next Actions: Wait for PR #117 (TASK032 dependency refresh) to be reviewed and merged; stale PR #116 has been superseded and closed.
 - Dependencies: Prisma client runtime availability on Windows environments (build emits expected engine warnings). Firefox Playwright runs fail locally on this machine with `Could not find profile folder`, reproducible by launching the bundled Firefox binary directly; CI installs browsers fresh and is unaffected.

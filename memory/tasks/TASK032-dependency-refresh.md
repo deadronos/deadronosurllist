@@ -31,7 +31,7 @@ update this to latest packages and dependencies and open a new branch for that, 
 |32.2|Create branch and task doc|Complete|2026-10-16|Branch `chore/dependency-refresh-2026-10` from `main`.|
 |32.3|Upgrade dependencies|Complete|2026-10-16|Refreshed all deps with `npx npm-check-updates -u`; lockfile regenerated from scratch.|
 |32.4|Resolve major-version blockers|Complete|2026-10-16|Held TypeScript at 6.0.3 (latest 6.x); `typescript-eslint` 8.71.2 hard-errors on TS 7.0. Prisma held at 7.10.1 (8.0.0 is prerelease).|
-|32.5|Validate and open PR|Complete|2026-10-16|`npm ci`, `npm run check`, `npm test` (213), `npm run build`, and Playwright chromium/webkit all pass. PR opened; stale PR #116 superseded.|
+|32.5|Validate and open PR|Complete|2026-10-16|`npm ci`, `npm run check`, `npm test` (213), `npm run build`, and Playwright chromium/webkit all pass. PR #117 opened; stale PR #116 superseded and closed.|
 
 ## Progress Log
 
@@ -49,4 +49,4 @@ update this to latest packages and dependencies and open a new branch for that, 
 - Firefox E2E is blocked by a machine-level issue unrelated to this change: the bundled Firefox binary cannot create its profile folder (`Could not find profile folder`), reproduced by launching the binary directly with no Playwright or npm involvement. CI installs browsers fresh on ubuntu-latest, so this does not affect CI.
 - Confirmed the E2E auth diagnostic spec requires the placeholder credential env vars that `ci.yml` sets (`AUTH_DISCORD_ID=placeholder`, `AUTH_GOOGLE_ID=placeholder`); it passes with them and its earlier failure was an environment mismatch, not a regression.
 - Dependency audit improved from 37 vulnerabilities (1 low / 9 moderate / 19 high / 8 critical) on `main` to 8 (1 low / 5 high / 2 critical) on this branch. The remaining findings are transitive in `eslint-config-next` and `next-auth` 4.x and are only "fixable" by breaking downgrades, so they were left alone.
-- Committed, pushed, and opened the pull request against `main`.
+- Committed, pushed, and opened PR #117 against `main`; closed stale PR #116 as superseded.
