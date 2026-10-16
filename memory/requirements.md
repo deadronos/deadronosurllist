@@ -73,7 +73,8 @@
 > Note (TASK033): these requirements are stated using the `@typescript-eslint/*` rule names
 > in force when they were written. Since the Oxlint migration the equivalent rules live in the
 > `typescript/*` namespace (e.g. `@typescript-eslint/no-unsafe-member-access` is now
-> `typescript/no-unsafe-member-access`). The requirements themselves are unchanged and still
+> `typescript/no-unsafe-member-access`), and the formatter is oxfmt rather than Prettier,
+> configured to match Prettier's output. The requirements themselves are unchanged and still
 > satisfied.
 
 - WHEN `npm run lint` executes, THE SYSTEM SHALL complete without any `@typescript-eslint/no-unsafe-*` or `@typescript-eslint/no-explicit-any` diagnostics across routers, database utilities, or tests [Acceptance: `npm run lint` exits with code 0 and reports zero such violations].
@@ -91,4 +92,4 @@
 
 - WHEN the TypeScript compiler runs via `npm run typecheck` while coverage artifacts exist under `coverage/`, THE SYSTEM SHALL complete without reporting diagnostics originating from those generated files [Acceptance: `npm run typecheck` exits 0 with the `coverage` directory present].
 - WHEN `npm run lint` executes after the tooling adjustments, THE SYSTEM SHALL finish without errors or warnings stemming from configuration updates [Acceptance: `npm run lint` exits successfully].
-- WHEN `npm run format:write` executes, THE SYSTEM SHALL reformat project files without introducing new diffs beyond Prettier's deterministic output [Acceptance: `npm run format:write` exits 0 and reports no outstanding formatting].
+- WHEN `npm run format:write` executes, THE SYSTEM SHALL reformat project files without introducing new diffs beyond the formatter's deterministic output [Acceptance: `npm run format:write` exits 0 and reports no outstanding formatting, and a second run is a no-op].

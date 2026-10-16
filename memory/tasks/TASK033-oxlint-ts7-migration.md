@@ -44,7 +44,8 @@ can we switch to biome or oxfmt so as ts7 typeaware linter?
 |33.3|Replace Prettier with oxfmt|Complete|2026-10-16|`.oxfmtrc.json` mirrors Prettier (printWidth 80, sortPackageJson false, sortTailwindcss {}); reformatted 80 files.|
 |33.4|Fix surfaced findings|Complete|2026-10-16|2 × no-floating-promises, 1 × prefer-promise-reject-errors in `scripts/`, 1 × no-useless-default-assignment in the auth route.|
 |33.5|Upgrade TypeScript to 7.0.2|Complete|2026-10-16|No tsconfig changes needed; type-aware linting re-proven under TS 7.|
-|33.6|Record in memory bank and open PR|Complete|2026-10-16|This document; PR opened against `main`.|
+|33.6|Record in memory bank and open PR|Complete|2026-10-16|This document; PR #119 merged into `main`.|
+|33.7|Resolve whole-branch review findings|Complete|2026-10-16|Fixed a test assertion that was stricter than the URL contract (`isSafeUrl` allows http and https; it rejected non-https), and refreshed contributor guidance that still named ESLint/Prettier in `.github/copilot-instructions.md`, `.github/instructions/reactjs.instructions.md`, `.github/chatmodes/claudette.chatmode.md`, `README.md` and `docs/SECURITY-IMPLEMENTATION.md`.|
 
 ## Progress Log
 
