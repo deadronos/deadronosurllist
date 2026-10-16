@@ -2,10 +2,6 @@ import { createTestCaller, type AppCaller } from "./setup-trpc";
 import { beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/server/db";
 
-
-
-
-
 let caller: AppCaller;
 
 const maybeReset = (db as unknown as { reset?: () => void }).reset;
@@ -39,14 +35,14 @@ describe("security reproduction", () => {
 
     // Inject a safe link to ensure legitimate data remains
     await db.link.create({
-        data: {
-          collectionId: collection.id,
-          name: "Safe Link",
-          url: "https://example.com",
-          comment: "This should be present",
-          order: 2,
-        },
-      });
+      data: {
+        collectionId: collection.id,
+        name: "Safe Link",
+        url: "https://example.com",
+        comment: "This should be present",
+        order: 2,
+      },
+    });
 
     // 3. Fetch the public catalog
     const response = await caller.collection.getPublicCatalog({
@@ -58,11 +54,15 @@ describe("security reproduction", () => {
     expect(item).toBeDefined();
 
     // 5. Assert that the malicious link IS filtered out (fixing the vulnerability)
-    const badLink = item?.topLinks.find((l) => l.url === "javascript:alert('XSS')");
+    const badLink = item?.topLinks.find(
+      (l) => l.url === "javascript:alert('XSS')",
+    );
     expect(badLink).toBeUndefined();
 
     // 6. Assert that safe link is present
-    const safeLink = item?.topLinks.find((l) => l.url === "https://example.com");
+    const safeLink = item?.topLinks.find(
+      (l) => l.url === "https://example.com",
+    );
     expect(safeLink).toBeDefined();
   });
 });

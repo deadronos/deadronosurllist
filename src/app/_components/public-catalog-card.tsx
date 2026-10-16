@@ -21,9 +21,7 @@ type PublicCatalogCardProps = {
 
 export function PublicCatalogCard({ collection }: PublicCatalogCardProps) {
   return (
-    <Card
-      className="bg-background/45 h-full overflow-hidden border backdrop-blur"
-    >
+    <Card className="bg-background/45 h-full overflow-hidden border backdrop-blur">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -80,7 +78,9 @@ export function PublicCatalogCard({ collection }: PublicCatalogCardProps) {
 
         <div className="flex items-center justify-between gap-2">
           <Button asChild variant="ghost" size="sm">
-            <Link href={`/public-collections/${collection.id}`}>View full list</Link>
+            <Link href={`/public-collections/${collection.id}`}>
+              View full list
+            </Link>
           </Button>
           <Button asChild variant="outline" size="sm">
             <Link href="/signin">Publish your own</Link>

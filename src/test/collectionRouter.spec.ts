@@ -3,10 +3,6 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { db } from "@/server/db";
 
-
-
-
-
 let caller: AppCaller;
 
 const maybeReset = (db as unknown as { reset?: () => void }).reset;
@@ -369,7 +365,9 @@ describe("collectionRouter (mocked)", () => {
         url: "https://example.com/1",
       });
 
-      const result = await caller.collection.getPublicById({ id: publicColl.id });
+      const result = await caller.collection.getPublicById({
+        id: publicColl.id,
+      });
       expect(result).not.toBeNull();
       expect(result?.name).toBe("Public Collection");
       expect(result?.description).toBe("Public Description");
@@ -385,7 +383,9 @@ describe("collectionRouter (mocked)", () => {
         isPublic: false,
       });
 
-      const result = await caller.collection.getPublicById({ id: privateColl.id });
+      const result = await caller.collection.getPublicById({
+        id: privateColl.id,
+      });
       expect(result).toBeNull();
     });
 
@@ -405,22 +405,40 @@ describe("collectionRouter (mocked)", () => {
         },
       });
 
+      // Inject a plain-HTTP link. Not encrypted, but explicitly allowed:
+      // isSafeUrl/urlSchema permit http and https and nothing else.
+      await db.link.create({
+        data: {
+          collectionId: publicColl.id,
+          name: "Plain HTTP Link",
+          url: "http://example.com",
+          order: 2,
+        },
+      });
+
       // Inject an unsafe link
       await db.link.create({
         data: {
           collectionId: publicColl.id,
           name: "Unsafe Link",
           url: "javascript:alert('XSS')",
-          order: 2,
+          order: 3,
         },
       });
 
-      const result = await caller.collection.getPublicById({ id: publicColl.id });
+      const result = await caller.collection.getPublicById({
+        id: publicColl.id,
+      });
       expect(result).not.toBeNull();
-      expect(result?.links).toHaveLength(1);
-      expect(result?.links[0]?.name).toBe("Safe Link");
-      expect(result?.links[0]?.url).toBe("https://example.com");
-      expect(result?.links.find((l) => l.url.startsWith("javascript:"))).toBeUndefined();
+      expect(result?.links).toHaveLength(2);
+      expect(result?.links.map((l) => l.name)).toEqual([
+        "Safe Link",
+        "Plain HTTP Link",
+      ]);
+      // Nothing may survive that is not an http(s) URL.
+      expect(
+        result?.links.find((l) => !/^https?:\/\//i.test(l.url)),
+      ).toBeUndefined();
     });
   });
 });

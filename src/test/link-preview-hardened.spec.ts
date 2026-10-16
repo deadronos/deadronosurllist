@@ -90,7 +90,10 @@ describe("fetchLinkPreview", () => {
   });
 
   it("returns an error object when the request times out", async () => {
-    const abortError = new DOMException("The operation was aborted.", "AbortError");
+    const abortError = new DOMException(
+      "The operation was aborted.",
+      "AbortError",
+    );
     fetchSpy.mockRejectedValue(abortError);
 
     const result = await fetchLinkPreview("https://slow.example.com");

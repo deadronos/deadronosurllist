@@ -84,7 +84,9 @@ export default async function DashboardPage() {
                 <Button asChild size="lg" className="w-full">
                   <Link href={actionHref}>{actionLabel}</Link>
                 </Button>
-                <div className="text-muted-foreground text-sm">{helperText}</div>
+                <div className="text-muted-foreground text-sm">
+                  {helperText}
+                </div>
               </CardContent>
             </Card>
           </div>

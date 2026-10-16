@@ -1,12 +1,13 @@
 "use client";
 
-import type { DragEndEvent, SensorDescriptor, SensorOptions } from "@dnd-kit/core";
+import type {
+  DragEndEvent,
+  SensorDescriptor,
+  SensorOptions,
+} from "@dnd-kit/core";
 import { FeedbackAlert } from "../feedback-alert";
 
-import {
-  DeleteLinkDialog,
-  EditLinkDialog,
-} from "./link-dialogs";
+import { DeleteLinkDialog, EditLinkDialog } from "./link-dialogs";
 import { LinksEmptyState } from "./links-empty-state";
 import { LinksList } from "./links-list";
 import { LinksToolbar } from "./links-toolbar";
@@ -104,7 +105,10 @@ export function CollectionLinksManagerView({
       ) : null}
 
       {!hasLinks ? (
-        <LinksEmptyState hasFilter={hasFilter} onClearFilter={() => onFilterChange("")} />
+        <LinksEmptyState
+          hasFilter={hasFilter}
+          onClearFilter={() => onFilterChange("")}
+        />
       ) : (
         <LinksList
           links={links}

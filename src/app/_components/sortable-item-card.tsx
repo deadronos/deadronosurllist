@@ -42,8 +42,8 @@ export function SortableItemCard({
         isDragging ? "ring-ring/30 ring-2" : null,
       )}
     >
-      <div className="flex flex-col gap-3 px-6 sm:flex-row sm:items-center sm:justify-between py-3">
-        <div className="flex min-w-0 items-start gap-3 w-full">
+      <div className="flex flex-col gap-3 px-6 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex w-full min-w-0 items-start gap-3">
           <Tooltip>
             <TooltipTrigger asChild>
               <button

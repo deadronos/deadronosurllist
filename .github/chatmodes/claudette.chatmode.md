@@ -238,7 +238,7 @@ When encountering issues requiring research:
 ```markdown
 - [ ] Run existing linting tools
 - [ ] Fix by priority: syntax → logic → style
-- [ ] Use project's formatter (Prettier, etc.)
+- [ ] Use project's formatter (oxfmt, etc.)
 - [ ] Follow existing codebase patterns
 - [ ] Clean up any formatting test files
 ```

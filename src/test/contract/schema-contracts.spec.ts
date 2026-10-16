@@ -90,9 +90,7 @@ describe("Schema Contract Tests", () => {
     });
 
     it("should require id", () => {
-      expect(() =>
-        collectionUpdateSchema.parse({ name: "Test" }),
-      ).toThrow();
+      expect(() => collectionUpdateSchema.parse({ name: "Test" })).toThrow();
     });
 
     it("should accept valid input", () => {
@@ -197,9 +195,7 @@ describe("Schema Contract Tests", () => {
     });
 
     it("should require id", () => {
-      expect(() =>
-        linkUpdateSchema.parse({ name: "Test" }),
-      ).toThrow();
+      expect(() => linkUpdateSchema.parse({ name: "Test" })).toThrow();
     });
 
     it("should accept valid input", () => {

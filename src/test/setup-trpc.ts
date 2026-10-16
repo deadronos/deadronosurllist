@@ -21,7 +21,9 @@ export const createSession = (userId: string): Session => ({
   expires: new Date(Date.now() + 60_000).toISOString(),
 });
 
-export const createTestCaller = (overrides?: Partial<TestContext>): AppCaller => {
+export const createTestCaller = (
+  overrides?: Partial<TestContext>,
+): AppCaller => {
   const context: TestContext = {
     db,
     session: createSession("user1"),

@@ -4,11 +4,7 @@ import { ChevronDownIcon, SearchIcon } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,7 +53,9 @@ export function PublicCatalogHeader({
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <CardTitle className="text-lg">All current public lists</CardTitle>
-          <CardDescription>Browse collections published by the community.</CardDescription>
+          <CardDescription>
+            Browse collections published by the community.
+          </CardDescription>
         </div>
 
         <div className="relative w-full md:w-80">
@@ -104,10 +102,7 @@ export function PublicCatalogHeader({
                   }
                 >
                   {sortOptions.map((option) => (
-                    <DropdownMenuRadioItem
-                      key={option.key}
-                      value={option.key}
-                    >
+                    <DropdownMenuRadioItem key={option.key} value={option.key}>
                       {option.label}
                     </DropdownMenuRadioItem>
                   ))}

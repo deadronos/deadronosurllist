@@ -10,6 +10,7 @@ None
 
 ## Completed
 
+- [TASK033] Oxlint + oxfmt toolchain migration and TypeScript 7 - Replaced ESLint/typescript-eslint and Prettier with Oxlint (type-aware) and oxfmt at exact lint parity, and adopted TypeScript 7.0.2 (2026-10-16).
 - [TASK032] Dependency refresh - Upgrade packages to latest stable, hold TypeScript 6.x pending typescript-eslint TS 7 support, and open a maintenance PR (2026-10-16).
 - [TASK030] Dependency refresh - Upgrade packages, fix compatibility issues, and open a maintenance PR (2026-06-19).
 - [TASK029] Dependency refresh - Upgrade packages, fix compatibility issues, and open a maintenance PR (2026-03-18).

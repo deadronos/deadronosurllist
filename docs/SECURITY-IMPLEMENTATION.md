@@ -125,7 +125,7 @@ Implemented via GitHub Actions workflow: `.github/workflows/security.yml`
 
 #### 3. Lint and Type Check
 
-- **Tools**: ESLint, TypeScript compiler
+- **Tools**: Oxlint, TypeScript compiler
 - **Scope**: Enforces code quality and type safety
 - **Catches**: Type errors, unsafe operations, code smells
 

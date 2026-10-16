@@ -1,11 +1,8 @@
 import { createTestCaller, createSession, type AppCaller } from "./setup-trpc";
 import { beforeEach, describe, it, expect } from "vitest";
 
-
-
 let caller: AppCaller;
 let collectionId: string;
-
 
 beforeEach(async () => {
   // Create context with mock session
@@ -27,7 +24,7 @@ describe("linkRouter security", () => {
         url: "javascript:alert(1)",
         name: "Malicious Link",
         comment: "This should fail",
-      })
+      }),
     ).rejects.toThrow();
   });
 
@@ -37,7 +34,7 @@ describe("linkRouter security", () => {
         collectionId,
         url: "vbscript:alert(1)",
         name: "Malicious VBS Link",
-      })
+      }),
     ).rejects.toThrow();
   });
 
@@ -47,7 +44,7 @@ describe("linkRouter security", () => {
         collectionId,
         url: "data:text/html,<script>alert(1)</script>",
         name: "Malicious Data Link",
-      })
+      }),
     ).rejects.toThrow();
   });
 

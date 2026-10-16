@@ -29,7 +29,9 @@ export type LinkPreviewResponse = LinkPreviewResult | LinkPreviewError;
  * Fetches HTML from a URL with safety guards and extracts OpenGraph / standard
  * metadata (title, description).
  */
-export async function fetchLinkPreview(url: string): Promise<LinkPreviewResponse> {
+export async function fetchLinkPreview(
+  url: string,
+): Promise<LinkPreviewResponse> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
@@ -58,9 +60,7 @@ export async function fetchLinkPreview(url: string): Promise<LinkPreviewResponse
     const $ = load(html);
 
     const title =
-      $("title").text() ||
-      $('meta[property="og:title"]').attr("content") ||
-      "";
+      $("title").text() || $('meta[property="og:title"]').attr("content") || "";
 
     const description =
       $('meta[name="description"]').attr("content") ||
@@ -73,7 +73,10 @@ export async function fetchLinkPreview(url: string): Promise<LinkPreviewResponse
     };
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
-      return { ok: false, reason: `Request timed out after ${FETCH_TIMEOUT_MS}ms` };
+      return {
+        ok: false,
+        reason: `Request timed out after ${FETCH_TIMEOUT_MS}ms`,
+      };
     }
 
     return {

@@ -30,15 +30,15 @@ const DefaultFallback = ({
 }) => {
   return (
     <div className="flex min-h-[60vh] items-center justify-center px-6 py-10">
-      <Card className="w-full max-w-xl bg-background/60 backdrop-blur">
+      <Card className="bg-background/60 w-full max-w-xl backdrop-blur">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BugIcon className="size-5 text-muted-foreground" />
+            <BugIcon className="text-muted-foreground size-5" />
             Something went wrong
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             {error.message ||
               "An unexpected error occurred. Try again or head back home."}
           </p>
@@ -49,7 +49,7 @@ const DefaultFallback = ({
             </Button>
           </div>
           <Separator />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             If this keeps happening, please refresh the page.
           </p>
         </CardContent>

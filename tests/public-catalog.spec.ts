@@ -10,9 +10,9 @@ test.describe("Public catalog", () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto("/catalog");
-    await expect(
-      page.getByText("Discover Links", { exact: true }),
-    ).toBeVisible({ timeout: 30000 });
+    await expect(page.getByText("Discover Links", { exact: true })).toBeVisible(
+      { timeout: 30000 },
+    );
   });
 
   test("Search filters catalog results", async ({ page }) => {
@@ -24,8 +24,12 @@ test.describe("Public catalog", () => {
     });
 
     await test.step("Verify filtered results", async () => {
-      await expect(page.getByText("Resource Roundup 3", { exact: true })).toBeVisible();
-      await expect(page.getByText("Resource Roundup 1", { exact: true })).toHaveCount(0);
+      await expect(
+        page.getByText("Resource Roundup 3", { exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByText("Resource Roundup 1", { exact: true }),
+      ).toHaveCount(0);
     });
   });
 
@@ -36,7 +40,10 @@ test.describe("Public catalog", () => {
 
     await test.step("Trigger infinite loading", async () => {
       await page.evaluate(() => {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" });
+        window.scrollTo({
+          top: document.body.scrollHeight,
+          behavior: "instant",
+        });
       });
     });
 
@@ -56,10 +63,7 @@ test.describe("Public catalog", () => {
         .getByRole("link", { name: "Publish your own" })
         .first();
       await expect(publishLink).toBeVisible();
-      await Promise.all([
-        page.waitForURL(/\/signin/),
-        publishLink.click(),
-      ]);
+      await Promise.all([page.waitForURL(/\/signin/), publishLink.click()]);
     });
 
     await test.step("Verify navigation", async () => {

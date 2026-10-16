@@ -14,11 +14,18 @@ export interface ThemeToggleViewProps {
   variant?: "icon" | "ghost";
 }
 
-export function ThemeToggleView({ onSetTheme, variant = "icon" }: ThemeToggleViewProps) {
+export function ThemeToggleView({
+  onSetTheme,
+  variant = "icon",
+}: ThemeToggleViewProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={variant === "icon" ? "outline" : "ghost"} size="icon" aria-label={variant === "icon" ? "Toggle theme" : "Theme options"}>
+        <Button
+          variant={variant === "icon" ? "outline" : "ghost"}
+          size="icon"
+          aria-label={variant === "icon" ? "Toggle theme" : "Theme options"}
+        >
           {variant === "icon" ? (
             <>
               <SunIcon className="size-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />

@@ -1,6 +1,10 @@
 "use client";
 
-import type { DragEndEvent, SensorDescriptor, SensorOptions } from "@dnd-kit/core";
+import type {
+  DragEndEvent,
+  SensorDescriptor,
+  SensorOptions,
+} from "@dnd-kit/core";
 import { FeedbackAlert } from "../feedback-alert";
 
 import { CollectionsEmptyState } from "./collections-empty-state";
@@ -71,7 +75,10 @@ export function DashboardCollectionsManagerView({
 }: DashboardCollectionsManagerViewProps) {
   return (
     <div className="space-y-4">
-      <CollectionsToolbar filterTerm={filterTerm} onFilterChange={onFilterChange} />
+      <CollectionsToolbar
+        filterTerm={filterTerm}
+        onFilterChange={onFilterChange}
+      />
 
       <FeedbackAlert feedback={feedback} />
 

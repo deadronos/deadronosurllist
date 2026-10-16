@@ -5,7 +5,8 @@ test.describe("Visual regression", () => {
 
   test("Home page snapshot", async ({ page }) => {
     await page.addStyleTag({
-      content: "*{animation-duration:0s!important;transition-duration:0s!important}",
+      content:
+        "*{animation-duration:0s!important;transition-duration:0s!important}",
     });
     await page.goto("/");
 
@@ -16,7 +17,8 @@ test.describe("Visual regression", () => {
 
   test("Catalog page snapshot", async ({ page }) => {
     await page.addStyleTag({
-      content: "*{animation-duration:0s!important;transition-duration:0s!important}",
+      content:
+        "*{animation-duration:0s!important;transition-duration:0s!important}",
     });
     await page.goto("/catalog");
 

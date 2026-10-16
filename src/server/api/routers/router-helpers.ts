@@ -37,7 +37,10 @@ export async function verifyCollectionOwnership(
  * Verifies that a link exists and its parent collection belongs to the authenticated user.
  * @returns The link object with the collection included.
  */
-export async function verifyLinkOwnership(ctx: ProtectedContext, linkId: string) {
+export async function verifyLinkOwnership(
+  ctx: ProtectedContext,
+  linkId: string,
+) {
   const link = await ctx.db.link.findFirst({
     where: { id: linkId },
     include: { collection: true },

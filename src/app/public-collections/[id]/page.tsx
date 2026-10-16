@@ -30,7 +30,8 @@ export async function generateMetadata({ params }: PageProps) {
   }
   return {
     title: `${collection.name} | Deadronos URL List`,
-    description: collection.description ?? "Explore this curated list of links.",
+    description:
+      collection.description ?? "Explore this curated list of links.",
   };
 }
 
@@ -63,7 +64,11 @@ export default async function PublicCollectionPage({ params }: PageProps) {
                 ) : null}
               </div>
 
-              <Button asChild variant="ghost" className="-ml-2 sm:ml-0 shrink-0">
+              <Button
+                asChild
+                variant="ghost"
+                className="-ml-2 shrink-0 sm:ml-0"
+              >
                 <Link href="/catalog">
                   <ArrowLeftIcon className="size-4" />
                   Back to catalog
@@ -88,11 +93,11 @@ export default async function PublicCollectionPage({ params }: PageProps) {
                     {collection.links.map((link) => (
                       <div
                         key={link.id}
-                        className="bg-background/35 hover:bg-background/50 transition-all duration-200 rounded-lg border p-4 group"
+                        className="bg-background/35 hover:bg-background/50 group rounded-lg border p-4 transition-all duration-200"
                       >
                         <div className="flex flex-col gap-2">
                           <div className="flex items-start justify-between gap-3">
-                            <h3 className="font-semibold text-base leading-tight group-hover:text-primary transition-colors">
+                            <h3 className="group-hover:text-primary text-base leading-tight font-semibold transition-colors">
                               {link.name}
                             </h3>
                           </div>
@@ -105,7 +110,7 @@ export default async function PublicCollectionPage({ params }: PageProps) {
                             href={link.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-primary mt-1 inline-flex items-center gap-1.5 text-sm transition-colors w-fit max-w-full"
+                            className="text-muted-foreground hover:text-primary mt-1 inline-flex w-fit max-w-full items-center gap-1.5 text-sm transition-colors"
                           >
                             <span className="truncate">{link.url}</span>
                             <ExternalLinkIcon className="size-3.5 shrink-0" />

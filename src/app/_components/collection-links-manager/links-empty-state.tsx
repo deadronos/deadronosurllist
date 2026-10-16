@@ -7,10 +7,15 @@ type LinksEmptyStateProps = {
   onClearFilter: () => void;
 };
 
-export function LinksEmptyState({ hasFilter, onClearFilter }: LinksEmptyStateProps) {
+export function LinksEmptyState({
+  hasFilter,
+  onClearFilter,
+}: LinksEmptyStateProps) {
   return (
     <div className="bg-background/35 mt-6 rounded-xl border p-6">
-      <div className="text-sm font-medium">{hasFilter ? "No matches" : "No links yet"}</div>
+      <div className="text-sm font-medium">
+        {hasFilter ? "No matches" : "No links yet"}
+      </div>
       <div className="text-muted-foreground mt-1 text-sm">
         {hasFilter
           ? "No links match the current filter."

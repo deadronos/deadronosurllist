@@ -105,11 +105,7 @@ export function LinkCreateFormView({
             </div>
           </div>
 
-          <Button
-            disabled={isSubmitting}
-            size="lg"
-            className="w-full"
-          >
+          <Button disabled={isSubmitting} size="lg" className="w-full">
             {isSubmitting ? "Adding..." : "Add link"}
           </Button>
         </form>

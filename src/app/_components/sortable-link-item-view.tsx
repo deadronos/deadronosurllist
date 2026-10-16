@@ -44,13 +44,13 @@ export function SortableLinkItemView({
       style={style}
       dragProps={dragProps}
     >
-      <div className="flex items-center justify-between gap-3 w-full">
+      <div className="flex w-full items-center justify-between gap-3">
         <div className="min-w-0">
           <a
             href={link.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 truncate text-sm font-medium hover:underline max-w-full"
+            className="inline-flex max-w-full items-center gap-1 truncate text-sm font-medium hover:underline"
           >
             <span className="truncate">{link.name}</span>
             <ExternalLinkIcon className="text-muted-foreground size-3 shrink-0" />
@@ -62,7 +62,7 @@ export function SortableLinkItemView({
           ) : null}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
