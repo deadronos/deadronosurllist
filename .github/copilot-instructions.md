@@ -52,8 +52,8 @@ npm run db:studio    # Open Prisma Studio GUI
 npm run db:generate  # Generate Prisma client (auto on postinstall)
 
 # Code Quality
-npm run format:write # Prettier format all files
-npm run lint:fix     # ESLint auto-fix
+npm run format:write # oxfmt format all files
+npm run lint:fix     # Oxlint auto-fix
 npm run typecheck    # TypeScript validation only
 ```
 

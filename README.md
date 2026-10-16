@@ -151,7 +151,7 @@ GitHub Actions workflow (`.github/workflows/security.yml`) runs:
 
 - **Gitleaks**: Scans for exposed secrets in code and history
 - **npm audit**: Checks dependencies for known vulnerabilities
-- **ESLint & TypeScript**: Enforces type safety and code quality
+- **Oxlint & TypeScript**: Enforces type safety and code quality
 
 ### Best Practices
 
