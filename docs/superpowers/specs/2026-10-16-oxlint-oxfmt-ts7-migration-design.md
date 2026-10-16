@@ -37,7 +37,7 @@ Oxlint's type-aware mode is built on `typescript-go` and its documentation state
 
 ## Acceptance criteria
 
-1. `npm run lint` runs Oxlint in type-aware mode and reports **the same findings as today** plus the three `scripts/` findings, which are fixed.
+1. `npm run lint` runs Oxlint in type-aware mode and reports **the same findings as today** plus the four real findings, which are fixed.
 2. `npm run format:check` runs oxfmt and **passes**; `npm run format:write` formats.
 3. `eslint`, `eslint-config-next`, `@eslint/eslintrc`, `@typescript-eslint/*`, `typescript-eslint`, `prettier` and `prettier-plugin-tailwindcss` are removed; `npm audit` findings drop from **8 to 3**.
 4. `typescript` is `7.0.2`.
@@ -49,9 +49,10 @@ Oxlint's type-aware mode is built on `typescript-go` and its documentation state
 | Probe | Result |
 |---|---|
 | Oxlint type-aware on `src` with mirrored rules | **4 findings — identical to ESLint** |
-| Unknown rules in the 49-rule mapping | **none** (`consistent-type-imports` included) |
+| Unknown rules in the 49-rule parity mapping | **none** (`consistent-type-imports` included) |
 | Oxlint over whole repo, ignores mirrored, JS excluded | 4 findings (exact parity) |
 | Oxlint over whole repo, ignores mirrored, **scripts/ included** | **7 findings** (4 pre-existing + 3 real) |
+| Oxlint over whole repo, plus `no-useless-default-assignment` | **8 findings** (adds `route.ts:40`) |
 | Prettier `--check` today (baseline) | **already fails on 72 files** |
 | oxfmt `--check` `src` @ printWidth 80 vs 100 | 68 files vs 121 files |
 | Biome formatter with Prettier-matching config | byte-identical to Prettier (0 diffs) |
@@ -74,9 +75,11 @@ Two findings worth recording because they shape the design:
 
 `oxlint-tsgolint` ships platform binaries with no JS dependencies; versioning tracks TypeScript (`7.0.2004` = TS 7.0.2 + patch 004).
 
-### Rule parity — 49 rules mapped
+### Rule parity — 50 rules mapped
 
 The current effective set is `@typescript-eslint/recommended` + `recommended-requiring-type-checking` (47 rules, flattened) plus the repo's own customisations. Each maps to an Oxlint `typescript/*` (or `eslint/*` for the four core rules) equivalent, with all rule categories set to `"off"` so **only** the mapped rules run and no new noise appears.
+
+One rule is added beyond parity, at the reviewer's request: `typescript/no-useless-default-assignment`. It is not in today's set but flagged a genuine issue, so it is enabled as an `error` and the finding is fixed (see "Resolved decisions").
 
 Options preserved exactly:
 
@@ -150,7 +153,7 @@ One PR, ordered commits so each is independently reviewable and revertable:
 1. `chore: add .gitattributes and normalize line endings`
 2. `chore: replace ESLint with Oxlint (type-aware)` — config and scripts only, **exact parity, no code changes**
 3. `chore: replace Prettier with oxfmt` — one-time reformat
-4. `fix: await floating promises and reject with Error in scripts/` — the 3 findings
+4. `fix: resolve the four findings surfaced by the new scope` — 2 × `no-floating-promises` and 1 × `prefer-promise-reject-errors` in `scripts/`, plus 1 × `no-useless-default-assignment` in `src/app/api/auth/[...nextauth]/route.ts`
 5. `chore: upgrade TypeScript to 7.0.2`
 6. `docs: record TASK033 in the memory bank`
 
@@ -176,8 +179,8 @@ Commit 5 is the risky one and drops cleanly on its own if TS 7 misbehaves.
 | Type-aware linting memory use on large codebases | This repo is small; watch CI duration |
 | CRLF files cause noisy, unstable diffs | `.gitattributes` lands first (commit 1) |
 
-## Open questions for the reviewer
+## Resolved decisions
 
-1. `typescript/no-useless-default-assignment` flagged a real issue at `src/app/api/auth/[...nextauth]/route.ts:40`, but it is **not** in today's rule set, so strict mirroring leaves it silent. Enable it and fix, or leave out?
-2. The `oxc` and `unicorn` plugins are available and would be enabled-but-inert under this config. Leave inert, or adopt a curated subset later?
-3. Formatter language scope is intentionally pinned to today's `{ts,tsx,js,jsx,mdx}` glob. When (if ever) should oxfmt take over JSON/CSS/Markdown/YAML as well?
+1. **`no-useless-default-assignment` is enabled and its finding fixed.** The reviewer chose to adopt the rule rather than stay strictly at parity. Scope: the rule is added as `error`; `src/app/api/auth/[...nextauth]/route.ts:40` is corrected.
+2. **The `oxc` and `unicorn` plugins stay inert.** They remain available but no rules are enabled from them in this migration; a curated subset can be adopted later as a separate change.
+3. **Formatter language scope stays pinned** to today's `{ts,tsx,js,jsx,mdx}` glob. When (if ever) oxfmt should take over JSON/CSS/Markdown/YAML remains a future decision.
