@@ -8,6 +8,10 @@ on:
   schedule:
     # Run daily at 00:00 UTC
     - cron: "0 0 * * *"
+  # Allow running on demand. GitHub disables a scheduled workflow after ~60
+  # days of consecutive failures, which is how this one went unnoticed when
+  # an out-of-sync lockfile broke `npm ci` on main.
+  workflow_dispatch:
 
 permissions:
   contents: read
