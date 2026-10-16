@@ -10,6 +10,7 @@ None
 
 ## Completed
 
+- [TASK032] Dependency refresh - Upgrade packages to latest stable, hold TypeScript 6.x pending typescript-eslint TS 7 support, and open a maintenance PR (2026-10-16).
 - [TASK030] Dependency refresh - Upgrade packages, fix compatibility issues, and open a maintenance PR (2026-06-19).
 - [TASK029] Dependency refresh - Upgrade packages, fix compatibility issues, and open a maintenance PR (2026-03-18).
 - [TASK028] Add user profiles - Public profile pages for user collections (2026-01-31).
