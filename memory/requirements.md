@@ -70,6 +70,12 @@
 
 ## Lint Compliance
 
+> Note (TASK033): these requirements are stated using the `@typescript-eslint/*` rule names
+> in force when they were written. Since the Oxlint migration the equivalent rules live in the
+> `typescript/*` namespace (e.g. `@typescript-eslint/no-unsafe-member-access` is now
+> `typescript/no-unsafe-member-access`). The requirements themselves are unchanged and still
+> satisfied.
+
 - WHEN `npm run lint` executes, THE SYSTEM SHALL complete without any `@typescript-eslint/no-unsafe-*` or `@typescript-eslint/no-explicit-any` diagnostics across routers, database utilities, or tests [Acceptance: `npm run lint` exits with code 0 and reports zero such violations].
 - WHEN tRPC procedures access `ctx.db`, THE SYSTEM SHALL expose a typed database client so property access (e.g., `collection`, `link`, `post`) carries Prisma-aligned signatures instead of `any` [Acceptance: TypeScript inference in routers eliminates `@typescript-eslint/no-unsafe-member-access` and related lint warnings].
 - WHEN Vitest suites construct callers or contexts, THE SYSTEM SHALL rely on typed helpers rather than `any` coercions [Acceptance: `npm run lint` reports no `@typescript-eslint/no-unsafe-assignment` or `no-explicit-any` issues within `src/test` files].
